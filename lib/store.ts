@@ -1,0 +1,1124 @@
+import { initialWorkflow, type TeamReturn, type Workflow } from "@/lib/return-workflow";
+import { randomBytes, randomUUID } from "crypto";
+import { mkdir, readFile, writeFile } from "fs/promises";
+import path from "path";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { decryptText, encryptText, hashToken, last4 } from "@/lib/crypto";
+import { staffEmails } from "@/lib/firm";
+import { normalizeRequestBlock, normalizeRequestState } from "@/lib/request-thread";
+import type {
+  DocumentKind,
+  DocumentRecord,
+  ClientTask,
+  EfileAuthorization,
+  FilingRecord,
+  IdentityNote,
+  Message,
+  Profile,
+  ProfileUpdate,
+  Role,
+  SignatureKind,
+  SignatureRecord,
+  TaskKind,
+  TaxpayerType,
+  TaxReturn,
+} from "@/lib/types";
+import { taskKinds } from "@/lib/types";
+
+type StoredProfile = Profile & { taxIdEncrypted: string | null };
+
+type StoredDocument = DocumentRecord & { storagePath: string };
+type StoredSignature = SignatureRecord & { storagePath: string };
+
+type MagicToken = {
+  hash: string;
+  profileId: string;
+  expiresAt: string;
+  usedAt: string | null;
+};
+
+type Database = {
+  returns: (TaxReturn & Partial<Workflow>)[];
+  profiles: StoredProfile[];
+  documents: StoredDocument[];
+  signatures: StoredSignature[];
+  messages: Message[];
+  tokens: MagicToken[];
+  identityNotes: IdentityNote[];
+  tasks: ClientTask[];
+  staffAllowlist: string[];
+  filings: FilingRecord[];
+  authorizations: EfileAuthorization[];
+};
+
+export type Store = {
+  listRequestStates(): Promise<Pick<Message, "id" | "profileId" | "returnId" | "previousId" | "requestState" | "requestBlock" | "body">[]>;
+  listFilings(returnId?: string): Promise<FilingRecord[]>;
+  saveFiling(input: Omit<FilingRecord, "id" | "updatedAt">): Promise<FilingRecord>;
+  listAuthorizations(returnId?: string): Promise<EfileAuthorization[]>;
+  saveAuthorization(input: Omit<EfileAuthorization, "id">): Promise<EfileAuthorization>;
+  bumpReturnVersion(id: string): Promise<number | null>;
+  listTeamReturns(): Promise<TeamReturn[]>;
+  updateWorkflow(id: string, workflow: Workflow): Promise<boolean>;
+  listReturns(profileId: string): Promise<TaxReturn[]>;
+  createReturn(input: Omit<TaxReturn, "id" | "returnVersion">): Promise<void>;
+  ensureStaff(): Promise<void>;
+  getProfileByEmail(email: string): Promise<Profile | null>;
+  getProfile(id: string): Promise<Profile | null>;
+  getTaxId(id: string): Promise<string | null>;
+  listProfiles(): Promise<Profile[]>;
+  createClient(input: { email: string; name: string }): Promise<Profile>;
+  updateProfile(id: string, patch: ProfileUpdate): Promise<Profile>;
+  issueToken(profileId: string): Promise<string>;
+  consumeToken(raw: string): Promise<Profile | null>;
+  listDocuments(profileId: string): Promise<DocumentRecord[]>;
+  addDocument(input: {
+    profileId: string;
+    kind: DocumentKind;
+    filename: string;
+    contentType: string;
+    bytes: Buffer;
+  }): Promise<DocumentRecord>;
+  readDocument(id: string): Promise<{ record: DocumentRecord; bytes: Buffer } | null>;
+  listSignatures(profileId: string): Promise<SignatureRecord[]>;
+  addSignature(input: {
+    profileId: string;
+    kind: SignatureKind;
+    ip: string;
+    userAgent: string;
+    bytes: Buffer;
+  }): Promise<SignatureRecord>;
+  readSignature(id: string): Promise<{ record: SignatureRecord; bytes: Buffer } | null>;
+  listMessages(profileId: string): Promise<Message[]>;
+  addMessage(input: {
+    previousId?: string;
+    requestState?: NonNullable<Message["requestState"]>;
+    requestBlock?: NonNullable<Message["requestBlock"]>;
+    returnId?: string;
+    documentId?: string;
+    signatureId?: string;
+    profileId: string;
+    authorId: string;
+    authorRole: Role;
+    body: string;
+    kind: "message" | "event" | "note";
+  }): Promise<Message>;
+  getIdentity(profileId: string): Promise<IdentityNote | null>;
+  saveIdentity(input: IdentityNote): Promise<IdentityNote>;
+  listTasks(): Promise<ClientTask[]>;
+  setTaskStatus(id: string, status: ClientTask["status"]): Promise<ClientTask | null>;
+  saveTaskNote(id: string, note: string): Promise<ClientTask | null>;
+  isStaffAllowed(email: string): Promise<boolean>;
+  createStaff(input: { email: string; name: string }): Promise<Profile | null>;
+  setFileFlags(id: string, flags: { starred?: boolean; snoozedUntil?: string | null }): Promise<Profile | null>;
+};
+
+const dataDir = path.join(process.cwd(), "data");
+const dbPath = path.join(dataDir, "db.json");
+
+function emptyDb(): Database {
+  return { returns: [], profiles: [], documents: [], signatures: [], messages: [], tokens: [], identityNotes: [], tasks: [], staffAllowlist: [], filings: [], authorizations: [] };
+}
+
+function readDb(raw: string): Database {
+  const parsed = JSON.parse(raw) as Partial<Database>;
+  return {
+    returns: parsed.returns ?? [],
+    profiles: parsed.profiles ?? [],
+    documents: parsed.documents ?? [],
+    signatures: parsed.signatures ?? [],
+    messages: parsed.messages ?? [],
+    tokens: parsed.tokens ?? [],
+    identityNotes: parsed.identityNotes ?? [],
+    tasks: parsed.tasks ?? [],
+    staffAllowlist: parsed.staffAllowlist ?? [],
+    filings: parsed.filings ?? [],
+    authorizations: parsed.authorizations ?? [],
+  };
+}
+
+function publicMessage(row: Message): Message {
+  return {
+    ...row,
+    requestState: normalizeRequestState(row.requestState),
+    requestBlock: normalizeRequestBlock(row.requestBlock),
+  };
+}
+
+function blankTask(profileId: string, kind: TaskKind): ClientTask {
+  const now = new Date().toISOString();
+  return { id: randomUUID(), profileId, kind, status: "open", note: "", createdAt: now, updatedAt: now };
+}
+
+function seedTasks(db: Database) {
+  for (const profile of db.profiles) {
+    if (profile.role !== "client") continue;
+    for (const kind of taskKinds) {
+      if (!db.tasks.some((task) => task.profileId === profile.id && task.kind === kind)) {
+        db.tasks.push(blankTask(profile.id, kind));
+      }
+    }
+  }
+}
+
+function omit<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K> {
+  const copy = { ...value } as Partial<T>;
+  delete copy[key];
+  return copy as Omit<T, K>;
+}
+
+function publicProfile(profile: StoredProfile): Profile {
+  const next = omit(profile, "taxIdEncrypted");
+  return { ...next, starred: profile.starred ?? false, snoozedUntil: profile.snoozedUntil ?? null };
+}
+
+let queue: Promise<unknown> = Promise.resolve();
+
+function withDb<T>(mutate: boolean, fn: (db: Database) => Promise<T> | T): Promise<T> {
+  const run = queue.then(async () => {
+    await mkdir(dataDir, { recursive: true });
+    let db = emptyDb();
+    try {
+      db = readDb(await readFile(dbPath, "utf8"));
+    } catch {
+      db = emptyDb();
+    }
+    const result = await fn(db);
+    if (mutate) {
+      await writeFile(dbPath, JSON.stringify(db, null, 2));
+    }
+    return result;
+  });
+  queue = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+function blankProfile(email: string, role: Role, name = ""): StoredProfile {
+  return {
+    id: randomUUID(),
+    email,
+    role,
+    name,
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    taxpayerType: "individual",
+    taxIdLast4: null,
+    taxIdEncrypted: null,
+    spouseName: "",
+    taxYears: "",
+    createdAt: new Date().toISOString(),
+    starred: false,
+    snoozedUntil: null,
+  };
+}
+
+const localStore: Store = {
+  async ensureStaff() {
+    await withDb(true, (db) => {
+      for (const email of staffEmails()) {
+        if (!db.profiles.some((profile) => profile.email === email)) {
+          db.profiles.push(blankProfile(email, "staff", email === "taxhelping2day@gmail.com" ? "Laura Wallace" : ""));
+        }
+      }
+    });
+  },
+  async getProfileByEmail(email) {
+    return withDb(false, (db) => {
+      const profile = db.profiles.find((item) => item.email === email.toLowerCase());
+      return profile ? publicProfile(profile) : null;
+    });
+  },
+  async getProfile(id) {
+    return withDb(false, (db) => {
+      const profile = db.profiles.find((item) => item.id === id);
+      return profile ? publicProfile(profile) : null;
+    });
+  },
+  async getTaxId(id) {
+    return withDb(false, (db) => {
+      const profile = db.profiles.find((item) => item.id === id);
+      return profile?.taxIdEncrypted ? decryptText(profile.taxIdEncrypted) : null;
+    });
+  },
+  async listProfiles() {
+    return withDb(false, (db) => db.profiles.map(publicProfile));
+  },
+  async createClient({ email, name }) {
+    return withDb(true, (db) => {
+      const existing = db.profiles.find((item) => item.email === email.toLowerCase());
+      if (existing) {
+        if (name && !existing.name) {
+          existing.name = name;
+        }
+        return publicProfile(existing);
+      }
+      const profile = blankProfile(email.toLowerCase(), "client", name);
+      db.profiles.push(profile);
+      return publicProfile(profile);
+    });
+  },
+  async updateProfile(id, patch) {
+    return withDb(true, (db) => {
+      const profile = db.profiles.find((item) => item.id === id);
+      if (!profile) {
+        throw new Error("Profile not found.");
+      }
+      profile.name = patch.name;
+      profile.phone = patch.phone;
+      profile.address = patch.address;
+      profile.city = patch.city;
+      profile.state = patch.state;
+      profile.zip = patch.zip;
+      profile.taxpayerType = patch.taxpayerType;
+      profile.spouseName = patch.spouseName;
+      profile.taxYears = patch.taxYears;
+      if (patch.taxId) {
+        const digits = patch.taxId.replace(/\D/g, "");
+        profile.taxIdEncrypted = encryptText(digits);
+        profile.taxIdLast4 = last4(digits);
+      }
+      return publicProfile(profile);
+    });
+  },
+  async issueToken(profileId) {
+    const raw = randomBytes(32).toString("hex");
+    await withDb(true, (db) => {
+      db.tokens.push({
+        hash: hashToken(raw),
+        profileId,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        usedAt: null,
+      });
+    });
+    return raw;
+  },
+  async consumeToken(raw) {
+    return withDb(true, (db) => {
+      const token = db.tokens.find((item) => item.hash === hashToken(raw));
+      if (!token || token.usedAt || new Date(token.expiresAt).getTime() < Date.now()) {
+        return null;
+      }
+      token.usedAt = new Date().toISOString();
+      const profile = db.profiles.find((item) => item.id === token.profileId);
+      return profile ? publicProfile(profile) : null;
+    });
+  },
+  async listDocuments(profileId) {
+    return withDb(false, (db) =>
+      db.documents
+        .filter((item) => item.profileId === profileId)
+        .map((item) => omit(item, "storagePath")),
+    );
+  },
+  async addDocument(input) {
+    const id = randomUUID();
+    const storagePath = path.join(dataDir, "files", id);
+    await mkdir(path.dirname(storagePath), { recursive: true });
+    await writeFile(storagePath, input.bytes);
+    const record: StoredDocument = {
+      id,
+      profileId: input.profileId,
+      kind: input.kind,
+      filename: input.filename,
+      contentType: input.contentType,
+      createdAt: new Date().toISOString(),
+      storagePath,
+    };
+    await withDb(true, (db) => {
+      db.documents.push(record);
+    });
+    return omit(record, "storagePath");
+  },
+  async readDocument(id) {
+    return withDb(false, async (db) => {
+      const record = db.documents.find((item) => item.id === id);
+      if (!record) {
+        return null;
+      }
+      const bytes = await readFile(record.storagePath);
+      return { record: omit(record, "storagePath"), bytes };
+    });
+  },
+  async listSignatures(profileId) {
+    return withDb(false, (db) =>
+      db.signatures
+        .filter((item) => item.profileId === profileId)
+        .sort((a,b) => b.signedAt.localeCompare(a.signedAt) || b.id.localeCompare(a.id))
+        .map((item) => omit(item, "storagePath")),
+    );
+  },
+  async addSignature(input) {
+    const id = randomUUID();
+    const storagePath = path.join(dataDir, "files", `${id}.pdf`);
+    await mkdir(path.dirname(storagePath), { recursive: true });
+    await writeFile(storagePath, input.bytes);
+    const record: StoredSignature = {
+      id,
+      profileId: input.profileId,
+      kind: input.kind,
+      signedAt: new Date().toISOString(),
+      ip: input.ip,
+      userAgent: input.userAgent,
+      storagePath,
+    };
+    await withDb(true, (db) => {
+      db.signatures.push(record);
+    });
+    return omit(record, "storagePath");
+  },
+  async readSignature(id) {
+    return withDb(false, async (db) => {
+      const record = db.signatures.find((item) => item.id === id);
+      if (!record) {
+        return null;
+      }
+      const bytes = await readFile(record.storagePath);
+      return { record: omit(record, "storagePath"), bytes };
+    });
+  },
+  async listMessages(profileId) {
+    return withDb(false, (db) =>
+      db.messages.filter((item) => item.profileId === profileId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map(publicMessage),
+    );
+  },
+  async addMessage(input) {
+    const message: Message = {
+      ...input,
+      id: randomUUID(),
+      profileId: input.profileId,
+      authorId: input.authorId,
+      authorRole: input.authorRole,
+      body: input.body,
+      kind: input.kind,
+      createdAt: new Date().toISOString(),
+    };
+    await withDb(true, (db) => {
+      if (input.previousId && db.messages.some(row => row.previousId === input.previousId)) {
+        throw new Error("This request already changed. Refresh to see the latest status.");
+      }
+      db.messages.push(message);
+    });
+    return message;
+  },
+  async listFilings(returnId) {
+    return withDb(false, (db) => db.filings.filter((item) => !returnId || item.returnId === returnId));
+  },
+  async saveFiling(input) {
+    const region = input.jurisdiction === "federal" ? "" : input.region.trim().toUpperCase();
+    const record = { ...input, region, id: randomUUID(), updatedAt: new Date().toISOString() };
+    return withDb(true, (db) => {
+      const existing = db.filings.find((item) => item.returnId === input.returnId && item.jurisdiction === input.jurisdiction && item.region.toLowerCase() === region.toLowerCase());
+      if (existing) {
+        Object.assign(existing, record, { id: existing.id });
+        return existing;
+      }
+      db.filings.push(record);
+      return record;
+    });
+  },
+  async listAuthorizations(returnId) {
+    return withDb(false, (db) => db.authorizations.filter((item) => !returnId || item.returnId === returnId));
+  },
+  async saveAuthorization(input) {
+    return withDb(true, (db) => {
+      const existing = db.authorizations.find((item) => item.returnId === input.returnId && item.signer === input.signer && item.returnVersion === input.returnVersion);
+      const record = { ...input, id: existing?.id ?? randomUUID() };
+      if (existing) Object.assign(existing, record);
+      else db.authorizations.push(record);
+      return record;
+    });
+  },
+  async bumpReturnVersion(id) {
+    return withDb(true, (db) => {
+      const item = db.returns.find((row) => row.id === id);
+      if (!item) return null;
+      item.returnVersion = (item.returnVersion ?? 1) + 1;
+      return item.returnVersion;
+    });
+  },
+  async getIdentity(profileId) {
+    return withDb(false, (db) => db.identityNotes.find((item) => item.profileId === profileId) ?? null);
+  },
+  async saveIdentity(input) {
+    await withDb(true, (db) => {
+      db.identityNotes = db.identityNotes.filter((item) => item.profileId !== input.profileId);
+      db.identityNotes.push(input);
+    });
+    return input;
+  },
+  async listRequestStates() {
+    return withDb(false, (db) => db.messages.flatMap((row) => {
+      const requestState = normalizeRequestState(row.requestState);
+      if (!requestState) return [];
+      return [{ id: row.id, profileId: row.profileId, returnId: row.returnId ?? null, previousId: row.previousId ?? null, requestState, requestBlock: normalizeRequestBlock(row.requestBlock), body: row.body }];
+    }));
+  },
+  async listTeamReturns() {
+    return withDb(false, (db) => db.returns.map((item) => ({ ...initialWorkflow, ...item, returnVersion: item.returnVersion ?? 1 })));
+  },
+  async updateWorkflow(id, workflow) {
+    return withDb(true, db => {
+      const item = db.returns.find(row => row.id === id);
+      if (!item || (item.revision ?? 0) !== workflow.revision) return false;
+      Object.assign(item, workflow, { revision: workflow.revision + 1 });
+      return true;
+    });
+  },
+  async listReturns(profileId) {
+    return withDb(false, db => db.returns.filter(item => item.profileId === profileId)
+      .sort((a, b) => b.taxYear - a.taxYear || a.entity.localeCompare(b.entity))
+      .map(({ id, profileId, taxYear, entity, taxpayerType, returnVersion }) => ({ id, profileId, taxYear, entity, taxpayerType, returnVersion: returnVersion ?? 1 })));
+  },
+  async createReturn(input) {
+    await withDb(true, db => {
+      const exists = db.returns.some(item => item.profileId === input.profileId &&
+        item.taxYear === input.taxYear && item.taxpayerType === input.taxpayerType &&
+        item.entity.toLowerCase() === input.entity.toLowerCase());
+      if (!exists) db.returns.push({ ...input, id: randomUUID(), returnVersion: 1 });
+    });
+  },
+  async listTasks() {
+    return withDb(true, (db) => {
+      seedTasks(db);
+      return db.tasks;
+    });
+  },
+  async setTaskStatus(id, status) {
+    return withDb(true, (db) => {
+      const task = db.tasks.find((item) => item.id === id);
+      if (!task) return null;
+      task.status = status;
+      task.updatedAt = new Date().toISOString();
+      return task;
+    });
+  },
+  async saveTaskNote(id, note) {
+    return withDb(true, (db) => {
+      const task = db.tasks.find((item) => item.id === id);
+      if (!task) return null;
+      task.note = note;
+      task.updatedAt = new Date().toISOString();
+      return task;
+    });
+  },
+  async isStaffAllowed(email) {
+    return withDb(false, (db) => db.staffAllowlist.includes(email.toLowerCase()));
+  },
+  async createStaff({ email, name }) {
+    return withDb(true, (db) => {
+      const value = email.toLowerCase();
+      const existing = db.profiles.find((item) => item.email === value);
+      if (existing?.role === "client") {
+        return null;
+      }
+      if (!db.staffAllowlist.includes(value)) {
+        db.staffAllowlist.push(value);
+      }
+      if (existing) {
+        if (name && !existing.name) {
+          existing.name = name;
+        }
+        return publicProfile(existing);
+      }
+      const profile = blankProfile(value, "staff", name);
+      db.profiles.push(profile);
+      return publicProfile(profile);
+    });
+  },
+  async setFileFlags(id, flags) {
+    return withDb(true, (db) => {
+      const profile = db.profiles.find((item) => item.id === id);
+      if (!profile) return null;
+      if (flags.starred !== undefined) profile.starred = flags.starred;
+      if (flags.snoozedUntil !== undefined) profile.snoozedUntil = flags.snoozedUntil;
+      return publicProfile(profile);
+    });
+  },
+};
+
+type ProfileRow = {
+  id: string;
+  email: string;
+  role: Role;
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  taxpayer_type: TaxpayerType;
+  tax_id_encrypted: string | null;
+  tax_id_last4: string | null;
+  spouse_name: string;
+  starred?: boolean | null;
+  snoozed_until?: string | null;
+  tax_years: string;
+  created_at: string;
+};
+
+function fromRow(row: ProfileRow): Profile {
+  return {
+    id: row.id,
+    email: row.email,
+    role: row.role,
+    name: row.name,
+    phone: row.phone,
+    address: row.address,
+    city: row.city,
+    state: row.state,
+    zip: row.zip,
+    taxpayerType: row.taxpayer_type,
+    taxIdLast4: row.tax_id_last4,
+    spouseName: row.spouse_name,
+    taxYears: row.tax_years,
+    createdAt: row.created_at,
+    starred: Boolean(row.starred),
+    snoozedUntil: row.snoozed_until ?? null,
+  };
+}
+
+function supabaseStore(client: SupabaseClient): Store {
+  const bucket = "portal-files";
+  return {
+    async ensureStaff() {
+      for (const email of staffEmails()) {
+        const { data } = await client.from("profiles").select("id").eq("email", email).maybeSingle();
+        if (!data) {
+          await client.from("profiles").insert({
+            email,
+            role: "staff",
+            name: email === "taxhelping2day@gmail.com" ? "Laura Wallace" : "",
+          });
+        }
+      }
+    },
+    async getProfileByEmail(email) {
+      const { data } = await client.from("profiles").select("*").eq("email", email.toLowerCase()).maybeSingle();
+      return data ? fromRow(data as ProfileRow) : null;
+    },
+    async getProfile(id) {
+      const { data } = await client.from("profiles").select("*").eq("id", id).maybeSingle();
+      return data ? fromRow(data as ProfileRow) : null;
+    },
+    async getTaxId(id) {
+      const { data } = await client.from("profiles").select("tax_id_encrypted").eq("id", id).maybeSingle();
+      const encrypted = (data as { tax_id_encrypted: string | null } | null)?.tax_id_encrypted;
+      return encrypted ? decryptText(encrypted) : null;
+    },
+    async listProfiles() {
+      const { data, error } = await client.from("profiles").select("*").order("created_at");
+      if (error) {
+        throw new Error(error.message);
+      }
+      return (data as ProfileRow[]).map(fromRow);
+    },
+    async createClient({ email, name }) {
+      const existing = await this.getProfileByEmail(email);
+      if (existing) {
+        if (name && !existing.name) {
+          await client.from("profiles").update({ name }).eq("id", existing.id);
+          return { ...existing, name };
+        }
+        return existing;
+      }
+      const { data, error } = await client
+        .from("profiles")
+        .insert({ email: email.toLowerCase(), role: "client", name })
+        .select("*")
+        .single();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return fromRow(data as ProfileRow);
+    },
+    async updateProfile(id, patch) {
+      const update: Record<string, string | null> = {
+        name: patch.name,
+        phone: patch.phone,
+        address: patch.address,
+        city: patch.city,
+        state: patch.state,
+        zip: patch.zip,
+        taxpayer_type: patch.taxpayerType,
+        spouse_name: patch.spouseName,
+        tax_years: patch.taxYears,
+      };
+      if (patch.taxId) {
+        const digits = patch.taxId.replace(/\D/g, "");
+        update.tax_id_encrypted = encryptText(digits);
+        update.tax_id_last4 = last4(digits);
+      }
+      const { data, error } = await client.from("profiles").update(update).eq("id", id).select("*").single();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return fromRow(data as ProfileRow);
+    },
+    async issueToken(profileId) {
+      const raw = randomBytes(32).toString("hex");
+      const { error } = await client.from("magic_tokens").insert({
+        profile_id: profileId,
+        token_hash: hashToken(raw),
+        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      });
+      if (error) {
+        throw new Error(error.message);
+      }
+      return raw;
+    },
+    async consumeToken(raw) {
+      const { data } = await client.from("magic_tokens").select("*").eq("token_hash", hashToken(raw)).maybeSingle();
+      const token = data as { id: string; profile_id: string; expires_at: string; used_at: string | null } | null;
+      if (!token || token.used_at || new Date(token.expires_at).getTime() < Date.now()) {
+        return null;
+      }
+      await client.from("magic_tokens").update({ used_at: new Date().toISOString() }).eq("id", token.id);
+      return this.getProfile(token.profile_id);
+    },
+    async listDocuments(profileId) {
+      const { data, error } = await client.from("documents").select("*").eq("profile_id", profileId);
+      if (error) {
+        throw new Error(error.message);
+      }
+      return (data as Array<Record<string, string>>).map((row) => ({
+        id: row.id,
+        profileId: row.profile_id,
+        kind: row.kind as DocumentKind,
+        filename: row.filename,
+        contentType: row.content_type,
+        createdAt: row.created_at,
+      }));
+    },
+    async addDocument(input) {
+      const id = randomUUID();
+      const storagePath = `${input.profileId}/${id}`;
+      const upload = await client.storage.from(bucket).upload(storagePath, input.bytes, {
+        contentType: input.contentType,
+        upsert: false,
+      });
+      if (upload.error) {
+        throw new Error(upload.error.message);
+      }
+      const { data, error } = await client
+        .from("documents")
+        .insert({
+          id,
+          profile_id: input.profileId,
+          kind: input.kind,
+          filename: input.filename,
+          content_type: input.contentType,
+          storage_path: storagePath,
+        })
+        .select("*")
+        .single();
+      if (error) {
+        throw new Error(error.message);
+      }
+      const row = data as Record<string, string>;
+      return {
+        id: row.id,
+        profileId: row.profile_id,
+        kind: row.kind as DocumentKind,
+        filename: row.filename,
+        contentType: row.content_type,
+        createdAt: row.created_at,
+      };
+    },
+    async readDocument(id) {
+      const { data } = await client.from("documents").select("*").eq("id", id).maybeSingle();
+      if (!data) {
+        return null;
+      }
+      const row = data as Record<string, string>;
+      const file = await client.storage.from(bucket).download(row.storage_path);
+      if (file.error || !file.data) {
+        throw new Error(file.error?.message ?? "File missing.");
+      }
+      const bytes = Buffer.from(await file.data.arrayBuffer());
+      return {
+        record: {
+          id: row.id,
+          profileId: row.profile_id,
+          kind: row.kind as DocumentKind,
+          filename: row.filename,
+          contentType: row.content_type,
+          createdAt: row.created_at,
+        },
+        bytes,
+      };
+    },
+    async listSignatures(profileId) {
+      const { data, error } = await client.from("signatures").select("*").eq("profile_id", profileId).order("signed_at", {ascending:false}).order("id",{ascending:false});
+      if (error) {
+        throw new Error(error.message);
+      }
+      return (data as Array<Record<string, string>>).map((row) => ({
+        id: row.id,
+        profileId: row.profile_id,
+        kind: row.kind as SignatureKind,
+        signedAt: row.signed_at,
+        ip: row.ip,
+        userAgent: row.user_agent,
+      }));
+    },
+    async addSignature(input) {
+      const id = randomUUID();
+      const storagePath = `${input.profileId}/signed-${input.kind}-${id}.pdf`;
+      const upload = await client.storage.from(bucket).upload(storagePath, input.bytes, {
+        contentType: "application/pdf",
+      });
+      if (upload.error) {
+        throw new Error(upload.error.message);
+      }
+      const { data, error } = await client
+        .from("signatures")
+        .insert({
+          id,
+          profile_id: input.profileId,
+          kind: input.kind,
+          ip: input.ip,
+          user_agent: input.userAgent,
+          storage_path: storagePath,
+        })
+        .select("*")
+        .single();
+      if (error) {
+        throw new Error(error.message);
+      }
+      const row = data as Record<string, string>;
+      return {
+        id: row.id,
+        profileId: row.profile_id,
+        kind: row.kind as SignatureKind,
+        signedAt: row.signed_at,
+        ip: row.ip,
+        userAgent: row.user_agent,
+      };
+    },
+    async readSignature(id) {
+      const { data } = await client.from("signatures").select("*").eq("id", id).maybeSingle();
+      if (!data) {
+        return null;
+      }
+      const row = data as Record<string, string>;
+      const file = await client.storage.from(bucket).download(row.storage_path);
+      if (file.error || !file.data) {
+        throw new Error(file.error?.message ?? "File missing.");
+      }
+      return {
+        record: {
+          id: row.id,
+          profileId: row.profile_id,
+          kind: row.kind as SignatureKind,
+          signedAt: row.signed_at,
+          ip: row.ip,
+          userAgent: row.user_agent,
+        },
+        bytes: Buffer.from(await file.data.arrayBuffer()),
+      };
+    },
+    async listMessages(profileId) {
+      const { data, error } = await client
+        .from("messages")
+        .select("*")
+        .eq("profile_id", profileId)
+        .order("created_at");
+      if (error) {
+        throw new Error(error.message);
+      }
+      return (data as Array<Record<string, string | null>>).map(messageFromSupabase);
+    },
+    async addMessage(input) {
+      const { data, error } = await client
+        .from("messages")
+        .insert({
+          profile_id: input.profileId,
+          author_id: input.authorId,
+          author_role: input.authorRole,
+          previous_id: input.previousId, request_state: input.requestState, request_block: input.requestBlock ?? null,
+          return_id: input.returnId, document_id: input.documentId, signature_id: input.signatureId,
+          body: input.body,
+          kind: input.kind,
+        })
+        .select("*")
+        .single();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return messageFromSupabase(data as Record<string, string | null>);
+    },
+    async getIdentity(profileId) {
+      const { data } = await client.from("identity_notes").select("*").eq("profile_id", profileId).maybeSingle();
+      if (!data) {
+        return null;
+      }
+      const row = data as Record<string, string | boolean | null>;
+      return {
+        profileId: String(row.profile_id),
+        attested: Boolean(row.attested),
+        note: String(row.note ?? ""),
+        attestedAt: row.attested_at ? String(row.attested_at) : null,
+        attestedBy: row.attested_by ? String(row.attested_by) : null,
+      };
+    },
+    async saveIdentity(input) {
+      const { error } = await client.from("identity_notes").upsert({
+        profile_id: input.profileId,
+        attested: input.attested,
+        note: input.note,
+        attested_at: input.attestedAt,
+        attested_by: input.attestedBy,
+      });
+      if (error) {
+        throw new Error(error.message);
+      }
+      return input;
+    },
+    async listRequestStates() {
+      const rows: Pick<Message, "id" | "profileId" | "returnId" | "previousId" | "requestState" | "requestBlock" | "body">[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await client.from("messages")
+          .select("id, profileId:profile_id, returnId:return_id, previousId:previous_id, requestState:request_state, requestBlock:request_block, body")
+          .not("request_state", "is", null).order("id").range(offset, offset + 499);
+        if (error) throw error;
+        rows.push(...(data as Array<Record<string, string | null>>).flatMap((row) => {
+          const requestState = normalizeRequestState(row.requestState);
+          if (!requestState) return [];
+          return [{
+            id: String(row.id),
+            profileId: String(row.profileId),
+            returnId: row.returnId,
+            previousId: row.previousId,
+            requestState,
+            requestBlock: normalizeRequestBlock(row.requestBlock),
+            body: String(row.body ?? ""),
+          }];
+        }));
+        if (data.length < 500) return rows;
+      }
+    },
+    async listFilings(returnId) {
+      const rows: FilingRecord[] = [];
+      for (let offset = 0; ; offset += 500) {
+        let query = client.from("filing_ledgers")
+          .select("id, returnId:return_id, jurisdiction, region, status, note, updatedAt:updated_at")
+          .order("id").range(offset, offset + 499);
+        if (returnId) query = query.eq("return_id", returnId);
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        rows.push(...(data as FilingRecord[]));
+        if (data.length < 500) return rows;
+      }
+    },
+    async saveFiling(input) {
+      const region = input.jurisdiction === "federal" ? "" : input.region.trim().toUpperCase();
+      const { data, error } = await client.from("filing_ledgers").upsert({
+        return_id: input.returnId, jurisdiction: input.jurisdiction, region,
+        status: input.status, note: input.note, updated_at: new Date().toISOString(),
+      }, { onConflict: "return_id,jurisdiction,region" }).select("id, returnId:return_id, jurisdiction, region, status, note, updatedAt:updated_at").single();
+      if (error) throw new Error(error.message);
+      return data as FilingRecord;
+    },
+    async listAuthorizations(returnId) {
+      const rows: EfileAuthorization[] = [];
+      for (let offset = 0; ; offset += 500) {
+        let query = client.from("efile_authorizations")
+          .select("id, returnId:return_id, signer, returnVersion:return_version, method, status, signedAt:signed_at, evidence")
+          .order("id").range(offset, offset + 499);
+        if (returnId) query = query.eq("return_id", returnId);
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        rows.push(...(data as EfileAuthorization[]));
+        if (data.length < 500) return rows;
+      }
+    },
+    async saveAuthorization(input) {
+      const { data, error } = await client.from("efile_authorizations").upsert({
+        return_id: input.returnId, signer: input.signer, return_version: input.returnVersion,
+        method: input.method, status: input.status, signed_at: input.signedAt, evidence: input.evidence,
+      }, { onConflict: "return_id,signer,return_version" }).select("id, returnId:return_id, signer, returnVersion:return_version, method, status, signedAt:signed_at, evidence").single();
+      if (error) throw new Error(error.message);
+      return data as EfileAuthorization;
+    },
+    async bumpReturnVersion(id) {
+      const { data, error } = await client.from("tax_returns").select("return_version").eq("id", id).maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!data) return null;
+      const returnVersion = Number(data.return_version ?? 1) + 1;
+      const updated = await client.from("tax_returns").update({ return_version: returnVersion }).eq("id", id).eq("return_version", Number(data.return_version ?? 1)).select("return_version");
+      if (updated.error) throw new Error(updated.error.message);
+      return updated.data.length === 1 ? returnVersion : null;
+    },
+    async listTeamReturns() {
+      const rows: TeamReturn[] = [];
+      for (let start = 0; ; start += 500) {
+        const { data, error } = await client.from("tax_returns")
+          .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, stage, owner:owner_id, due:due_date, nextAction:next_action, resumeStage:resume_stage, returnVersion:return_version, revision")
+          .order("id").range(start, start + 499);
+        if (error) throw new Error(error.message);
+        rows.push(...(data as TeamReturn[]).map((item) => ({ ...initialWorkflow, ...item, returnVersion: item.returnVersion ?? 1, resumeStage: item.resumeStage ?? null })));
+        if (data.length < 500) return rows;
+      }
+    },
+    async updateWorkflow(id, workflow) {
+      const { data, error } = await client.from("tax_returns").update({
+        stage: workflow.stage, owner_id: workflow.owner, due_date: workflow.due,
+        next_action: workflow.nextAction, resume_stage: workflow.resumeStage, revision: workflow.revision + 1,
+      }).eq("id", id).eq("revision", workflow.revision).select("id");
+      if (error) throw new Error(error.message);
+      return data.length === 1;
+    },
+    async listReturns(profileId) {
+      const { data, error } = await client.from("tax_returns")
+        .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, returnVersion:return_version")
+        .eq("profile_id", profileId).order("tax_year", { ascending: false }).order("entity");
+      if (error) throw new Error(error.message);
+      return (data as TaxReturn[]).map((item) => ({ ...item, returnVersion: item.returnVersion ?? 1 }));
+    },
+    async createReturn(input) {
+      const { error } = await client.from("tax_returns").insert({
+        profile_id: input.profileId, tax_year: input.taxYear,
+        entity: input.entity, taxpayer_type: input.taxpayerType,
+      });
+      if (error && error.code !== "23505") throw new Error(error.message);
+    },
+    async listTasks() {
+      const profiles = await this.listProfiles();
+      const { data, error } = await client.from("tasks").select("*");
+      if (error) {
+        throw new Error(error.message);
+      }
+      const existing = ((data ?? []) as Array<Record<string, string>>).map(taskFromRow);
+      const missing = profiles
+        .filter((profile) => profile.role === "client")
+        .flatMap((profile) =>
+          taskKinds
+            .filter((kind) => !existing.some((task) => task.profileId === profile.id && task.kind === kind))
+            .map((kind) => ({ profile_id: profile.id, kind, status: "open", note: "" })),
+        );
+      if (missing.length === 0) {
+        return existing;
+      }
+      const { data: inserted, error: insertError } = await client.from("tasks").insert(missing).select("*");
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
+      return [...existing, ...((inserted ?? []) as Array<Record<string, string>>).map(taskFromRow)];
+    },
+    async setTaskStatus(id, status) {
+      const { data, error } = await client
+        .from("tasks")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return data ? taskFromRow(data as Record<string, string>) : null;
+    },
+    async saveTaskNote(id, note) {
+      const { data, error } = await client
+        .from("tasks")
+        .update({ note, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return data ? taskFromRow(data as Record<string, string>) : null;
+    },
+    async isStaffAllowed(email) {
+      const { data } = await client.from("staff_allowlist").select("email").eq("email", email.toLowerCase()).maybeSingle();
+      return Boolean(data);
+    },
+    async createStaff({ email, name }) {
+      const value = email.toLowerCase();
+      const existing = await this.getProfileByEmail(value);
+      if (existing?.role === "client") {
+        return null;
+      }
+      const { error: allowError } = await client.from("staff_allowlist").upsert({ email: value });
+      if (allowError) {
+        throw new Error(allowError.message);
+      }
+      if (existing) {
+        if (name && !existing.name) {
+          await client.from("profiles").update({ name }).eq("id", existing.id);
+          return { ...existing, name };
+        }
+        return existing;
+      }
+      const { data, error } = await client.from("profiles").insert({ email: value, role: "staff", name }).select("*").single();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return fromRow(data as ProfileRow);
+    },
+    async setFileFlags(id, flags) {
+      const update: { starred?: boolean; snoozed_until?: string | null } = {};
+      if (flags.starred !== undefined) update.starred = flags.starred;
+      if (flags.snoozedUntil !== undefined) update.snoozed_until = flags.snoozedUntil;
+      const { data, error } = await client.from("profiles").update(update).eq("id", id).select("*").maybeSingle();
+      if (error) {
+        throw new Error(error.message);
+      }
+      return data ? fromRow(data as ProfileRow) : null;
+    },
+  };
+}
+
+function messageFromSupabase(row: Record<string, string | null>): Message {
+  const kind = row.kind === "note" || row.kind === "event" ? row.kind : "message";
+  return {
+    id: String(row.id),
+    profileId: String(row.profile_id),
+    authorId: String(row.author_id),
+    authorRole: row.author_role === "staff" ? "staff" : "client",
+    previousId: row.previous_id,
+    requestState: normalizeRequestState(row.request_state),
+    requestBlock: normalizeRequestBlock(row.request_block),
+    returnId: row.return_id,
+    documentId: row.document_id,
+    signatureId: row.signature_id,
+    body: String(row.body ?? ""),
+    kind,
+    createdAt: String(row.created_at),
+  };
+}
+
+function taskFromRow(row: Record<string, string>): ClientTask {
+  return {
+    id: row.id,
+    profileId: row.profile_id,
+    kind: row.kind as TaskKind,
+    status: row.status === "done" ? "done" : "open",
+    note: row.note ?? "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at ?? row.created_at,
+  };
+}
+
+let cached: Store | null = null;
+
+export function getStore(): Store {
+  if (cached) {
+    return cached;
+  }
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (url && key) {
+    cached = supabaseStore(createClient(url, key, { auth: { persistSession: false } }));
+  } else {
+    if (process.env.NODE_ENV === "production") throw new Error("Configure Supabase before running the production portal.");
+    cached = localStore;
+  }
+  return cached;
+}

@@ -1,0 +1,64 @@
+"use client";
+
+import {
+  BookOpenIcon,
+  ContactRoundIcon,
+  FileSignatureIcon,
+  FileTextIcon,
+  FolderOpenIcon,
+  InboxIcon,
+  LayoutDashboardIcon,
+  ListTodoIcon,
+  ScaleIcon,
+  SettingsIcon,
+  SparklesIcon,
+  UserRoundIcon,
+} from "lucide-react";
+import { DeskRail, type DeskItem } from "@/components/desk-rail";
+import type { DeskSearchItem } from "@/components/desk/desk-search";
+
+const staffItems: DeskItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
+  { href: "/returns", label: "Returns", icon: FileTextIcon },
+  { href: "/inbox", label: "Inbox", icon: InboxIcon },
+  { href: "/tasks", label: "Tasks", icon: ListTodoIcon },
+  { href: "/contacts", label: "Contacts", icon: ContactRoundIcon },
+  { href: "/library", label: "Library", icon: BookOpenIcon },
+  { href: "/assistant", label: "Assistant", icon: SparklesIcon },
+  { href: "/settings", label: "Settings", icon: SettingsIcon },
+];
+
+const staffSearch: DeskSearchItem[] = [
+  { href: "/dashboard", label: "Dashboard", group: "Desk" },
+  { href: "/returns", label: "Returns", group: "Desk" },
+  { href: "/inbox", label: "Inbox", group: "Desk" },
+  { href: "/tasks", label: "Tasks", group: "Desk" },
+  { href: "/contacts", label: "Contacts", group: "Desk" },
+  { href: "/library", label: "Library", group: "Desk" },
+  { href: "/assistant", label: "Assistant", group: "Desk" },
+  { href: "/settings/general", label: "General", group: "Settings" },
+  { href: "/settings/teammates", label: "Teammates", group: "Settings" },
+  { href: "/settings/security", label: "Security", group: "Settings" },
+];
+
+const clientItems: DeskItem[] = [
+  { href: "/portal", label: "This season", icon: InboxIcon },
+  { href: "/portal/profile", label: "Profile", icon: UserRoundIcon },
+  { href: "/portal/documents", label: "Documents", icon: FolderOpenIcon },
+  { href: "/portal/engagement", label: "Engagement letter", icon: FileSignatureIcon },
+  { href: "/portal/poa", label: "Form 2848", icon: ScaleIcon },
+];
+
+const clientSearch: DeskSearchItem[] = clientItems.map((item) => ({ href: item.href, label: item.label, group: "Portal" }));
+
+export function DeskShell({ side, children }: { side: "staff" | "client"; children: React.ReactNode }) {
+  const items = side === "staff" ? staffItems : clientItems;
+  const homeHref = side === "staff" ? "/inbox" : "/portal";
+
+  return (
+    <div className="flex h-dvh overflow-hidden bg-background">
+      <DeskRail items={items} homeHref={homeHref} search={side === "staff" ? staffSearch : clientSearch} />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
+    </div>
+  );
+}

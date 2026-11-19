@@ -1,0 +1,27 @@
+import Link from "next/link";
+import { taxpayerTypeLabel, type TaxReturn } from "@/lib/types";
+
+export function TaxReturnList({ returns }: { returns: TaxReturn[] }) {
+  return (
+    <section className="grid gap-2">
+      <div>
+        <h2 className="font-medium">Tax returns</h2>
+        <p className="text-sm text-muted-foreground">Open a year to review documents, ask for what is missing, and record the filing.</p>
+      </div>
+      {returns.length === 0 && <p className="text-sm text-muted-foreground">No returns opened yet.</p>}
+      <ul className="grid gap-2">
+        {returns.map((item) => (
+          <li key={item.id} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
+            <div>
+              <p className="font-medium">{item.taxYear} {taxpayerTypeLabel(item.taxpayerType).toLowerCase()} return</p>
+              <p className="text-sm text-muted-foreground">{item.entity}</p>
+            </div>
+            <Link href={`/returns/${item.profileId}/${item.id}`} className="text-sm underline">
+              Open return
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}

@@ -1,0 +1,418 @@
+{
+  "run_id": "trun_d701a861c88644cd8e6749002156a62b",
+  "interaction_id": "trun_d701a861c88644cd8e6749002156a62b",
+  "result_url": "https://platform.parallel.ai/play/deep-research/trun_d701a861c88644cd8e6749002156a62b",
+  "status": "completed",
+  "output": {
+    "basis": [
+      {
+        "field": "answer",
+        "reasoning": "Assessment reasoning:\n- The user field_description requests a practitioner workflow report for a product designer covering end-to-end engagement, roles, document lifecycle, signatures, fee/payments, product comparisons, status models, initial build orders, compliance constraints, recommended journeys, and common mistakes, all citing sources and naming forms and timelines. \n- The provided field_answer is a comprehensive narrative that touches on end-to-end engagement, signatures (including Form 8879, 7216, etc.), document requests vs uploads, roles, client vs staff views, product pattern comparisons (TaxDome, Canopy, Liscio, SafeSend, SmartVault, etc.), status models, first releases, risk and compliance details, and a synthesis with references. It includes explicit mentions of forms (8879, 7216, 2848, 8821, 7004, etc.), deadlines, and references to various portal products and workflows. \n- While not every single item from the user\u2019s exhaustive list is spelled out identically (e.g., every nuance for Schedule C, nonprofit 990 handling, or every named product\u2019s client vs firm actions in every context), the answer provides broad coverage for the topics requested and references sources inline for most claims. The response also avoids inventing features beyond what sources document or clearly notes when evidence is missing. \n- Therefore, the field_answer appears to address the expected topics comprehensively and cites sources inline, supporting the requested coverage. \n- Conclusion: completeness = true; supported = true.",
+        "citations": [
+          {
+            "url": "https://accountants.intuit.com/support/en-us/help-article/small-business-processes/getting-started-intuit-link-proconnect-tax/L2ceCp8lH_US_en_US?srsltid=AfmBOoouCQChAFFowh_PQ_WBhrezuOC94Cpu1-WvEqcIQqiM5zNLNE9_",
+            "excerpts": [
+              "Step 2: Taxpayer uses Intuit Link to answer questionnaire and upload documents.",
+              "Once you invite the taxpayer, they will need to select the link in the email to setup their account or sign in. This activates the two way communication between you and the taxpayer.",
+              "Step 3: Access client responses and import documents into the tax return.",
+              "Advanced Options: Customization, Tracking and Sending Documents to the taxpayer.",
+              "See [**Using Intuit Link to import documents into a return**](https://community.intuit.com/oicms/L8Q1tiQV0_US_en_US) for overall usage, including what forms you can import.",
+              "Step 2: Taxpayer uses Intuit Link to answer questionnaire and upload documents. Once you invite the taxpayer, they will need to select the link in the email to setup their account or sign in. This activates the two way communication between you and the taxpayer. This article has instructions for the taxpayer, including how to change their email address and upload documents: [**How do taxpayers use Intuit Link?**](https://community.intuit.com/oicms/L2RxWD4np_US_en_US)"
+            ],
+            "title": "Getting started with Intuit Link in ProConnect Tax"
+          },
+          {
+            "url": "https://www.journalofaccountancy.com/issues/2020/mar/tax-busy-season-new-client-strategies/",
+            "excerpts": [
+              "Design a preset email and hard-copy letter template for inquiries that includes: (1) set rates (e.g., $A for the first 30 minutes or $X per year retainer) that must be substantially prepaid, and (2) an engagement letter like the one offered by the AICPA and [available to Tax Section members](https://www.aicpa.org/interestareas/tax/resources.html) and an intake questionnaire that must be substantially complete before work can begin.",
+              "Set up e-pay options that clients can access and use to submit payments around the clock.",
+              "Consider carving out a few initially empty hours for last-minute, prepaid prospects and current client emergencies.",
+              "Set clear expectations in the engagement letter as to when the work will likely get done.",
+              "Perhaps an extension is filed now; all supporting documentation must be in by, e.g., June 1; and work will be completed by July 15.",
+              "Similarly, this should be in a premade template.",
+              "Set clear expectations in the engagement letter as to when the work will likely get done. Perhaps an extension is filed now; all supporting documentation must be in by, e.g., June 1; and work will be completed by July 15. Similarly, this should be in a premade template."
+            ],
+            "title": "Onslaught of the tax procrastinators - Journal of Accountancy"
+          },
+          {
+            "url": "https://accountants.intuit.com/support/en-us/help-article/bookkeeping-processes/getting-started-intuit-tax-advisor/L4usXAYSJ_US_en_US",
+            "excerpts": [
+              "With [**Intuit Tax Advisor**](https://taxadvisor.app.intuit.com/) , you can build custom tax plans in minutes, using data automatically generated from Lacerte or ProConnect Tax.",
+              "With [**Intuit Tax Advisor**](https://taxadvisor.app.intuit.com/) , you can build custom tax plans in minutes, using data automatically generated from Lacerte or ProConnect Tax. **Beginning January 1st, 2025:** **Advanced User roles will be in effect** : When users are assigned to one of the Advanced User roles, you can customize their advanced tax permissions for specific tasks and responsibilities. Firm admins will need to **buy user access credits** for users who need advanced tax permissions (including e-file permission), and assign them Advanced User roles on the Manage and invite user page in ProConnect Tax under Settings."
+            ],
+            "title": "Getting started with Intuit Tax Advisor"
+          },
+          {
+            "url": "https://www.thomsonreuters.com/en-us/help/onvio/setup/enabling-client-center.html",
+            "excerpts": [
+              "You can give clients and contacts access to Onvio Client Center to collaborate and securely share and sign documents.",
+              "Each Client Center user needs to exist in a relationship to a client to be able to see documents and tasks in their portal.",
+              "You can only give access to Onvio Client Center to one client or contact at a time, but if you would like this option you can add an idea to the Ideas Community.",
+              "Go to **Setup** and select **All Contacts** .",
+              "Select **Edit** next to a client or contact in the list.",
+              "Verify that the **Email Address** field is correct. If it's empty, enter an email address for the client or contact.",
+              "Go to the **Client Center Access** tab.",
+              "Turn on the **Client Center** switch.",
+              "Select **Save** when you're finished.",
+              "After completing their registration, add folders for your clients so they can upload documents. Clients can't add their own folders.",
+              "Clients can also access their portal and shared documents using the Client Center mobile app.",
+              "In Onvio Client Center you can see and select clients from the dropdown that this contact is linked to through relationships.",
+              "This article applies to: Product: Onvio Subject: Setup",
+              "Audiences: Staff",
+              "Give clients and contacts access to Client Center"
+            ],
+            "title": "Give clients and contacts access to Client Center"
+          },
+          {
+            "url": "https://www.irs.gov/e-file-providers/frequently-asked-questions-for-irs-efile-signature-authorization",
+            "excerpts": [
+              "Is identity verification a one-time event? No. Identity verification must be completed every time a taxpayer electronically signs Form 8878 or 8879, with two exceptions. If a taxpayer e-signs the form in the physical presence of the ERO, and the taxpayer has a multi-year business relationship with the ERO, then no further identity verification is needed. A multi-year business relationship is one in which the ERO has originated tax returns for the taxpayer for a prior tax year and has identified the taxpayer using the identity verification process.",
+              "The software must record the following data: Digital image of the signed form; Date and time of the signature; Taxpayer\u2019s computer IP address (remote transaction only); Taxpayer\u2019s login identification \u2014 user name (remote transaction only); Results of the identity verification check validating that the taxpayer\u2019s ID verification was successful; and The e-signature method used to sign the record.",
+              "What is identity verification failure? When an ERO uses tax preparation software to electronically sign Form 8878 or 8879, the software enables identity verification using knowledge based authentication questions. If the taxpayer fails to provide the correct answers to the knowledge based authentication questions after three attempts, the ERO must get the taxpayer\u2019s handwritten signature.",
+              "The e-signature option is only available to taxpayers e-filing their tax returns through an ERO, who uses software that provides identity verification and e-signature. To meet e-signature requirements, the ERO must be able to record the taxpayer\u2019s name, social security number, address and date of birth electronically for identity verification purposes. Are taxpayers required to sign Forms 8878 or 8879 electronically? No."
+            ],
+            "title": "Frequently Asked Questions for IRS efile Signature Authorization | Internal Revenue Service"
+          },
+          {
+            "url": "https://safesendreturns.zendesk.com/hc/en-us/articles/34542030916371-Client-Portal-Overview",
+            "excerpts": [
+              "The Client Portal is connected to all SafeSend products.",
+              "The Client Portal is designed to create a centralized location for client tasks and document sharing.",
+              "The client can view and access outstanding tasks, upload and download documents, pay vouchers, distribute K-1s, and update settings.",
+              "|Is using the Client Portal mandatory to complete tasks? |No, the Client Portal is not required to complete tasks. Clients can choose to access tasks from the Client Portal or access them from an individual task access link. |",
+              "|Is the client experience going to affect individual task workflows? |No, the Client Portal simply allows a different authentication method to access the workflows the client is already used to seeing. Clients can use a single login so they do not need to authenticate separately across different SafeSend Products. |",
+              "The client must be registered in the firm's [Client Portal Management](https://safesendreturns.zendesk.com/hc/en-us/articles/48281267668883-Client-Portal-Management) dashboard to access the portal.",
+              "|When will tasks/documents sent by the firm appear on the client's Home page? |All pending tasks delivered to the client's email ID appear on their Client Portal as soon as their account is created. They will have access to any tax returns from 2021 and later. Other documents will be available if they were delivered after the account was created. |",
+              "|How do tasks appear for the client? |Tasks appear on their Home page and are categorized by product type. |",
+              "Client Portal Overview Avatar **[Annie M.](https://safesendreturns.zendesk.com/hc/en-us/profiles/398593238554-Annie-M)**"
+            ],
+            "title": "Client Portal Overview \u2013 SafeSend Returns"
+          },
+          {
+            "url": "https://www.smartvault.com/product/client-portal",
+            "excerpts": [
+              "It combines AI-built document requests, 8879 eSignature, real-time status tracking, and unlimited client users, and it integrates with Lacerte, ProSeries, UltraTax, Drake, and CCH Axcess.",
+              "Works with Lacerte, ProSeries, ProConnect, UltraTax CS, Drake, CCH Axcess Tax, QuickBooks and more.",
+              "Clients sign 8879s, engagement letters, and more right in the portal, with a full audit trail attached to every signature.",
+              "The built-in eSignature tool supports tax forms, engagement letters, POAs, and more, with full audit trails attached to every signature.",
+              "It combines AI-built document requests, 8879 eSignature, real-time status tracking, and unlimited client users, and it integrates with Lacerte, ProSeries, UltraTax, Drake, and CCH Axcess. [Book a Demo](https://www.smartvault.com/book-a-demo) See the Connected Workflow The Client Experience"
+            ],
+            "title": "Client Portal for Accountants & CPA Firms - Secure & Customizable"
+          },
+          {
+            "url": "https://support.liscio.me/en/articles/10574265-smart-tax-delivery-client-experience",
+            "excerpts": [
+              "Client Steps for Completing their Tax Return: **Access the Return:** From the email notification or reminders. From the Liscio Mobile App. Under \"My To Do List\" on the Liscio Home Dashboard. From the Requests Page.",
+              "**Review and Approval:** Filing Information. Balances Due and Refunds Federal & State Returns. Estimated Payments.",
+              "**Sign E-File Pages:** Signers will be guided through signing.",
+              "Joint filers: **Separate logins:** Each taxpayer signs in separately. The first signer completes their part; the second signer logs in afterward and selects the **eSign** option in Step 2.",
+              "**Single login/shared email address:** The first signer signs first, then passes the device over to the second signer to complete their portion.",
+              "If there is no Pay step, the signer is done. If there is a Pay step. each signer can move on to review the payment vouchers, print them, or pay online.",
+              "**Payment Vouchers** If clients have balances due for Federal or State taxes, they are guided to an option to review, print, or pay online. Their **Taxes** **page** is available for quick access to tax information anytime.",
+              "Once the client clicks \"Submit\" or the firm clicks \"Mark Complete\", the **full tax return PDF, Federal and State returns** , **Estimated Payment Vouchers** , **Return Payment Vouchers** , and **signed E-File pages** are automatically added to the client's **Files** .",
+              "Joint filers: **Separate logins:** Each taxpayer signs in separately. The first signer completes their part; the second signer logs in afterward and selects the **eSign** option in Step 2. If there is no Pay step, the signer is done. If there is a Pay step. each signer can move on to review the payment vouchers, print them, or pay online. **Single login/shared email address:** The first signer signs first, then passes the device over to the second signer to complete their portion.",
+              "**Review and Approval:** Filing Information. Balances Due and Refunds Federal & State Returns. Estimated Payments. **Sign E-File Pages:** Signers will be guided through signing. Joint filers: **Separate logins:** Each taxpayer signs in separately. The first signer completes their part; the second signer logs in afterward and selects the **eSign** option in Step 2. If there is no Pay step, the signer is done. If there is a Pay step. each signer can move on to review the payment vouchers, print them, or pay online. **Single login/shared email address:** The first signer signs first, then passes the device over to the second signer to complete their portion. Once the client clicks \"Submit\" or the firm clicks \"Mark Complete\", the **full tax return PDF, Federal and State returns** , **Estimated Payment Vouchers** , **Return Payment Vouchers** , and **signed E-File pages** are automatically added to the client's **Files** . **Payment Vouchers** If clients have balances due for Federal or State taxes, they are guided to an option to review, print, or pay online. Their **Taxes** **page** is available for quick access to tax information anytime.",
+              "**Review and Approval:** Filing Information. Balances Due and Refunds Federal & State Returns. Estimated Payments. **Sign E-File Pages:** Signers will be guided through signing. Joint filers: **Separate logins:** Each taxpayer signs in separately. The first signer completes their part; the second signer logs in afterward and selects the **eSign** option in Step 2. If there is no Pay step, the signer is done. If there is a Pay step. each signer can move on to review the payment vouchers, print them, or pay online. **Single login/shared email address:** The first signer signs first, then passes the device over to the second signer to complete their portion.",
+              "**Review and Approval:** Filing Information. Balances Due and Refunds Federal & State Returns. Estimated Payments. **Sign E-File Pages:** Signers will be guided through signing. Joint filers: **Separate logins:** Each taxpayer signs in separately. The first signer completes their part; the second signer logs in afterward and selects the **eSign** option in Step 2. If there is no Pay step, the signer is done. If there is a Pay step. each signer can move on to review the payment vouchers, print them, or pay online. **Single login/shared email address:** The first signer signs first, then passes the device over to the second signer to complete their portion. Once the client clicks \"Submit\" or the firm clicks \"Mark Complete\", the **full tax return PDF, Federal and State returns** , **Estimated Payment Vouchers** , **Return Payment Vouchers** , and **signed E-File pages** are automatically added to the client's **Files** ."
+            ],
+            "title": "Smart Tax Delivery: Client Experience | Liscio Help Center"
+          },
+          {
+            "url": "https://helpcenter.taxcaddy.com/hc/en-us/articles/226804147-Uploading-requested-items",
+            "excerpts": [
+              "When your tax professional needs you to upload a document, their request appears in your requested items under **Document Requests** .",
+              "On the **Overview** screen, you will see a **Task List** on the left, with your **Upload** requests listed as **[Tax Year] Document Requests** .",
+              "By default, both pending and previously fulfilled requests will be displayed.",
+              "However, you can click the drop-down menu to specify only **Open** (i.e. pending) or **Fulfilled** (i.e. completed) requests be displayed.",
+              "Click a pending document request to begin fulfilling it with an upload. Alternatively, you can drag a file onto the document request.",
+              "Alternatively, you can click the **MORE OPTIONS** menu to view all options to fulfill/complete this request.",
+              "Alternatively, you can click the **MORE OPTIONS** menu to view all options to fulfill/complete this request. [Click here to learn how to fulfill a request by replying with an amount.](https://helpcenter.taxcaddy.com/hc/en-us/articles/360011043373-Replying-with-amount) [Click here to learn how to indicate that a request doesn't apply or was already provided.](https://helpcenter.taxcaddy.com/hc/en-us/articles/226804187-Indicating-a-requested-item-doesn-t-apply-or-was-already-provided)",
+              "|already-provided-icon.png ( **Already provided** ) |You've indicated that the document in this request has already been provided previously. [Click here to learn how to indicate that a request has already been provided.](https://helpcenter.taxcaddy.com/hc/en-us/articles/226804187-Indicating-a-requested-item-doesn-t-apply-or-was-already-provided) |",
+              "|doesnt-apply-icon.png ( **Doesn't apply** ) |You've indicated that the document in this request does not apply. [Click here to learn how to indicate that a request does not apply.](https://helpcenter.taxcaddy.com/hc/en-us/articles/226804187-Indicating-a-requested-item-doesn-t-apply-or-was-already-provided) |",
+              "Browse to the location of the file on your device and select a file to upload.",
+              "``` Accepted file formats are: .pdf, .docx, .xls and .xlsx.",
+              "You can upload multiple files to the same category at one time. ```",
+              "After you provide the requested item, the icon appearing for this document request will update to green to indicate that this request has been fulfilled.",
+              "Fulfilling a document request will also update the progress bar to indicate how many more pending requests you have in your account.",
+              "``` After completing all of your pending tasks, your account's **Task List** progress will not reach **100%** until you've notified your tax professional that you are done uploading tax documents for this tax year [Click here to learn more about indicating that you're done uploading.](https://helpcenter.taxcaddy.com/hc/en-us/articles/360008615793) ```",
+              "[Uploading requested items](https://helpcenter.taxcaddy.com/hc/en-us/articles/226804147-Uploading-requested-items) [Replying with amount](https://helpcenter.taxcaddy.com/hc/en-us/articles/360011043373-Replying-with-amount) [Complete Form](https://helpcenter.taxcaddy.com/hc/en-us/articles/360041454153-Complete-Form) [Automatically retrieving documents from financial institutions (add Smart Links)](https://helpcenter.taxcaddy.com/hc/en-us/articles/226804127-Automatically-retrieving-documents-from-financial-institutions-add-Smart-Links)"
+            ],
+            "title": "Uploading requested items \u2013 TaxCaddy"
+          },
+          {
+            "url": "https://tax.thomsonreuters.com/blog/how-to-fix-tax-prep-bottlenecks-6-failures-that-might-be-hidden-in-your-workflow/",
+            "excerpts": [
+              "Failure 2: Organizers come back late, incomplete, or not at all",
+              "Generic organizers put all the work on the client, and clients have little reason to finish them quickly. Some never get submitted and sit in an inbox while your team sends one reminder after another. Others come back incomplete, with skipped questions and missing documents that stop preparers from finishing returns they\u2019ve started.",
+              "And many arrive **late** , so work that should start in February lands in March, competing for the same deadline.",
+              "Failure 1: Document data gets typed by hand",
+              "Without built-in optical character recognition (OCR) that scans and extracts data, every W-2 and 1099 becomes a manual entry project. Preparers can spend hours on end inputting figures from form to software.",
+              "Failure 3: Errors surface after submission",
+              "Mistakes found after filing lead to rejected returns, amended filings, and frustrated clients. Your team ends up doing the work twice, and the client remembers.",
+              "Failure 4: Review becomes a second round of preparation",
+              "Failure 4: Review becomes a second round of preparation Reviewers open a return and find the support scattered across PDFs, emails, and spreadsheets. They hunt for the source of each number, send questions back to the preparer, and wait for answers. Review stretches, and partners become the bottleneck at the busiest time of year.",
+              "**The fix:** A [workpaper structure](https://tax.thomsonreuters.com/blog/ask-an-expert-how-1040-workpaper-management-software-improves-review-time/) that makes every number traceable.",
+              "Most delays occur between workflow stages, not during the work itself.",
+              "Pick any return from last season and trace its path from the first client document to the final payment. You\u2019ll find stretches where nobody was working on it: a stack waiting for data entry, an organizer sitting half finished in a client\u2019s inbox, a finished return waiting on delivery. Those stretches are your bottlenecks, and each one traces back to a failure in the workflow rather than in your people.",
+              "Failure 5: Returns move through disconnected handoffs [Client portals or email intake systems that are disconnected](https://tax.thomsonreuters.com/blog/where-email-intake-and-generic-client-tax-portals-fall-short/) from your tax software increase the likelihood of errors and delays for every single return. **The fix:** Gathering and delivery platforms that [connect directly with your tax software](https://tax.thomsonreuters.com/en/accounting-solutions/safesend-one) close those gaps automatically.",
+              "Failure 6: Payment lives outside the workflow",
+              "Failure 6: Invoicing lives outside the workflow Sending invoices separately slows collection and gives your team one more thing to track outside the process.",
+              "**The fix:** Make it a priority to pair invoice reminders with return delivery. Clients see what they owe while they\u2019re reviewing your work, and your team follows one status view. A [single platform for delivery and follow-up](https://tax.thomsonreuters.com/en/accounting-solutions/safesend-one) keeps that status in one place.",
+              "Pick any return from last season and trace its path from the first client document to the final payment. You\u2019ll find stretches where nobody was working on it: a stack waiting for data entry, an organizer sitting half finished in a client\u2019s inbox, a finished return waiting on delivery. Those stretches are your bottlenecks, and each one traces back to a failure in the workflow rather than in your people. If you\u2019re trying to determine how to fix tax prep bottlenecks, start by finding the failures. Firms facing a 45% staffing shortage, according to the [2025 State of Tax Professionals Report](https://www.thomsonreuters.com/en/institute/reports/2025-state-of-tax-professionals-report) , can\u2019t hire their way past them, because the problem is manual work, not a lack of effort. Here are five of the most common congestion points in today\u2019s tax workflows.",
+              "Most delays occur between workflow stages, not during the work itself. Integrated automation reduces manual entry, rework, and follow-up tasks. Pick any return from last season and trace its path from the first client document to the final payment. You\u2019ll find stretches where nobody was working on it: a stack waiting for data entry, an organizer sitting half finished in a client\u2019s inbox, a finished return waiting on delivery. Those stretches are your bottlenecks, and each one traces back to a failure in the workflow rather than in your people.",
+              "Failure 4: Review becomes a second round of preparation Reviewers open a return and find the support scattered across PDFs, emails, and spreadsheets. They hunt for the source of each number, send questions back to the preparer, and wait for answers. Review stretches, and partners become the bottleneck at the busiest time of year. **The fix:** A [workpaper structure](https://tax.thomsonreuters.com/blog/ask-an-expert-how-1040-workpaper-management-software-improves-review-time/) that makes every number traceable.",
+              "Generic organizers put all the work on the client, and clients have little reason to finish them quickly. Some never get submitted and sit in an inbox while your team sends one reminder after another. Others come back incomplete, with skipped questions and missing documents that stop preparers from finishing returns they\u2019ve started. And many arrive **late** , so work that should start in February lands in March, competing for the same deadline.",
+              "Generic organizers put all the work on the client, and clients have little reason to finish them quickly. Some never get submitted and sit in an inbox while your team sends one reminder after another. Others come back incomplete, with skipped questions and missing documents that stop preparers from finishing returns they\u2019ve started. And many arrive **late** , so work that should start in February lands in March, competing for the same deadline. **The fix:** Certain client collaboration platforms monitor the intake process and hold clients accountable so you don\u2019t have to hunt down every loose item. Look for [organizer tools](https://tax.thomsonreuters.com/en/accounting-solutions/safesend-one) with two capabilities: **Real-time progress tracking:** See which clients haven\u2019t opened their organizer, which are partway through, and which have finished. **Automated notifications and reminders:** Unresponsive clients get nudged automatically, so follow-up no longer depends on someone remembering to send the email. Failure 3: Errors surface after submission Mistakes found after filing lead to rejected returns, amended filings, and frustrated clients. Your team ends up doing the work twice, and the client remembers. **The fix** : Some of the more sophisticated software options can catch pesky errors during preparation. Use [tax preparation software](https://tax.thomsonreuters.com/en/products/ultratax-cs) that runs diagnostics in real time and flags issues such as: Missing values in required fields Data that should carry across related returns State and local requirements in multistate filings Software that shares data across returns also helps, because each figure is entered once and fills every related field. Failure 4: Review becomes a second round of preparation Reviewers open a return and find the support scattered across PDFs, emails, and spreadsheets. They hunt for the source of each number, send questions back to the preparer, and wait for answers. Review stretches, and partners become the bottleneck at the busiest time of year. **The fix:** A [workpaper structure](https://tax.thomsonreuters.com/blog/ask-an-expert-how-1040-workpaper-management-software-improves-review-time/) that makes every number traceable."
+            ],
+            "title": "6 failures that might be hidden in your tax prep workflow"
+          },
+          {
+            "url": "https://help.taxdome.com/article/1229-proposals-overview",
+            "excerpts": [
+              "In general, the proposal workflow is: You [send the proposal](https://help.taxdome.com/article/181-contracts) to the client.",
+              "The client receives an email and a notification in their portal and mobile app.",
+              "The client clicks the link in the email and is taken directly to review the document.",
+              "If they agree to your terms, they authorize a secure payment and e-sign the proposal.",
+              "After signing, they receive a confirmation notification.",
+              "**Issue invoices with the proposal** \u2014 send a one-time or [recurring invoice](https://help.taxdome.com/article/931-recurring-invoices-overview) and request a deposit from the client upon acceptance.",
+              "**Get paid automatically** \u2014 let clients authorize automatic payments (e.g., subscribing to [recurring services](https://help.taxdome.com/article/931-recurring-invoices-overview) ) so future payments are processed without manual work; this requires a [connected payment provider](https://help.taxdome.com/article/set-up-taxdome-payments) and a [contact with signing authority](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) on the account.",
+              "**Send a pricelist** \u2014 include a list of services that can be easily converted into an invoice once the client signs the proposal, useful when you\u2019re not ready to send a full invoice yet.",
+              "Once the proposal is created, you can find it on the **Billing > Proposals & ELs** page from your left menu bar. From here, you can: [View the status](https://help.taxdome.com/article/1214-proposal-list-basic-view-sort-search) of the proposal (whether it was signed, invoices are paid, etc.). [Manage](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) which contacts need to sign the proposal. [Download a proposal as a PDF](https://help.taxdome.com/article/495-contracts-how-to-view-edit-print-delete) . [Create an invoice for services listed in the proposal](https://help.taxdome.com/article/495-contracts-how-to-view-edit-print-delete) .",
+              "A proposal lets you set expectations, present your services, highlight their value, and secure timely payment\u2014all in one document that the client reviews and signs.",
+              "In general, the proposal workflow is: You [send the proposal](https://help.taxdome.com/article/181-contracts) to the client. The client receives an email and a notification in their portal and mobile app. The client clicks the link in the email and is taken directly to review the document. If they agree to your terms, they authorize a secure payment and e-sign the proposal. After signing, they receive a confirmation notification.",
+              "**Issue invoices with the proposal** \u2014 send a one-time or [recurring invoice](https://help.taxdome.com/article/931-recurring-invoices-overview) and request a deposit from the client upon acceptance. **Get paid automatically** \u2014 let clients authorize automatic payments (e.g., subscribing to [recurring services](https://help.taxdome.com/article/931-recurring-invoices-overview) ) so future payments are processed without manual work; this requires a [connected payment provider](https://help.taxdome.com/article/set-up-taxdome-payments) and a [contact with signing authority](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) on the account. **Send a pricelist** \u2014 include a list of services that can be easily converted into an invoice once the client signs the proposal, useful when you\u2019re not ready to send a full invoice yet.",
+              "**Issue invoices with the proposal** \u2014 send a one-time or [recurring invoice](https://help.taxdome.com/article/931-recurring-invoices-overview) and request a deposit from the client upon acceptance. **Get paid automatically** \u2014 let clients authorize automatic payments (e.g., subscribing to [recurring services](https://help.taxdome.com/article/931-recurring-invoices-overview) ) so future payments are processed without manual work; this requires a [connected payment provider](https://help.taxdome.com/article/set-up-taxdome-payments) and a [contact with signing authority](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) on the account. **Send a pricelist** \u2014 include a list of services that can be easily converted into an invoice once the client signs the proposal, useful when you\u2019re not ready to send a full invoice yet. **Reuse templates** \u2014 save time by [creating a proposal template](https://help.taxdome.com/article/117-custom-contract-templates) with your firm\u2019s info and terms pre-filled, then add packages, invoices, or services when you send it. **Offer packages** \u2014 let clients choose between multiple [service tiers](https://help.taxdome.com/article/setup-proposal-packages) instead of a single fixed offer. **Request deposit** \u2014 [ask for a deposit](https://help.taxdome.com/article/request-deposit) to collect partial payment upfront. image How proposals work In general, the proposal workflow is: You [send the proposal](https://help.taxdome.com/article/181-contracts) to the client. The client receives an email and a notification in their portal and mobile app. The client clicks the link in the email and is taken directly to review the document. If they agree to your terms, they authorize a secure payment and e-sign the proposal. After signing, they receive a confirmation notification."
+            ],
+            "title": "Proposals explained - TaxDome Help Center"
+          },
+          {
+            "url": "https://help.smartvault.com/hc/en-us/articles/1500010685441-Getting-Started-with-SmartVault-Request-Docs",
+            "excerpts": [
+              "**Guest User View** \u2013 Clients receive an email with a secure link to the SmartVault portal, where they can view the list of requested documents, upload or drag-and-drop files, mark items as not applicable, and submit their request once complete.",
+              "They can also use [SmartScan](https://help.smartvault.com/hc/en-us/articles/30830477498007) to upload documents directly from their mobile device.",
+              "**Track client progress** \u2014 View which files have been uploaded or are still pending.",
+              "**Send reminders** \u2014 Prompt clients to complete outstanding requests.",
+              "Here, you can create new document requests, monitor client progress, send reminders, and archive completed requests.",
+              "Both firm and guest users interact through a shared workflow based on templates, which define the list of documents clients must provide.",
+              "Templates can be reused or customized to match your firm\u2019s specific needs.",
+              "**Guest User View** \u2013 Clients receive an email with a secure link to the SmartVault portal, where they can view the list of requested documents, upload or drag-and-drop files, mark items as not applicable, and submit their request once complete. They can also use [SmartScan](https://help.smartvault.com/hc/en-us/articles/30830477498007) to upload documents directly from their mobile device. Both firm and guest users interact through a shared workflow based on templates, which define the list of documents clients must provide. Templates can be reused or customized to match your firm\u2019s specific needs."
+            ],
+            "title": "Getting Started with SmartVault Request Docs \u2013 SmartVault"
+          },
+          {
+            "url": "https://support.liscio.me/en/articles/10658906-smart-tax-organizers-importing-sending",
+            "excerpts": [
+              "Select the **Smart Tax** page in the vertical (left-hand) menu.",
+              "**Browse** or **Drag and Drop** the PDF tax return(s) generated from the tax software.",
+              "**Note _:_** _We recommend importing batches of 100 to avoid browser timeouts._",
+              "Select the **Organizer Template** .",
+              "Select the **Upload** button in the bottom-right corner.",
+              "Upload tax returns in the **left-side import box labeled \u201cSmart Tax Organizers.\u201d**",
+              "Do **not upload organizers in the Smart Tax Delivery import window.**",
+              "Organizers are **automatically assigned** when the email address on the organizer matches the taxpayer\u2019s or spouse\u2019s email address in Liscio.",
+              "If both spouses are assigned, they will complete **one shared organizer** , and each spouse can see the other\u2019s responses.",
+              "If an organizer does not have an assignee, it must be **manually assigned** before sending.",
+              "Add a **Due Date** , then select **Send** .",
+              "_Optional:_ If you'd like to assign the \"Owner\" of the organizer to a different employee, select the **drop down** next to the Upload button to make this change. The Owner receives a notification when the client submits their organizer.",
+              "Once sent, use the **progress bar** to track client progress.",
+              "Organizers are **automatically assigned** when the email address on the organizer matches the taxpayer\u2019s or spouse\u2019s email address in Liscio. If both spouses are assigned, they will complete **one shared organizer** , and each spouse can see the other\u2019s responses. If an organizer does not have an assignee, it must be **manually assigned** before sending. Select the organizers. Add a **Due Date** , then select **Send** .",
+              "Upload tax returns in the **left-side import box labeled \u201cSmart Tax Organizers.\u201d** Do **not upload organizers in the Smart Tax Delivery import window.**",
+              "Organizers are **automatically assigned** when the email address on the organizer matches the taxpayer\u2019s or spouse\u2019s email address in Liscio. If both spouses are assigned, they will complete **one shared organizer** , and each spouse can see the other\u2019s responses.",
+              "**Browse** or **Drag and Drop** the PDF tax return(s) generated from the tax software. **Note _:_** _We recommend importing batches of 100 to avoid browser timeouts._ Select the **Organizer Template** . Your firm's published [customized organizer templates](https://support.liscio.me/en/articles/13161784-customizable-smart-tax-organizers) are available in the dropdown. _Optional:_ If you'd like to assign the \"Owner\" of the organizer to a different employee, select the **drop down** next to the Upload button to make this change. The Owner receives a notification when the client submits their organizer. Select the **Upload** button in the bottom-right corner.",
+              "Organizers are **automatically assigned** when the email address on the organizer matches the taxpayer\u2019s or spouse\u2019s email address in Liscio. If both spouses are assigned, they will complete **one shared organizer** , and each spouse can see the other\u2019s responses. If an organizer does not have an assignee, it must be **manually assigned** before sending. Select the organizers. Add a **Due Date** , then select **Send** . For unassigned organizers: Select the draft to open it. Add an **Assignee** Select the blue **Save** button. Complete this process until all drafts have an assigned, then send in bulk. Once sent, use the **progress bar** to track client progress."
+            ],
+            "title": "Smart Tax Organizers: Importing & Sending | Liscio Help Center"
+          },
+          {
+            "url": "https://help.taxdome.com/article/use-e-signatures",
+            "excerpts": [
+              "Upload the document.",
+              "In the Documents tab, click the three dots to the far right of the file and select **Request signature** .",
+              "Choose the signer manually in the **Signers** list, [add them using their email](https://help.taxdome.com/article/146-electronic-signatures) or apply a [signature template](https://help.taxdome.com/article/537-signature-templates) .",
+              "Indicate where the client needs to add their signature. Add as many e-signature fields as you need, one for each signer.",
+              "Add a custom message for the client.",
+              "Once the client has e-signed, you\u2019re alerted with a notification in your email and **Inbox+** .",
+              "The completed document is visible in the client account profile and downloadable.",
+              "Create a tax return delivery package with your completed tax return documents.",
+              "Add signature requests for forms and documents that require client signatures.",
+              "Send the delivery to clients. They\u2019ll review documents, sign forms and documents, and pay invoices through a guided step-by-step flow.",
+              "Tax return delivery is only available for US firms.",
+              "All contacts with a [Signatory authority](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) that are linked to the client\u2019s account will be prompted to e-sign the proposal from their client portal. Depending on the proposal [settings](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) , the proposal is considered signed when at least one or all the parties have added their e-signatures. You can also [manage signers](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) after you send the proposal. If you added an invoice on proposal acceptance, at least one contact must enter their payment details to proceed.",
+              "Create a recurring invoice with automatic payment authorization. You won\u2019t need to mark it up with e-signature fields; an e-signature request and an agreement to terms are automatically added to the recurring invoice.",
+              "All contacts with a [signatory authority](https://help.taxdome.com/article/559-which-contacts-sign-a-contract-how-does-having-multiple-signatories-work) linked to the client account will be prompted to e-sign the recurring invoice from their client portal. However, a single signature is enough to accept a recurring invoice.",
+              "Once your clients have e-signed, you are alerted with a notification in your email and Inbox+; the client\u2019s credit card/bank account will be charged automatically in accordance with a schedule inlined",
+              "TaxDome does not currently support e-signatures for password-protected documents.",
+              "[Knowledge-based authentication (KBA)](https://help.taxdome.com/article/287-knowledge-based-authentication-kba)",
+              "[E-sign joint returns](https://help.taxdome.com/article/1197-mr-2374-e-signing-joint-returns)",
+              "Tax return delivery is only available for US firms. To use e-signatures with [tax return delivery](https://help.taxdome.com/article/tax-return-delivery) : Create a tax return delivery package with your completed tax return documents. image Add signature requests for forms and documents that require client signatures. Send the delivery to clients. They\u2019ll review documents, sign forms and documents, and pay invoices through a guided step-by-step flow.",
+              "Create a tax return delivery package with your completed tax return documents. image Add signature requests for forms and documents that require client signatures. Send the delivery to clients. They\u2019ll review documents, sign forms and documents, and pay invoices through a guided step-by-step flow."
+            ],
+            "title": "Request e-signatures from clients - TaxDome Help Center"
+          },
+          {
+            "url": "https://safesendreturns.zendesk.com/hc/en-us/articles/360050321654-Returns-Client-Experience",
+            "excerpts": [
+              "The taxpayer can access the return, review, sign, pay vouchers/invoices, deliver K-1s, and download documents.",
+              "Click the **Return Section** you want to review (filing instructions, tax return, and attachments).",
+              "Click **Download** to download and save documents to your device.",
+              "Click **View or Download Signed Documents** to download the signed e-file forms.",
+              "Enter your spouse's email address (if applicable).",
+              "Enter your spouse's mobile number to prompt access codes to go to their cell phone (optional).",
+              "If there is a spouse on the return the confirmation screen below appears.",
+              "Here you can update the spouse's email and add a phone number (optional).",
+              "Knowledge-Based Authentication (personal returns only)",
+              "Answer 3 of 5 questions correctly to pass.",
+              "If you pass, continue to the **E-Sign Your Documents** section.",
+              "If you fail, you are directed to **Manually Sign** your documents.",
+              "Depending on your firm's settings, you may see a pop-up requesting payment details or a new tab open to a payment site.",
+              "If you do not see the Pay Now option, this indicates the firm does not have a payment method available online, but you can download the invoice in the next section.",
+              "Click **Pay Now** to open a new tab for the taxing authorities website to pay online.",
+              "Click **Get Voucher** to download the payment voucher.",
+              "Estimated payments appear when you click **Done** .",
+              "The options are the same for Tax Payment and Estimated Payments.",
+              "Click the **Due date** to view the payments due.",
+              "The Paper File Returns section only appears if your delivered return includes a paper file return.",
+              "This option is only available for entity returns.",
+              "Any signed documents downloaded from SafeSend are password-protected and cannot be edited.",
+              "Knowledge-Based Authentication (personal returns only) Select the correct answer. Answer 3 of 5 questions correctly to pass. If you pass, continue to the **E-Sign Your Documents** section. If you fail, you are directed to **Manually Sign** your documents.",
+              "Click the **Return Section** you want to review (filing instructions, tax return, and attachments). Click **Download** to download and save documents to your device."
+            ],
+            "title": "Returns Client Experience \u2013 SafeSend Returns"
+          },
+          {
+            "url": "https://www.irs.gov/pub/irs-pdf/p1345.pdf",
+            "excerpts": [
+              "All prescribed due dates for filing of returns apply to e-file returns. All Providers must ensure that returns are promptly processed. A Provider that receives a return for electronic filing on or before the due date of the return (including extensions) must ensure that it transmits the electronic part of the return on or before the due date. An electronically filed return isn\u2019t considered filed until the IRS acknowledges acceptance of the elec- tronic part of the tax return for processing.",
+              "An extension of time to file may be filed electronically by the original return due date, but it is an extension of time to file the return, not an extension of time to pay.",
+              "Taxpayers who owe additional tax must pay the taxes they owe by the original due date of the return or be subject to interest and penalties.",
+              "Taxpayers can schedule a payment for withdrawal on a future date. Scheduled payments must be effective on or before the return due date.",
+              "**Resubmission of Rejected Tax Returns** If the IRS rejects the electronic portion of a taxpayer\u2019s individual income tax return for processing, and the ERO cannot fix the reason for the rejection, the ERO must take reasonable steps to inform the taxpayer of the rejec- tion within 24 hours. When the ERO tells the taxpayer that it hasn\u2019t filed the return, the ERO must provide the taxpayer with the business rule(s) accompanied by an explanation.",
+              "A rejected individual income tax return that was submitted on or before the due date of the return will be considered timely filed if the taxpayer corrects the electronic portion of the return and resubmits the return by the fifth calendar day after the due date of the return.",
+              "To timely file a rejected return submitted on or before the due date of the return, the taxpayer must file the paper return by the 22 later of the due date of the return or ten calendar days after the date the IRS gives notification that it rejected the electronic portion of the return or that the return can\u2019t be accepted for processing.",
+              "At a minimum, providers must require taxpayer\u2019s who have established an online account to validate access to a second factor (email, phone or other secure authenticator) before being permitted to electron- ically transmit their tax return to the IRS. For a taxpayer creating a new account, this requires validation of the phone number, email, or other secure authenticator prior to electronically submitting a tax return. For a taxpayer logging back into an existing account, this requires multi-factor authentication of the taxpayer prior to granting access to tax data stored within the account. Multi-factor authentication requires the use of at least two of these authentication factors: a knowledge factor (for example, a password); a possession factor (for example, a token); and an inherence factor (for example, biometric).",
+              "An electronically filed return isn\u2019t considered filed until the IRS acknowledges acceptance of the elec- tronic part of the tax return for processing. The IRS accepts individual income tax returns electronically only if the taxpayer signs the return using a Personal Identification Number (PIN). If Providers transmit the electronic portion of a return on or shortly before the due date and the IRS ultimately rejects it, but the Provider and the taxpayer comply with the requirements for timely resubmission of a correct return, the IRS considers the return timely filed.",
+              "The ERO must keep Forms 8878 and 8879 for three years from the return due date or the IRS received date, whichever is later. EROs must not send Forms 8878 and 8879 to the IRS unless the IRS requests they do so. **Note:** Form 8878 is only needed for Forms 4868 when taxpayers are authorizing an electronic funds withdrawal and want an ERO to enter their PINs.",
+              "Taxpayers who can\u2019t pay the amount they owe for Form 1040 series returns and owe $50,000 or less in combined taxes, interest and penalties may use the **Online Payment Agreement (OPA) Online Payment Agreement (OPA)** application to request a payment plan (installment agreement). Authorized representatives with a power of attorney may use OPA on the taxpayer\u2019s behalf.",
+              "This publication provides helpful information on safeguarding taxpayer data including how to create a data security plan. **\u2022 Publication 5708 Publication 5708** , Creating a Written Information Security Plan for Your Tax & Accounting Practice. Publication 5708 will be used by Tax and Accounting practices for information on developing an Informa- tion Security Plan.",
+              "**Authorized IRS** **_e-file_** **Providers of Individual Income Tax Returns**"
+            ],
+            "title": "Publication 1345 (Rev. 10-2026)"
+          },
+          {
+            "url": "https://www.thomsonreuters.com/en-us/help/onvio/documents/requesting-information-in-onvio",
+            "excerpts": [
+              "Before you start Make sure you're assigned to a permission group that has **Documents** enabled.",
+              "Select **Documents** and then **Communications** . Select **Add** , then **Document Request** .",
+              "Select a client, and then select an existing contact or enter an email address for the recipient of the document request.",
+              "Select **Send via Email** or **Send via Client Center.**",
+              "Create and send a document request You can send document requests to anyone, even if they don't have access to Onvio.",
+              "You can request documents from only 1 recipient at a time.",
+              "In the Document Upload Destination field, select **Browse** and go to the folder where you want the requested document to go.",
+              "Select a request template to use or enter a description of the files to be uploaded in the **Document Request** field.",
+              "Select a **Due Date** and an **Expiration Date** . The expiration date defaults to 1 year from today's date.",
+              "Enter a brief description of the request in the **Message Subject** field. Select **Send** when you're finished.",
+              "The recipient will receive an email that includes a link to upload the requested files.",
+              "If you select **Send via Client Center** and the recipient isn't registered for Client Center, then they'll receive an email invitation to register.",
+              "If you select **Send via Client Center** this will only be enabled if the recipient is an Individual and has a relationship to the selected client.",
+              "Select a **Due Date** and an **Expiration Date** . The expiration date defaults to 1 year from today's date. Enter a brief description of the request in the **Message Subject** field. Select **Send** when you're finished. The recipient will receive an email that includes a link to upload the requested files."
+            ],
+            "title": "Request documents or files from a client"
+          },
+          {
+            "url": "https://www.soraban.com/how-tax-returns-move-from-client-upload-to-signed-return",
+            "excerpts": [
+              "Clients access a white-labeled portal from any device.",
+              "They answer adaptive questions and upload multiple documents at once.",
+              "AI scans and categorizes each file, separates multi-page PDFs, and renames them automatically.",
+              "Preparers view source documents alongside extracted data.",
+              "High-confidence fields are marked in green, while flagged items allow one-click corrections.",
+              "One-click export populates all fields in UltraTax, Lacerte, Drake, or CCH Axcess with PDFs attached, so preparers receive a fully organized return ready for review instead of starting from scratch. \u200d \u200d",
+              "Soraban works alongside UltraTax, Lacerte, Drake, or CCH Axcess.",
+              "It handles document collection, data extraction, and final delivery, while you continue preparing returns in your tax software.",
+              "Once a return is complete, Deliver assembles the packet automatically.",
+              "Signature fields, dates, and payment processing are included in a single link, reducing tasks that previously took 30 minutes to just 3.",
+              "Clients receive one mobile-friendly link to review, sign, and pay.",
+              "Soraban automates the full tax workflow with three connected products:",
+              "**Collect:** Personalized and dynamic questionnaires guide clients while AI organizes documents automatically",
+              "**Connect:** AI extracts data with and pushes it directly into your tax software with 99-100% accuracy",
+              "**Deliver:** Returns are assembled, e-signed, and paid in a single secure client link, and Soraban handles the reminders",
+              "Most firms are still doing this by hand \u2014 organizing client uploads, typing W-2 data into tax software, then building signature packets with separate tools. \u200d Here's what actually happens when you use Soraban, from client upload to signed return. This is the complete workflow that saves 83 minutes per return on intake, cuts data entry to the tax software out of the process, and drops return packet prep from 30 minutes to 3 minutes."
+            ],
+            "title": "Inside Soraban: How Tax Returns Move from Client Upload to Signed Return"
+          },
+          {
+            "url": "https://web.soraban.com/products/collect",
+            "excerpts": [
+              "Responsive web app & client portal in one Clients open their questionnaire and portal from one place on any device.",
+              "No app to install, no password reset spiral.",
+              "Upload later, answer later Clients don\u2019t have to finish in one sitting. They can answer what they know now and come back for the rest, dramatically reducing abandonment and the \u201cI\u2019ll do it this weekend\u201d black hole.",
+              "Soraban reminders that actually land Automated, polite nudges over SMS and email keep clients moving without your staff having to remember who owes what.",
+              "One shared inbox for client email Consolidate all client email into a single inbox the whole team can see.",
+              "No more CC chains, anyone can pick up the thread and respond fast.",
+              "No app to install, no password reset spiral. 100% white-labeled If you already have a client portal, Soraban looks like a native part of your brand."
+            ],
+            "title": "Collect: Automated Client Document Intake | Soraban"
+          },
+          {
+            "url": "https://www.irs.gov/instructions/i7004",
+            "excerpts": [
+              "When To File Generally, Form 7004 must be filed on or before the due date of the applicable tax return. The due date of the return can be found in the instructions for the applicable return.",
+              "Line 2 Check the box on line 2 if you are requesting an extension of time to file for a foreign corporation that does not have an office or place of business in the United States. The entity must file Form 7004 by the due date of the return (the 15th day of the 6th month following the close of the tax year) to request an extension.",
+              "Purpose of Form Use Form 7004 to request an automatic extension of time to file certain business income tax, information, and other returns. The extension will be granted if you complete Form 7004 properly, make a proper estimate of the tax (if applicable), file Form 7004 by the due date of the return for which the extension is requested, and pay any tax that is due.",
+              "Payment of Tax Caution: Form 7004 does not extend the time to pay any tax due. Generally, payment of any balance due on Part II, line 8, is required by the due date of the return for which this extension is filed. See the instructions for Part II, line 8 .",
+              "**Maximum extension period.** The automatic extension period for time to file is generally 6 months. Exceptions apply for certain filers of Form 1041 and for C corporations with tax years ending June 30.",
+              "Exceptions apply for certain filers of Form 1041 and for C corporations with tax years ending June 30. An estate (other than a bankruptcy estate) and a trust filing Form 1041 are eligible for an automatic 5\u00bd-month extension of time to file.",
+              "Extension Period The IRS will no longer send a notification that your extension has been approved. We will notify you only if your request for an extension is disallowed. Properly filing Form 7004 will automatically give you the maximum extension allowed from the due date of your return to file the return. **Maximum extension period.** The automatic extension period for time to file is generally 6 months.",
+              "What\u2019s New **Paper Forms 708, 8924, and 8928 for tax year 2025.** Use a paper Form 7004 for tax year 2025 to request an extension of time to file for Forms 708, 8924, and 8928.",
+              "**Paper Forms 708, 8924, and 8928 for tax year 2025.** Use a paper Form 7004 for tax year 2025 to request an extension of time to file for Forms 708, 8924, and 8928. Electronic filing of these forms will start in tax year 2026.",
+              "**Maximum extension period.** The automatic extension period for time to file is generally 6 months.",
+              "The automatic extension period for time to file is generally 6 months. Exceptions apply for certain filers of Form 1041 and for C corporations with tax years ending June 30. An estate (other than a bankruptcy estate) and a trust filing Form 1041 are eligible for an automatic 5\u00bd-month extension of time to file.",
+              "Form 7004 does not extend the time to pay any tax due. Generally, payment of any balance due on Part II, line 8, is required by the due date of the return for which this extension is filed."
+            ],
+            "title": "Instructions for Form 7004 (12/2025) | Internal Revenue Service"
+          },
+          {
+            "url": "https://www.irs.gov/filing/individuals/when-to-file",
+            "excerpts": [
+              "**File on:** April 15, 2026 Fiscal year filers **File on:** The fourth month after your fiscal year ends, day 15."
+            ],
+            "title": "When to file | Internal Revenue Service"
+          },
+          {
+            "url": "https://www.irs.gov/newsroom/irs-opens-2026-filing-season",
+            "excerpts": [
+              "The IRS expects about 164 million individual tax returns for tax year 2025 to be filed ahead of the Wednesday, April 15, federal deadline. Taxpayers can find a range of tools and filing options on IRS.gov to help them prepare and file their returns. \u201cAs America celebrates its 250th anniversary, the IRS and its employees are excited to once again serve American taxpayers in meeting their tax filing obligations during the 2026 filing season,\u201d said IRS Chief Executive Officer Frank J."
+            ],
+            "title": "IRS opens 2026 filing season | Internal Revenue Service"
+          },
+          {
+            "url": "https://www.irs.gov/tax-professionals/section-7216-frequently-asked-questions",
+            "excerpts": [
+              "Q5 What is \"tax return information\"? **A5** Tax return information is all the information tax return preparers obtain from taxpayers or other sources in any form or manner that is used to prepare tax returns or is obtained in connection with the preparation of returns. It also includes all computations, worksheets, and printouts preparers create; correspondence from IRS during the preparation, filing and correction of returns; statistical compilations of tax return information; and tax return preparation software registration information. All tax return information is protected by \u00a77216 and the regulations.",
+              "The regulations authorize two types of disclosures: Certain permissible disclosures without taxpayer consent Disclosures requiring taxpayer consent The regulations provide exceptions allowing tax return preparers to disclose tax return information without a taxpayer's prior written consent under certain circumstances: e.g., disclosures to the IRS, other taxing jurisdictions or the courts; disclosures to other U.S.-based tax return preparers that assist in preparing the return; and disclosures for the purpose of obtaining legal advice. These and other exceptions can be found in Treas. Reg. \u00a7301.7216-2. All other disclosures not specifically authorized require tax return preparers to secure from taxpayers advance signed consents (see 7 below) authorizing the disclosures.",
+              "Q8 When and how does a tax return preparer obtain consent to disclose tax return information? **A8** A taxpayer must provide written consent before a tax return preparer discloses the taxpayer's tax return information.",
+              "Q7 What are \"consents to disclose tax return information\"? **A7** Consents to disclose tax return information are paper or electronic documents that contain certain specific information including the names of the tax return preparer and the taxpayer and that specify the nature of the disclosure(s), to whom the disclosures will be made, and details on the data to be disclosed. Consents are valid only if they are a made by the taxpayer knowingly and voluntarily and are signed and dated by the taxpayer in pen-and-ink or electronically. Consent forms must include certain language and warnings. Refer to Treas. Reg. \u00a7301.7216-3(a)(3) and Revenue Procedures 2013-14 and 2013-19 for complete information.",
+              "Q10 What are \"consents to use tax return information\"? **A10** Consents to use tax return information are paper or electronic documents that contain certain specific information including the names of the tax return preparer and the taxpayer and that describe the particular use authorized, identify the product or service for which the tax return information will be used, and detail the data to be used. Consents are valid only if they are made by the taxpayer knowingly and voluntarily and are signed and dated by the taxpayer in pen-and-ink or electronically. Consent forms must include certain language and warnings. Refer to Treas. Reg. \u00a7301.7216-3(a)(3) and Revenue Procedures 2013-14 and 2013-19 for complete information. Q11 When and how does a tax return preparer obtain consent to use tax return information? **A11** A taxpayer must provide written consent before a tax return preparer uses the taxpayer's tax return information. Additionally, a tax return preparer may not request a taxpayer's consent to use tax return information for purposes of solicitation after the tax return preparer provides a completed tax return to the taxpayer for signature. The rules for obtaining consents to use tax return information are found in Treas. Reg. \u00a7301.7216-3(b) and Revenue Procedures 2013-14 and 2013-19.",
+              "**A14** Disclosing tax return information to another tax return preparer that is assisting in the preparation of the return or providing auxiliary services in connection with preparing the return generally does not require the consent of the taxpayer. However, if the other tax return preparer is located outside the United States or any territory or possession of the United States, the taxpayer must agree and sign a form consenting to the disclosure. See Revenue Procedure 2013-14, section 5.04(e) for specific language that must be included in the consent form.",
+              "Q10 What are \"consents to use tax return information\"? **A10** Consents to use tax return information are paper or electronic documents that contain certain specific information including the names of the tax return preparer and the taxpayer and that describe the particular use authorized, identify the product or service for which the tax return information will be used, and detail the data to be used. Consents are valid only if they are made by the taxpayer knowingly and voluntarily and are signed and dated by the taxpayer in pen-and-ink or electronically. Consent forms must include certain language and warnings. Refer to Treas. Reg. \u00a7301.7216-3(a)(3) and Revenue Procedures 2013-14 and 2013-19 for complete information.",
+              "This page is designated as historical and is no longer updated."
+            ],
+            "title": "Section 7216 Frequently Asked Questions | Internal Revenue Service"
+          },
+          {
+            "url": "https://www.ecfr.gov/current/title-26/section-301.7216-1",
+            "excerpts": [
+              "The term tax return preparer means: (A) Any person who is engaged in the business of preparing or assisting in preparing tax returns; (B) Any person who is engaged in the business of providing auxiliary services in connection with the preparation of tax returns, including a person who develops software that is used to prepare or file a tax return and any Authorized IRS e-file Provider; (C) Any person who is otherwise compensated for preparing, or assisting in preparing, a tax return for any other person; or (D) Any individual who, as part of their duties of employment with any person described in paragraph (b)(2)(i)(A), (B), or (C) of this section performs services that assist in the preparation of, or assist in providing auxiliary services in connection with the preparation of, a tax return. (ii) Business of preparing returns. A person is engaged in the business of preparing tax returns as described in paragraph (b)(2)(i)(A) of this section if, in the course of the person's business, the person holds himself out to tax return preparers or taxpayers as a person who prepares tax returns or assists in preparing tax returns, whether or not tax return preparation is the person's sole business activity and whether or not the person charges a fee for tax return preparation services. (iii) Providing auxiliary services. A person is engaged in the business of providing auxiliary services in connection with the preparation of tax returns as described in paragraph (b)(2)(i)(B) of this section if, in the course of the person's business, the person holds himself out to tax return preparers or to taxpayers as a person who performs auxiliary services, whether or not providing the auxiliary services is the person's sole business activity and whether or not the person charges a fee for the auxiliary services. Likewise, a person is engaged in the business of providing auxiliary services if, in the course of the person's business, the person receives a taxpayer's tax return information from another tax return preparer pursuant to the provisions of \u00a7 301.7216-2(d)(2)."
+            ],
+            "title": "26 CFR \u00a7 301.7216-1 Penalty for disclosure or use of tax return information."
+          }
+        ],
+        "confidence": "high"
+      }
+    ],
+    "type": "text",
+    "beta_fields": null,
+    "mcp_tool_calls": null,
+    "content_file": "cpa-client-portal-workflow-trun_d701a861c88644cd8e6749002156a62b.md"
+  }
+}
