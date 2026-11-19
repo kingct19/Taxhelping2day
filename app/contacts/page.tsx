@@ -2,6 +2,7 @@ import Link from "next/link";
 import { importClients, submitClientInvite } from "@/lib/actions";
 import { requireProfile } from "@/lib/auth";
 import { NewContactDialog } from "@/components/contacts/new-contact-dialog";
+import { ContactRowActions } from "@/components/contacts/contact-row-actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,28 +11,22 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { isSeasonStage, seasonFor, seasonLabel, seasonStages, type SeasonStage } from "@/lib/season";
 import { getStore } from "@/lib/store";
 import { taxpayerTypeLabel, taxpayerTypes, type TaxpayerType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-type Segment = "all" | SeasonStage | TaxpayerType;
+type Segment = "all" | TaxpayerType;
 
 function isSegment(value: string): value is Segment {
-  return value === "all" || isSeasonStage(value) || taxpayerTypes.some((type) => type === value);
+  return value === "all" || taxpayerTypes.some((type) => type === value);
 }
 
 function segmentLabel(segment: Segment) {
   switch (segment) {
     case "all":
       return "All contacts";
-    case "profile":
-    case "letter":
-    case "documents":
-    case "ready":
-      return seasonLabel(segment);
     case "individual":
     case "business":
     case "nonprofit":
@@ -43,7 +38,41 @@ function segmentLabel(segment: Segment) {
   }
 }
 
-const segments: Segment[] = ["all", ...seasonStages, ...taxpayerTypes];
+function typeTone(type: TaxpayerType) {
+  switch (type) {
+    case "individual":
+      return "info" as const;
+    case "business":
+      return "attention" as const;
+    case "nonprofit":
+      return "accent" as const;
+    default: {
+      const exhaustive: never = type;
+      return exhaustive;
+    }
+  }
+}
+
+function initials(name: string, email: string) {
+  const letters = (name.trim() || email)
+    .split(/[\s@]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+  return letters || "?";
+}
+
+function emailDomain(email: string) {
+  return email.split("@")[1] ?? "—";
+}
+
+function locationOf(city: string, state: string) {
+  const place = [city, state].filter(Boolean).join(", ");
+  return place || "—";
+}
+
+const segments: Segment[] = ["all", ...taxpayerTypes];
 
 export default async function ContactsPage({ searchParams }: { searchParams: Promise<{ segment?: string }> }) {
   await requireProfile("staff");
@@ -51,30 +80,15 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
   const segment = segmentQuery && isSegment(segmentQuery) ? segmentQuery : "all";
   const store = getStore();
   const profiles = await store.listProfiles();
-  const clients = profiles.filter((profile) => profile.role === "client");
-  const rows = await Promise.all(
-    clients.map(async (client) => {
-      const [documents, signatures] = await Promise.all([store.listDocuments(client.id), store.listSignatures(client.id)]);
-      return {
-        client,
-        stage: seasonFor(client, signatures, documents),
-        poa: signatures.some((item) => item.kind === "poa"),
-      };
-    }),
-  );
-  const visible = rows.filter((row) => {
+  const rows = profiles.filter((profile) => profile.role === "client");
+  const visible = rows.filter((client) => {
     switch (segment) {
       case "all":
         return true;
-      case "profile":
-      case "letter":
-      case "documents":
-      case "ready":
-        return row.stage === segment;
       case "individual":
       case "business":
       case "nonprofit":
-        return row.client.taxpayerType === segment;
+        return client.taxpayerType === segment;
       default: {
         const exhaustive: never = segment;
         return exhaustive;
@@ -91,19 +105,14 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
         <nav className="flex flex-col gap-0.5 p-2">
           {segments.map((item) => {
             const active = item === segment;
-            const count = rows.filter((row) => {
+            const count = rows.filter((client) => {
               switch (item) {
                 case "all":
                   return true;
-                case "profile":
-                case "letter":
-                case "documents":
-                case "ready":
-                  return row.stage === item;
                 case "individual":
                 case "business":
                 case "nonprofit":
-                  return row.client.taxpayerType === item;
+                  return client.taxpayerType === item;
                 default: {
                   const exhaustive: never = item;
                   return exhaustive;
@@ -167,41 +176,46 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Where they are</TableHead>
-                <TableHead>Form 2848</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Email domain</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Added</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {visible.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                     No contacts in this segment.
                   </TableCell>
                 </TableRow>
               ) : (
-                visible.map((row) => (
-                  <TableRow key={row.client.id}>
+                visible.map((client) => (
+                  <TableRow key={client.id}>
                     <TableCell>
-                      <Link href={`/contacts/${row.client.id}`} className="flex items-center gap-3 font-medium">
-                        <Avatar className="size-8">
-                          <AvatarFallback className="text-xs">
-                            {(row.client.name || row.client.email)
-                              .split(/[\s@]+/)
-                              .filter(Boolean)
-                              .slice(0, 2)
-                              .map((part) => part[0]?.toUpperCase() ?? "")
-                              .join("") || "?"}
-                          </AvatarFallback>
+                      <Link href={`/contacts/${client.id}`} className="flex items-center gap-3">
+                        <Avatar className="size-9">
+                          <AvatarFallback className="text-xs">{initials(client.name, client.email)}</AvatarFallback>
                         </Avatar>
                         <span className="min-w-0">
-                          <span className="block truncate">{row.client.name || row.client.email}</span>
-                          <span className="block truncate text-xs font-normal text-muted-foreground">{row.client.email}</span>
+                          <span className="block truncate text-sm font-medium">{client.name || client.email}</span>
+                          <span className="block truncate text-xs font-normal text-muted-foreground">{client.email}</span>
                         </span>
                       </Link>
                     </TableCell>
-                    <TableCell>{seasonLabel(row.stage)}</TableCell>
                     <TableCell>
-                      <Badge variant={row.poa ? "success" : "warning"}>{row.poa ? "Signed" : "Open"}</Badge>
+                      <Badge variant={typeTone(client.taxpayerType)}>{taxpayerTypeLabel(client.taxpayerType)}</Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{client.phone || "—"}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{emailDomain(client.email)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{locationOf(client.city, client.state)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(client.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </TableCell>
+                    <TableCell>
+                      <ContactRowActions id={client.id} email={client.email} />
                     </TableCell>
                   </TableRow>
                 ))

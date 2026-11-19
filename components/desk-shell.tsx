@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { DeskRail, type DeskItem } from "@/components/desk-rail";
 import type { DeskSearchItem } from "@/components/desk/desk-search";
+import { cn } from "@/lib/utils";
 
 const staffItems: DeskItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
@@ -54,11 +55,12 @@ const clientSearch: DeskSearchItem[] = clientItems.map((item) => ({ href: item.h
 export function DeskShell({ side, children }: { side: "staff" | "client"; children: React.ReactNode }) {
   const items = side === "staff" ? staffItems : clientItems;
   const homeHref = side === "staff" ? "/inbox" : "/portal";
+  const portal = side === "client";
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background">
-      <DeskRail items={items} homeHref={homeHref} search={side === "staff" ? staffSearch : clientSearch} />
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
+    <div className={cn("flex h-dvh overflow-hidden bg-background", portal && "portal")}>
+      <DeskRail items={items} homeHref={homeHref} search={side === "staff" ? staffSearch : clientSearch} inset={portal} />
+      <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden", portal && "ml-2")}>{children}</div>
     </div>
   );
 }

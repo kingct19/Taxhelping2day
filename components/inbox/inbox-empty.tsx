@@ -15,24 +15,12 @@ export function InboxEmpty() {
           opacity="0.9"
           d="M14.3 9.03a5 5 0 0 1 4.91-4.08H58.8a5 5 0 0 1 4.91 4.08l8.07 43.22a6 6 0 0 1-5.9 7.1H52.76a5.72 5.72 0 0 0-5.24 3.41 5.72 5.72 0 0 1-5.23 3.42h-6.58a5.72 5.72 0 0 1-5.23-3.42 5.72 5.72 0 0 0-5.24-3.4h-13.1a6 6 0 0 1-5.9-7.1L14.3 9.02Z"
         />
-        <path
-          stroke="currentColor"
-          strokeWidth="1.5"
-          opacity="0.6"
-          d="m2.36 55.6 3.2 14.06A12 12 0 0 0 17.26 79h43.48a12 12 0 0 0 11.7-9.34l3.2-14.06"
-        />
-        <path
-          stroke="currentColor"
-          strokeWidth="1.5"
-          opacity="0.3"
-          d="M18.21 10.59a2.25 2.25 0 0 1 2.22-1.84h37.14c1.09 0 2.02.77 2.22 1.84l7.6 40.82c.36 2-1.17 3.84-3.2 3.84H13.8a3.25 3.25 0 0 1-3.2-3.84l7.6-40.82Z"
-        />
         <path stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity="0.6" d="M24.85 19h27.28m-28.26 7H53.1m-31.18 7h33.13M20 40h20" />
       </svg>
       <div className="flex flex-col items-center gap-1.5">
-        <p className="text-2xl font-semibold text-foreground xl:text-3xl">Select a client</p>
+        <p className="text-2xl font-semibold text-foreground xl:text-3xl">Select a conversation</p>
         <p className="max-w-sm text-sm text-balance text-muted-foreground">
-          Choose a file from the list to read the thread, check this season, and reply. Invite someone from Contacts when the list is empty.
+          Choose a conversation from the inbox to read the thread, see the client, and reply.
         </p>
       </div>
     </div>

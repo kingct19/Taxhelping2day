@@ -1,3 +1,4 @@
+import { IdentityForm } from "@/components/identity-form";
 import { TaxReturnList } from "@/components/tax-return-list";
 import { createTaxReturn } from "@/lib/actions";
 import { Input } from "@/components/ui/input";
@@ -55,7 +56,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           <p className="truncate text-xs text-muted-foreground">{client.email}</p>
         </div>
         <Link href={`/inbox?id=${client.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-auto")}>
-          Open file
+          Open conversation
         </Link>
       </div>
       <div className="grid min-h-0 flex-1 lg:grid-cols-[18rem_minmax(0,1fr)_20rem]">
@@ -102,7 +103,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             </ul>
           )}
         </section>
-        <aside className="hidden flex-col gap-4 overflow-auto border-l p-4 xl:flex">
+        <aside className="flex flex-col gap-4 overflow-auto border-t p-4 xl:border-t-0 xl:border-l">
           <h2 className="text-sm font-medium">This season</h2>
           <Fact label="Stage" value={seasonLabel(stage)} />
           <div className="flex flex-wrap gap-2">
@@ -125,6 +126,8 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
               ))}
             </ul>
           )}
+          <h2 className="text-sm font-medium">Identity</h2>
+          <IdentityForm key={`${client.id}-${identity?.attested ?? false}-${identity?.note ?? ""}`} clientId={client.id} identity={identity} />
           <h2 className="text-sm font-medium">Tasks</h2>
           <ul className="flex flex-col gap-2 text-sm">
             {fileTasks.map((task) => (

@@ -31,7 +31,7 @@ const organization = {
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-full bg-background text-foreground">
+    <div className="site min-h-full bg-background text-foreground">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
       <SiteHeader />
       <main>{children}</main>

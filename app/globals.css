@@ -49,7 +49,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+:root,
+.site {
   --background: #f6f1e8;
   --foreground: #1a1a1a;
   --card: #fffdf8;
@@ -82,6 +83,15 @@
   --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: #e4d9c8;
   --sidebar-ring: #3dcfd0;
+}
+
+.site {
+  color-scheme: light;
+}
+
+:root:not(.dark) .portal {
+  --background: #fffdf8;
+  --sidebar: #f6f1e8;
 }
 
 .dark {

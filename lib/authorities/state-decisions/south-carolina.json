@@ -1,0 +1,3627 @@
+{
+  "state": "South Carolina",
+  "office": "South Carolina Department of Revenue",
+  "asOf": "2026-11-19",
+  "items": [
+    {
+      "cite": "South Carolina RR26-7",
+      "title": "Revenue Ruling \u00b7 Tax Liability",
+      "href": "https://www.dor.sc.gov/admissions-tax-tax-liability"
+    },
+    {
+      "cite": "South Carolina RR26-6",
+      "title": "Revenue Ruling \u00b7 Homeowner's Association Membership Fees",
+      "href": "https://www.dor.sc.gov/admissions-tax-homeowners-association-membership-fees"
+    },
+    {
+      "cite": "South Carolina RR26-5",
+      "title": "Revenue Ruling \u00b7 Trustee Certification - Income Beneficiary of Trust",
+      "href": "https://www.dor.sc.gov/property-tax-trustee-certification-income-beneficiary-trust"
+    },
+    {
+      "cite": "South Carolina RR26-4",
+      "title": "Revenue Ruling \u00b7 Fee-In-Lieu of Tax (FILOT) Agreements and Assets Placed in Service",
+      "href": "https://www.dor.sc.gov/property-tax-fee-lieu-tax-filot-agreements-and-assets-placed-service"
+    },
+    {
+      "cite": "South Carolina RR26-3",
+      "title": "Revenue Ruling \u00b7 Rental and Leases of Tangible Personal Property with an Operator",
+      "href": "https://www.dor.sc.gov/sales-use-tax-rental-and-leases-tangible-personal-property-operator"
+    },
+    {
+      "cite": "South Carolina RR26-2",
+      "title": "Revenue Ruling \u00b7 Places of Amusement",
+      "href": "https://www.dor.sc.gov/admissions-tax-places-amusement-0"
+    },
+    {
+      "cite": "South Carolina RR26-1",
+      "title": "Revenue Ruling \u00b7 Abandoned Building Revitalization Credit",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-abandoned-building-revitalization-credit-0"
+    },
+    {
+      "cite": "South Carolina RR25-9",
+      "title": "Revenue Ruling \u00b7 Purchases by Individuals 85 Years of Age and Older",
+      "href": "https://www.dor.sc.gov/sales-use-tax-purchases-individuals-85-years-age-and-older-2"
+    },
+    {
+      "cite": "South Carolina RR25-8",
+      "title": "Revenue Ruling \u00b7 Dinner Attractions Shows",
+      "href": "https://www.dor.sc.gov/admissions-tax-sales-use-tax-dinner-attractions-shows"
+    },
+    {
+      "cite": "South Carolina RR25-6",
+      "title": "Revenue Ruling \u00b7 Tax Exemption for Farmers - Frequently Asked Questions and list of eligible items",
+      "href": "https://www.dor.sc.gov/sales-use-tax-tax-exemption-farmers-frequently-asked-questions-and-list-eligible-items-0"
+    },
+    {
+      "cite": "South Carolina RR25-7",
+      "title": "Revenue Ruling \u00b7 Paying Project Debt using a Capital Project Sales Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-paying-project-debt-using-capital-project-sales-tax"
+    },
+    {
+      "cite": "South Carolina PLR25-1",
+      "title": "Private Letter Ruling \u00b7 Providing Scaffolding for the Installation of Insulation",
+      "href": "https://www.dor.sc.gov/sales-use-tax-providing-scaffolding-installation-insulation"
+    },
+    {
+      "cite": "South Carolina RR25-4",
+      "title": "Revenue Ruling \u00b7 Credit Against the Corporate License Fee (Utility License Fee Credit)",
+      "href": "https://www.dor.sc.gov/corporate-license-fee-credit-against-corporate-license-fee-utility-license-fee-credit"
+    },
+    {
+      "cite": "South Carolina RR25-5",
+      "title": "Revenue Ruling \u00b7 New Jobs Credit",
+      "href": "https://www.dor.sc.gov/income-tax-new-jobs-credit-0"
+    },
+    {
+      "cite": "South Carolina RR25-2",
+      "title": "Revenue Ruling \u00b7 Sales of Boat Trailers, Farm Trailers, and Other Utility Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-boat-trailers-farm-trailers-and-other-utility-trailers"
+    },
+    {
+      "cite": "South Carolina RR25-1",
+      "title": "Revenue Ruling \u00b7 South Carolina Textiles Communities Revitalization Act",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-south-carolina-textiles-communities-revitalization-act"
+    },
+    {
+      "cite": "South Carolina RR25-3",
+      "title": "Revenue Ruling \u00b7 Withdrawals for Use",
+      "href": "https://www.dor.sc.gov/sales-use-tax-withdrawals-use"
+    },
+    {
+      "cite": "South Carolina PLR24-3",
+      "title": "Private Letter Ruling \u00b7 Flex Dollars - Educational Meal Plans",
+      "href": "https://www.dor.sc.gov/sales-use-tax-flex-dollars-educational-meal-plans"
+    },
+    {
+      "cite": "South Carolina RR24-4",
+      "title": "Revenue Ruling \u00b7 Golf Club Monthly or Annual Dues",
+      "href": "https://www.dor.sc.gov/admissions-tax-golf-club-monthly-or-annual-dues"
+    },
+    {
+      "cite": "South Carolina RR24-5",
+      "title": "Revenue Ruling \u00b7 Military Servicemember and Spouse - Domicile and Taxation",
+      "href": "https://www.dor.sc.gov/income-tax-military-servicemember-and-spouse-domicile-and-taxation"
+    },
+    {
+      "cite": "South Carolina RR24-6",
+      "title": "Revenue Ruling \u00b7 Rehabilitation Credits for Historic Structures and Historic Residential Structures",
+      "href": "https://www.dor.sc.gov/income-tax-rehabilitation-credits-historic-structures-and-historic-residential-structures"
+    },
+    {
+      "cite": "South Carolina PLR24-2",
+      "title": "Private Letter Ruling \u00b7 Sale and Rental of Digital Textbooks",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sale-and-rental-digital-textbooks"
+    },
+    {
+      "cite": "South Carolina PLR24-1",
+      "title": "Private Letter Ruling \u00b7 Sale of a Partnership Interest",
+      "href": "https://www.dor.sc.gov/income-tax-sale-partnership-interest"
+    },
+    {
+      "cite": "South Carolina RR24-2",
+      "title": "Revenue Ruling \u00b7 Solar Energy Credit",
+      "href": "https://www.dor.sc.gov/income-tax-solar-energy-credit"
+    },
+    {
+      "cite": "South Carolina RR24-1",
+      "title": "Revenue Ruling \u00b7 South Carolina Deed Recording Fee",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-south-carolina-deed-recording-fee"
+    },
+    {
+      "cite": "South Carolina RR24-3",
+      "title": "Revenue Ruling \u00b7 Tuition Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-tuition-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR23-3",
+      "title": "Revenue Ruling \u00b7 Motor Vehicles, Motorcycles, Recreational Vehicles, and Self-Propelled Light Construction Equipment",
+      "href": "https://www.dor.sc.gov/sales-use-tax-motor-vehicles-motorcycles-recreational-vehicles-and-self-propelled-light-construction-equipment"
+    },
+    {
+      "cite": "South Carolina RR23-2",
+      "title": "Revenue Ruling \u00b7 South Carolina Income Tax Credit for Hiring Formerly Incarcerated Individuals",
+      "href": "https://www.dor.sc.gov/bank-tax-corporate-license-fee-income-tax-south-carolina-income-tax-credit-hiring-formerly-incarcerated-individuals"
+    },
+    {
+      "cite": "South Carolina RR23-1",
+      "title": "Revenue Ruling \u00b7 South Carolina Tax Credit for Hiring Veterans",
+      "href": "https://www.dor.sc.gov/bank-tax-corporate-license-fee-income-tax-south-carolina-tax-credit-hiring-veterans"
+    },
+    {
+      "cite": "South Carolina RR23-4",
+      "title": "Revenue Ruling \u00b7 Tax Exemption for Farmers - Frequently Asked Questions and List of Eligible Items",
+      "href": "https://www.dor.sc.gov/sales-use-tax-tax-exemption-farmers-frequently-asked-questions-and-list-eligible-items"
+    },
+    {
+      "cite": "South Carolina RR22-11",
+      "title": "Revenue Ruling \u00b7 Age 65 and Older Deduction Against Any Type Income; \"General\" Retirement Income Deduction at Any Age; and \"Military\" Retirement Income Deduction at Any Age",
+      "href": "https://www.dor.sc.gov/income-tax-age-65-and-older-deduction-against-any-type-income-general-retirement-income-deduction-any-age-and"
+    },
+    {
+      "cite": "South Carolina PLR22-2",
+      "title": "Private Letter Ruling \u00b7 Chemically Injected Medication - Exemption in Code Section 12-36-2120(80)",
+      "href": "https://www.dor.sc.gov/sales-use-tax-chemically-injected-medication-exemption-code-section-12-36-212080"
+    },
+    {
+      "cite": "South Carolina RR22-3",
+      "title": "Revenue Ruling \u00b7 Employer Wage Withholding Requirements",
+      "href": "https://www.dor.sc.gov/income-tax-employer-wage-withholding-requirements"
+    },
+    {
+      "cite": "South Carolina RR22-4",
+      "title": "Revenue Ruling \u00b7 Federal Employee Retention Credit - Modification for Qualified Wages for Tax Years 2020 and 2021",
+      "href": "https://www.dor.sc.gov/income-tax-federal-employee-retention-credit-modification-qualified-wages-tax-years-2020-and-2021"
+    },
+    {
+      "cite": "South Carolina RR22-12",
+      "title": "Revenue Ruling \u00b7 Fuel Surcharges by Retailers Delivering Tangible Personal Property",
+      "href": "https://www.dor.sc.gov/sales-use-tax-fuel-surcharges-retailers-delivering-tangible-personal-property-0"
+    },
+    {
+      "cite": "South Carolina RR22-5",
+      "title": "Revenue Ruling \u00b7 Income Taxes Paid by a Pass-Through Entity to Other States on Personal Service Income and Other Business Income and the Credit for Taxes Paid to Other States",
+      "href": "https://www.dor.sc.gov/income-tax-income-taxes-paid-pass-through-entity-other-states-personal-service-income-and-other-business-income"
+    },
+    {
+      "cite": "South Carolina RR22-10",
+      "title": "Revenue Ruling \u00b7 Inflation Fees, Convenience Fees, Non-Cash Adjustment Fees, and Similar Fees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-inflation-fees-convenience-fees-non-cash-adjustment-fees-and-similar-fees"
+    },
+    {
+      "cite": "South Carolina RR22-9",
+      "title": "Revenue Ruling \u00b7 Injectable Medications and Injectable Biologics Sold to Hospitals and Independent Surgery Centers - Exemption in Code Section 12-36-2120(80)",
+      "href": "https://www.dor.sc.gov/sales-use-tax-injectable-medications-and-injectable-biologics-sold-hospitals-and-independent-surgery-centers"
+    },
+    {
+      "cite": "South Carolina RR22-8",
+      "title": "Revenue Ruling \u00b7 Local Sales and Use Taxes and Catawba Tribal Sales and Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-local-sales-and-use-taxes-and-catawba-tribal-sales-and-use-tax-0"
+    },
+    {
+      "cite": "South Carolina RR22-2",
+      "title": "Revenue Ruling \u00b7 Local Transportation Tax - Expenditure Guidelines",
+      "href": "https://www.dor.sc.gov/sales-use-tax-local-transportation-tax-expenditure-guidelines"
+    },
+    {
+      "cite": "South Carolina RR22-13",
+      "title": "Revenue Ruling \u00b7 Manufacturing Property - Partial Property Tax Exemption",
+      "href": "https://www.dor.sc.gov/property-tax-manufacturing-property-partial-property-tax-exemption"
+    },
+    {
+      "cite": "South Carolina RR22-1",
+      "title": "Revenue Ruling \u00b7 Micro-Distillery and Manufacturing Facility Tours and Liquor Tastings",
+      "href": "https://www.dor.sc.gov/admissions-tax-alcohol-taxes-sales-use-tax-micro-distillery-and-manufacturing-facility-tours-and-liquor-tastings"
+    },
+    {
+      "cite": "South Carolina PLR22-1",
+      "title": "Private Letter Ruling \u00b7 Sales of Allergen Extracts - Injectable Biologics Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-allergen-extracts-injectable-biologics-exemption"
+    },
+    {
+      "cite": "South Carolina RR22-7",
+      "title": "Revenue Ruling \u00b7 Sales of Boats, Boat Motors, and Boat Trailers",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-sales-use-tax-sales-boats-boat-motors-and-boat-trailers"
+    },
+    {
+      "cite": "South Carolina RR22-6",
+      "title": "Revenue Ruling \u00b7 Sales of Boats, Boat Motors, and Airplanes",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-sales-boats-boat-motors-and-airplanes"
+    },
+    {
+      "cite": "South Carolina RR21-15",
+      "title": "Revenue Ruling \u00b7 Active Trade or Business Income - Annual Election by Pass-Through Entity to Pay Tax at Entity Level",
+      "href": "https://www.dor.sc.gov/income-tax-active-trade-or-business-income-annual-election-pass-through-entity-pay-tax-entity-level"
+    },
+    {
+      "cite": "South Carolina RR21-13",
+      "title": "Revenue Ruling \u00b7 Age 65 and Older Deduction, General and Military Retirement Deductions, and Earned Income Offset by Military Deductions",
+      "href": "https://www.dor.sc.gov/income-tax-age-65-and-older-deduction-general-and-military-retirement-deductions-and-earned-income-offset"
+    },
+    {
+      "cite": "South Carolina RR21-9",
+      "title": "Revenue Ruling \u00b7 Beekeepers - Honey Production and Related Products Agriculture, Processing, Exemptions and Exclusions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-beekeepers-honey-production-and-related-products-agriculture-processing-exemptions-and-exclusions"
+    },
+    {
+      "cite": "South Carolina RR21-11",
+      "title": "Revenue Ruling \u00b7 Catastrophe Savings Accounts - Taxability of Contributions and Withdrawals",
+      "href": "https://www.dor.sc.gov/income-tax-catastrophe-savings-accounts-taxability-contributions-and-withdrawals"
+    },
+    {
+      "cite": "South Carolina RR21-3",
+      "title": "Revenue Ruling \u00b7 Common-Law Marriage Tax Treatment and Permitted Filing Statuses in Light of Stone v. Thompson",
+      "href": "https://www.dor.sc.gov/income-tax-common-law-marriage-tax-treatment-and-permitted-filing-statuses-light-stone-v-thompson"
+    },
+    {
+      "cite": "South Carolina PLR21-2",
+      "title": "Private Letter Ruling \u00b7 Delivery of Manufactured Property to a Point Outside South Carolina",
+      "href": "https://www.dor.sc.gov/sales-use-tax-delivery-manufactured-property-point-outside-south-carolina"
+    },
+    {
+      "cite": "South Carolina RR21-7",
+      "title": "Revenue Ruling \u00b7 Discount for Timely Filed Returns",
+      "href": "https://www.dor.sc.gov/sales-use-tax-discount-timely-filed-returns"
+    },
+    {
+      "cite": "South Carolina RR21-6",
+      "title": "Revenue Ruling \u00b7 Honey Bees - Live Stock Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-honey-bees-live-stock-exemption"
+    },
+    {
+      "cite": "South Carolina RR21-4",
+      "title": "Revenue Ruling \u00b7 Impact of Treasury Regulation on Charitable Contribution Deduction and State Tax Credits",
+      "href": "https://www.dor.sc.gov/income-tax-impact-treasury-regulation-charitable-contribution-deduction-and-state-tax-credits"
+    },
+    {
+      "cite": "South Carolina RR21-2",
+      "title": "Revenue Ruling \u00b7 Internal Revenue Code Section 163(j)",
+      "href": "https://www.dor.sc.gov/income-tax-internal-revenue-code-section-163j"
+    },
+    {
+      "cite": "South Carolina RR21-10",
+      "title": "Revenue Ruling \u00b7 Military Servicemember Spouse-Domicile and Taxation",
+      "href": "https://www.dor.sc.gov/income-tax-military-servicemember-spouse-domicile-and-taxation"
+    },
+    {
+      "cite": "South Carolina RR21-8",
+      "title": "Revenue Ruling \u00b7 One-Time Sales of Airplanes and Boats",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-sales-use-tax-one-time-sales-airplanes-and-boats"
+    },
+    {
+      "cite": "South Carolina RR21-14",
+      "title": "Revenue Ruling \u00b7 Professional Services Rendered by, and Retail Sales Made by Opticians, Ophthalmologists, and Optometrists",
+      "href": "https://www.dor.sc.gov/sales-use-tax-professional-services-rendered-and-retail-sales-made-opticians-ophthalmologists-and-optometrists"
+    },
+    {
+      "cite": "South Carolina RR21-12",
+      "title": "Revenue Ruling \u00b7 Retirement Income Deduction - Applicability to COVID-Related Distributions from Retirement Plans under the Federal CARES Act of 2020",
+      "href": "https://www.dor.sc.gov/income-tax-retirement-income-deduction-applicability-covid-related-distributions-retirement-plans-under-federal"
+    },
+    {
+      "cite": "South Carolina RR21-1",
+      "title": "Revenue Ruling \u00b7 South Carolina Housing Tax Credit",
+      "href": "https://www.dor.sc.gov/bank-tax-corporate-license-fee-income-tax-south-carolina-housing-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR21-5",
+      "title": "Revenue Ruling \u00b7 South Carolina Housing Tax Credit",
+      "href": "https://www.dor.sc.gov/bank-tax-corporate-license-fee-income-tax-south-carolina-housing-tax-credit-0"
+    },
+    {
+      "cite": "South Carolina PLR21-1",
+      "title": "Private Letter Ruling \u00b7 Warranty Agreements and Withdrawals of Repair Parts from Inventory by a Manufacturer under a Warranty",
+      "href": "https://www.dor.sc.gov/sales-use-tax-warranty-agreements-and-withdrawals-repair-parts-inventory-manufacturer-under-warranty"
+    },
+    {
+      "cite": "South Carolina RR20-3",
+      "title": "Revenue Ruling \u00b7 Buydowns - Tobacco Company Payments to Retailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-buydowns-tobacco-company-payments-retailers"
+    },
+    {
+      "cite": "South Carolina PLR20-3",
+      "title": "Private Letter Ruling \u00b7 Concrete Mixing Charges for Use in Road Construction Project",
+      "href": "https://www.dor.sc.gov/sales-use-tax-concrete-mixing-charges-use-road-construction-project"
+    },
+    {
+      "cite": "South Carolina PLR20-4",
+      "title": "Private Letter Ruling \u00b7 Online Software Subscription Service and Training",
+      "href": "https://www.dor.sc.gov/sales-use-tax-online-software-subscription-service-and-training"
+    },
+    {
+      "cite": "South Carolina PLR20-1",
+      "title": "Private Letter Ruling \u00b7 Online Software Subscription Service for Managing Durable Medical Equipment Inventory, Billing and Claims",
+      "href": "https://www.dor.sc.gov/sales-use-tax-online-software-subscription-service-managing-durable-medical-equipment-inventory-billing-and-claims"
+    },
+    {
+      "cite": "South Carolina PLR20-2",
+      "title": "Private Letter Ruling \u00b7 Peer-to-Peer Motor Vehicle Rentals Through a Marketplace Facilitator",
+      "href": "https://www.dor.sc.gov/sales-use-tax-peer-peer-motor-vehicle-rentals-through-marketplace-facilitator"
+    },
+    {
+      "cite": "South Carolina RR20-1",
+      "title": "Revenue Ruling \u00b7 Sales of Boats, Boat Motors, and Airplane",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-sales-boats-boat-motors-and-airplane"
+    },
+    {
+      "cite": "South Carolina PLR20-5",
+      "title": "Private Letter Ruling \u00b7 Sales of Electricity - Vehicle Charging Stations",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-electricity-vehicle-charging-stations"
+    },
+    {
+      "cite": "South Carolina RR20-2",
+      "title": "Revenue Ruling \u00b7 Service as a Preceptor for Clinical Rotations - New Credit and Deduction",
+      "href": "https://www.dor.sc.gov/income-tax-service-preceptor-clinical-rotations-new-credit-and-deduction"
+    },
+    {
+      "cite": "South Carolina RR20-4",
+      "title": "Revenue Ruling \u00b7 Tariffs and Tariff Surcharges",
+      "href": "https://www.dor.sc.gov/sales-use-tax-tariffs-and-tariff-surcharges"
+    },
+    {
+      "cite": "South Carolina RR19-2",
+      "title": "Revenue Ruling \u00b7 Brewery Tours and Beer Samples",
+      "href": "https://www.dor.sc.gov/sales-use-tax-brewery-tours-and-beer-samples"
+    },
+    {
+      "cite": "South Carolina PLR19-1",
+      "title": "Private Letter Ruling \u00b7 Data Collection and Analysis Services",
+      "href": "https://www.dor.sc.gov/sales-use-tax-data-collection-and-analysis-services"
+    },
+    {
+      "cite": "South Carolina RR19-9",
+      "title": "Revenue Ruling \u00b7 Delivery Charges",
+      "href": "https://www.dor.sc.gov/sales-use-tax-delivery-charges"
+    },
+    {
+      "cite": "South Carolina RR19-11",
+      "title": "Revenue Ruling \u00b7 Job Tax Credit - Increased Credit Amount for Tier III and IV Counties",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-increased-credit-amount-tier-iii-and-iv-counties"
+    },
+    {
+      "cite": "South Carolina RR19-6",
+      "title": "Revenue Ruling \u00b7 Marketplace Facilitators and Third Parties Whose Products are Sold Via a Marketplace - Guidance and Tax Obligations",
+      "href": "https://www.dor.sc.gov/sales-use-tax-marketplace-facilitators-and-third-parties-whose-products-are-sold-marketplace-guidance-and-tax"
+    },
+    {
+      "cite": "South Carolina RR19-3",
+      "title": "Revenue Ruling \u00b7 Micro-Distillery Tours and Liquor Tastings",
+      "href": "https://www.dor.sc.gov/admissions-tax-alcohol-taxes-sales-use-tax-micro-distillery-tours-and-liquor-tastings"
+    },
+    {
+      "cite": "South Carolina RR19-10",
+      "title": "Revenue Ruling \u00b7 Rental of Mobile Toilet Trailer, Hand Washing Station, or Portable Waste Holding Tank - Tax Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-rental-mobile-toilet-trailer-hand-washing-station-or-portable-waste-holding-tank-tax-exemption"
+    },
+    {
+      "cite": "South Carolina RR19-5",
+      "title": "Revenue Ruling \u00b7 Residential Electricity and Fuel Exemption - Primary Residence, Vacation Homes and Second Homes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-residential-electricity-and-fuel-exemption-primary-residence-vacation-homes-and-second-homes"
+    },
+    {
+      "cite": "South Carolina RR19-4",
+      "title": "Revenue Ruling \u00b7 Sales Tax Holiday - Frequently Asked Questions and List of Eligible Items",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-tax-holiday-frequently-asked-questions-and-list-eligible-items"
+    },
+    {
+      "cite": "South Carolina RR19-7",
+      "title": "Revenue Ruling \u00b7 Sales to Government Employees, Foreign Diplomats, and Other Similar Employees While on Official Business",
+      "href": "https://www.dor.sc.gov/accommodations-tax-sales-use-tax-sales-government-employees-foreign-diplomats-and-other-similar-employees-while-official-business"
+    },
+    {
+      "cite": "South Carolina RR19-1",
+      "title": "Revenue Ruling \u00b7 State Tax Deduction for Individuals who Itemize Deductions",
+      "href": "https://www.dor.sc.gov/income-tax-state-tax-deduction-individuals-who-itemize-deductions"
+    },
+    {
+      "cite": "South Carolina RR19-8",
+      "title": "Revenue Ruling \u00b7 Universal Service Fund Surcharge, Dual Party Relay Charge, and 911 Service Charge",
+      "href": "https://www.dor.sc.gov/sales-use-tax-universal-service-fund-surcharge-dual-party-relay-charge-and-911-service-charge"
+    },
+    {
+      "cite": "South Carolina RR18-5",
+      "title": "Revenue Ruling \u00b7 Barges - Maximum Sales and Use Tax Provisios",
+      "href": "https://www.dor.sc.gov/sales-use-tax-barges-maximum-sales-and-use-tax-provisios"
+    },
+    {
+      "cite": "South Carolina RR18-2",
+      "title": "Revenue Ruling \u00b7 Compressed Natural Gas, Liquefied Natural Gas, and Liquefied Petroleum Gas Conversion to Gallon Equivalents",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-compressed-natural-gas-liquefied-natural-gas-and-liquefied-petroleum-gas-conversion-gallon"
+    },
+    {
+      "cite": "South Carolina RR18-7",
+      "title": "Revenue Ruling \u00b7 Destination Marketing Fees",
+      "href": "https://www.dor.sc.gov/accommodations-tax-destination-marketing-fees"
+    },
+    {
+      "cite": "South Carolina RR18-3",
+      "title": "Revenue Ruling \u00b7 Kerosene",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-kerosene-0"
+    },
+    {
+      "cite": "South Carolina RR18-15",
+      "title": "Revenue Ruling \u00b7 Local Sales and Use Taxes, Catawba Tribal Sales and Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-local-sales-and-use-taxes-catawba-tribal-sales-and-use-tax"
+    },
+    {
+      "cite": "South Carolina RR18-13",
+      "title": "Revenue Ruling \u00b7 Manufacturing Property - New partial Property Tax Exemption",
+      "href": "https://www.dor.sc.gov/property-tax-manufacturing-property-new-partial-property-tax-exemption"
+    },
+    {
+      "cite": "South Carolina RR18-1",
+      "title": "Revenue Ruling \u00b7 Motor Vehicles, Motorcycles, Trailers, Semitrailers, Pole Trailers and Other Vehicles",
+      "href": "https://www.dor.sc.gov/sales-use-tax-motor-vehicles-motorcycles-trailers-semitrailers-pole-trailers-and-other-vehicles"
+    },
+    {
+      "cite": "South Carolina RR18-4",
+      "title": "Revenue Ruling \u00b7 Personal Watercrafts - Maximum Sales and Use Tax Provisions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-personal-watercrafts-maximum-sales-and-use-tax-provisions"
+    },
+    {
+      "cite": "South Carolina RR18-10",
+      "title": "Revenue Ruling \u00b7 Purchases by Individuals 85 Years of Age and Older",
+      "href": "https://www.dor.sc.gov/sales-use-tax-purchases-individuals-85-years-age-and-older-1"
+    },
+    {
+      "cite": "South Carolina RR18-6",
+      "title": "Revenue Ruling \u00b7 Racing Gasoline",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-racing-gasoline-0"
+    },
+    {
+      "cite": "South Carolina RR18-14",
+      "title": "Revenue Ruling \u00b7 Retailers Without a Physical Presence (\"Remote Sellers\") - Economic Nexus",
+      "href": "https://www.dor.sc.gov/sales-use-tax-retailers-without-physical-presence-remote-sellers-economic-nexus"
+    },
+    {
+      "cite": "South Carolina RR18-11",
+      "title": "Revenue Ruling \u00b7 Sales of Boats, Boat Motors and Boat Trailers",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-sales-use-tax-sales-boats-boat-motors-and-boat-trailers-0"
+    },
+    {
+      "cite": "South Carolina RR18-12",
+      "title": "Revenue Ruling \u00b7 Sales of Fire Trucks and Firefighting Equipment",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-fire-trucks-and-firefighting-equipment"
+    },
+    {
+      "cite": "South Carolina PLR18-1",
+      "title": "Private Letter Ruling \u00b7 Streaming Subscription and Related Services - Viewing the Playing of Video Games, the Playing of Music, Live eSports Events or Similar Content of Third Party Broadcasters and Chat Services",
+      "href": "https://www.dor.sc.gov/sales-use-tax-streaming-subscription-and-related-services-viewing-playing-video-games-playing-music-live-esports"
+    },
+    {
+      "cite": "South Carolina PLR18-2",
+      "title": "Private Letter Ruling \u00b7 Table Top Ordering and Bill Payment Tablets Used by a Restaurant - Monthly Service and Game Fees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-table-top-ordering-and-bill-payment-tablets-used-restaurant-monthly-service-and-game-fees"
+    },
+    {
+      "cite": "South Carolina RR18-16",
+      "title": "Revenue Ruling \u00b7 Use of the 2% Local Accommodations Tax Fund; Withdrawal of SC Revenue Ruling #98-22",
+      "href": "https://www.dor.sc.gov/sales-use-tax-use-2-local-accommodations-tax-fund-withdrawal-sc-revenue-ruling-98-22"
+    },
+    {
+      "cite": "South Carolina RR18-9",
+      "title": "Revenue Ruling \u00b7 Use Tax Information for Individuals, Businesses and Nonprofits",
+      "href": "https://www.dor.sc.gov/sales-use-tax-use-tax-information-individuals-businesses-and-nonprofits-3"
+    },
+    {
+      "cite": "South Carolina RR18-8",
+      "title": "Revenue Ruling \u00b7 Utility License Fee Credit Under Code Section 12-20-105",
+      "href": "https://www.dor.sc.gov/corporate-license-fee-utility-license-fee-credit-under-code-section-12-20-105"
+    },
+    {
+      "cite": "South Carolina RR17-2",
+      "title": "Revenue Ruling \u00b7 Communications-Ways or Means for the Transmission of the Voice or Messages and Other Communications",
+      "href": "https://www.dor.sc.gov/sales-use-tax-communications-ways-or-means-transmission-voice-or-messages-and-other-communications-1"
+    },
+    {
+      "cite": "South Carolina RR17-5",
+      "title": "Revenue Ruling \u00b7 Deed Recoreding Fee",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-deed-recoreding-fee"
+    },
+    {
+      "cite": "South Carolina RR17-3",
+      "title": "Revenue Ruling \u00b7 Natural Gas Compressed or Liquefied for Use in a Motor Vehicle",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-sales-use-tax-natural-gas-compressed-or-liquefied-use-motor-vehicle"
+    },
+    {
+      "cite": "South Carolina RR17-6",
+      "title": "Revenue Ruling \u00b7 Refundable Motor Fuel Income Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-motor-fuel-user-fee-refundable-motor-fuel-income-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR17-1",
+      "title": "Revenue Ruling \u00b7 Residential Electricity Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-residential-electricity-exemption"
+    },
+    {
+      "cite": "South Carolina RR17-4",
+      "title": "Revenue Ruling \u00b7 Residential Electricity Exemption; Nursing Homes, Assisted living Facilities, Healthcare Facilities, Dormitories and Prisons",
+      "href": "https://www.dor.sc.gov/sales-use-tax-residential-electricity-exemption-nursing-homes-assisted-living-facilities-healthcare-facilities"
+    },
+    {
+      "cite": "South Carolina RR16-4",
+      "title": "Revenue Ruling \u00b7 Coin-Operated Devices",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-coin-operated-devices-1"
+    },
+    {
+      "cite": "South Carolina RR16-1",
+      "title": "Revenue Ruling \u00b7 Compressed Natural Gas, Liquefied Natural Gas, and Liquefied Propane Gas Conversion to Gallon Equivalents",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-compressed-natural-gas-liquefied-natural-gas-and-liquefied-propane-gas-conversion-gallon-equivalents"
+    },
+    {
+      "cite": "South Carolina RR16-3",
+      "title": "Revenue Ruling \u00b7 Electronic Tablet Table Top Ordering and Bill Payment Devices Used by Restaurants",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-electronic-tablet-table-top-ordering-and-bill-payment-devices-used-restaurants"
+    },
+    {
+      "cite": "South Carolina RR16-8",
+      "title": "Revenue Ruling \u00b7 Exemptions for Sales of Seeds and Plants to Grow Food",
+      "href": "https://www.dor.sc.gov/sales-use-tax-exemptions-sales-seeds-and-plants-grow-food"
+    },
+    {
+      "cite": "South Carolina RR16-2",
+      "title": "Revenue Ruling \u00b7 Interest Exempt from South Carolina Income Tax",
+      "href": "https://www.dor.sc.gov/income-tax-interest-exempt-south-carolina-income-tax-0"
+    },
+    {
+      "cite": "South Carolina RR16-12",
+      "title": "Revenue Ruling \u00b7 Manufacturers' Property - Return, Assessment and Payment of Taxes",
+      "href": "https://www.dor.sc.gov/property-tax-manufacturers-property-return-assessment-and-payment-taxes"
+    },
+    {
+      "cite": "South Carolina RR16-11",
+      "title": "Revenue Ruling \u00b7 Nexus Creating Activities for Income Taxes",
+      "href": "https://www.dor.sc.gov/income-tax-nexus-creating-activities-income-taxes-0"
+    },
+    {
+      "cite": "South Carolina RR16-9",
+      "title": "Revenue Ruling \u00b7 Purchases by Individuals 85 Years of Age and Older",
+      "href": "https://www.dor.sc.gov/sales-use-tax-purchases-individuals-85-years-age-and-older-0"
+    },
+    {
+      "cite": "South Carolina RR16-5",
+      "title": "Revenue Ruling \u00b7 Streaming of Television Programs, Movies, Music, Etc.",
+      "href": "https://www.dor.sc.gov/sales-use-tax-streaming-television-programs-movies-music-etc"
+    },
+    {
+      "cite": "South Carolina RR16-7",
+      "title": "Revenue Ruling \u00b7 Use of Net Operating Losses Following a Change in Ownership",
+      "href": "https://www.dor.sc.gov/income-tax-use-net-operating-losses-following-change-ownership"
+    },
+    {
+      "cite": "South Carolina RR16-6",
+      "title": "Revenue Ruling \u00b7 Use Tax Information for Individuals, Businesses and Nonprofits",
+      "href": "https://www.dor.sc.gov/sales-use-tax-use-tax-information-individuals-businesses-and-nonprofits-2"
+    },
+    {
+      "cite": "South Carolina RR16-10",
+      "title": "Revenue Ruling \u00b7 Vacation Rentals of Residences, Vacation Homes, and Places of Abode for 15 Days or More a Year",
+      "href": "https://www.dor.sc.gov/accommodations-tax-vacation-rentals-residences-vacation-homes-and-places-abode-15-days-or-more-year"
+    },
+    {
+      "cite": "South Carolina PLR16-1",
+      "title": "Private Letter Ruling \u00b7 Website Shopping Membership Fee - Free Trial Membership or Annual Membership",
+      "href": "https://www.dor.sc.gov/sales-use-tax-website-shopping-membership-fee-free-trial-membership-or-annual-membership"
+    },
+    {
+      "cite": "South Carolina RR15-7",
+      "title": "Revenue Ruling \u00b7 Abandoned Building Revitalization Credit",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-abandoned-building-revitalization-credit"
+    },
+    {
+      "cite": "South Carolina RR15-12",
+      "title": "Revenue Ruling \u00b7 Abandoned Building Revitalization Credit - Additional Rules for State-Owned Abandoned Buildings",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-abandoned-building-revitalization-credit-additional-rules-state-owned-abandoned-buildings"
+    },
+    {
+      "cite": "South Carolina RR15-2",
+      "title": "Revenue Ruling \u00b7 Construction Material Exemption for Manufacturing and Distribution Facilities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-construction-material-exemption-manufacturing-and-distribution-facilities"
+    },
+    {
+      "cite": "South Carolina RR15-13",
+      "title": "Revenue Ruling \u00b7 Debt Setoff and GEAR Procedures",
+      "href": "https://www.dor.sc.gov/administrative-process-procedures-debt-setoff-and-gear-procedures"
+    },
+    {
+      "cite": "South Carolina RR15-3",
+      "title": "Revenue Ruling \u00b7 Deed Recording Fee",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-deed-recording-fee-0"
+    },
+    {
+      "cite": "South Carolina RR15-6",
+      "title": "Revenue Ruling \u00b7 Expiration of Tax Liens",
+      "href": "https://www.dor.sc.gov/administrative-refunds-payments-expiration-tax-liens"
+    },
+    {
+      "cite": "South Carolina RR15-1",
+      "title": "Revenue Ruling \u00b7 Kayaks and Paddle Boards - Rentals and Tours",
+      "href": "https://www.dor.sc.gov/sales-use-tax-kayaks-and-paddle-boards-rentals-and-tours"
+    },
+    {
+      "cite": "South Carolina RR15-10",
+      "title": "Revenue Ruling \u00b7 Photographers - Photographs Sold in Tangible or Electronic Form",
+      "href": "https://www.dor.sc.gov/sales-use-tax-photographers-photographs-sold-tangible-or-electronic-form"
+    },
+    {
+      "cite": "South Carolina RR15-9",
+      "title": "Revenue Ruling \u00b7 Retail Facilities Revitalization Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-retail-facilities-revitalization-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR15-11",
+      "title": "Revenue Ruling \u00b7 Sales to Government Employees, Foreign Diplomats, and Other Similar Employees While on Official Business",
+      "href": "https://www.dor.sc.gov/accommodations-tax-sales-use-tax-sales-government-employees-foreign-diplomats-and-other-similar-employees-while-official-business-0"
+    },
+    {
+      "cite": "South Carolina PLR15-1",
+      "title": "Private Letter Ruling \u00b7 Solar Energy Facility - Eligibility for Exemptions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-solar-energy-facility-eligibility-exemptions"
+    },
+    {
+      "cite": "South Carolina RR15-14",
+      "title": "Revenue Ruling \u00b7 Solar Energy Facility - Sale of Electricity",
+      "href": "https://www.dor.sc.gov/electric-power-tax-sales-use-tax-solar-energy-facility-sale-electricity"
+    },
+    {
+      "cite": "South Carolina RR15-8",
+      "title": "Revenue Ruling \u00b7 Textiles Communities Revitalization Act",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-textiles-communities-revitalization-act"
+    },
+    {
+      "cite": "South Carolina RR15-5",
+      "title": "Revenue Ruling \u00b7 Use of Alternative Apportionment Methods - Including Combined Unitary Reporting",
+      "href": "https://www.dor.sc.gov/income-tax-use-alternative-apportionment-methods-including-combined-unitary-reporting"
+    },
+    {
+      "cite": "South Carolina RR15-4",
+      "title": "Revenue Ruling \u00b7 Vacation Rentals of Residence: Sales Tax Exemption for Rental of Less Thank 15 Days a Year and Property Tax Assessment Ratio for Rentals of Not More Than 72 Days a Year",
+      "href": "https://www.dor.sc.gov/accommodations-tax-property-tax-vacation-rentals-residence-sales-tax-exemption-rental-less-thank-15-days-year-and-property-tax"
+    },
+    {
+      "cite": "South Carolina PLR14-5",
+      "title": "Private Letter Ruling \u00b7 123 System for Insurance Claims",
+      "href": "https://www.dor.sc.gov/sales-use-tax-123-system-insurance-claims"
+    },
+    {
+      "cite": "South Carolina RR14-6",
+      "title": "Revenue Ruling \u00b7 Angel Investor Credit",
+      "href": "https://www.dor.sc.gov/income-tax-angel-investor-credit"
+    },
+    {
+      "cite": "South Carolina RR14-3",
+      "title": "Revenue Ruling \u00b7 Bingo Paper Standards",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-paper-standards-1"
+    },
+    {
+      "cite": "South Carolina RR14-5",
+      "title": "Revenue Ruling \u00b7 Charges by Hotels, Motels and Other Places Furnishing Sleeping Accommodations",
+      "href": "https://www.dor.sc.gov/accommodations-tax-sales-use-tax-charges-hotels-motels-and-other-places-furnishing-sleeping-accommodations"
+    },
+    {
+      "cite": "South Carolina PLR14-4",
+      "title": "Private Letter Ruling \u00b7 Cloud-Based Service for Processing and Routing Telephone Calls within a Customer's Telephone System and for Other Support Services",
+      "href": "https://www.dor.sc.gov/sales-use-tax-cloud-based-service-processing-and-routing-telephone-calls-within-customers-telephone-system-and"
+    },
+    {
+      "cite": "South Carolina PLR14-1",
+      "title": "Private Letter Ruling \u00b7 Delivery Company as Transportation for Hire",
+      "href": "https://www.dor.sc.gov/property-tax-delivery-company-transportation-hire"
+    },
+    {
+      "cite": "South Carolina RR14-7",
+      "title": "Revenue Ruling \u00b7 Hurricane Rental Insurance",
+      "href": "https://www.dor.sc.gov/accommodations-tax-hurricane-rental-insurance"
+    },
+    {
+      "cite": "South Carolina RR14-4",
+      "title": "Revenue Ruling \u00b7 Nexus Creating Activities for Sales and Use Taxes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-nexus-creating-activities-sales-and-use-taxes-0"
+    },
+    {
+      "cite": "South Carolina RR14-2",
+      "title": "Revenue Ruling \u00b7 Sales of Utility Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-utility-trailers"
+    },
+    {
+      "cite": "South Carolina RR14-1",
+      "title": "Revenue Ruling \u00b7 Same-Sex Marriage Filing Guidance",
+      "href": "https://www.dor.sc.gov/income-tax-same-sex-marriage-filing-guidance"
+    },
+    {
+      "cite": "South Carolina RR14-8",
+      "title": "Revenue Ruling \u00b7 South Carolina Income Tax Treatment of Same-Sex Marriages",
+      "href": "https://www.dor.sc.gov/income-tax-south-carolina-income-tax-treatment-same-sex-marriages"
+    },
+    {
+      "cite": "South Carolina TRR14-8",
+      "title": "Temporary Revenue Ruling \u00b7 South Carolina Income Tax Treatment of Same-Sex Marriages",
+      "href": "https://www.dor.sc.gov/income-tax-south-carolina-income-tax-treatment-same-sex-marriages-0"
+    },
+    {
+      "cite": "South Carolina RR14-9",
+      "title": "Revenue Ruling \u00b7 South Carolina Tax Treatment of Same-Sex Marriage",
+      "href": "https://www.dor.sc.gov/property-tax-south-carolina-tax-treatment-same-sex-marriage-0"
+    },
+    {
+      "cite": "South Carolina TRR14-9",
+      "title": "Temporary Revenue Ruling \u00b7 South Carolina Tax Treatment of Same-Sex Marriage",
+      "href": "https://www.dor.sc.gov/property-tax-south-carolina-tax-treatment-same-sex-marriage"
+    },
+    {
+      "cite": "South Carolina PLR14-3",
+      "title": "Private Letter Ruling \u00b7 The Abandoned Buildings Revitalization Act - Demolition and New Construction Cost",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-abandoned-buildings-revitalization-act-demolition-and-new-construction-cost"
+    },
+    {
+      "cite": "South Carolina PLR14-2",
+      "title": "Private Letter Ruling \u00b7 X Cloud Service and Y Storage Service",
+      "href": "https://www.dor.sc.gov/sales-use-tax-x-cloud-service-and-y-storage-service"
+    },
+    {
+      "cite": "South Carolina PLR13-3",
+      "title": "Private Letter Ruling \u00b7 Apportionment of Engineering Service Income",
+      "href": "https://www.dor.sc.gov/income-tax-apportionment-engineering-service-income"
+    },
+    {
+      "cite": "South Carolina RR13-4",
+      "title": "Revenue Ruling \u00b7 Bad Debt Deductions by Retailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-bad-debt-deductions-retailers"
+    },
+    {
+      "cite": "South Carolina PLR13-4",
+      "title": "Private Letter Ruling \u00b7 Baseball and Softball Indoor Facility",
+      "href": "https://www.dor.sc.gov/admissions-tax-baseball-and-softball-indoor-facility"
+    },
+    {
+      "cite": "South Carolina PLR13-5",
+      "title": "Private Letter Ruling \u00b7 Beer and Wine Business Ownership and Employment - Three-Tier Laws",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-beer-and-wine-business-ownership-and-employment-three-tier-laws"
+    },
+    {
+      "cite": "South Carolina RR13-5",
+      "title": "Revenue Ruling \u00b7 Datacenter Computers, Computer Equipment, Computer Hardware and Software, and Electricity",
+      "href": "https://www.dor.sc.gov/sales-use-tax-datacenter-computers-computer-equipment-computer-hardware-and-software-and-electricity"
+    },
+    {
+      "cite": "South Carolina PLR13-1",
+      "title": "Private Letter Ruling \u00b7 Disease Management Program - Communications or Data Processing",
+      "href": "https://www.dor.sc.gov/sales-use-tax-disease-management-program-communications-or-data-processing"
+    },
+    {
+      "cite": "South Carolina RR13-1",
+      "title": "Revenue Ruling \u00b7 General Rules for Limitations on Filing a Claim for Refund",
+      "href": "https://www.dor.sc.gov/administrative-refunds-payments-general-rules-limitations-filing-claim-refund"
+    },
+    {
+      "cite": "South Carolina PLR13-2",
+      "title": "Private Letter Ruling \u00b7 Hospital Communications System; Rental of Tangible Personal Property or a Service",
+      "href": "https://www.dor.sc.gov/sales-use-tax-hospital-communications-system-rental-tangible-personal-property-or-service"
+    },
+    {
+      "cite": "South Carolina RR13-3",
+      "title": "Revenue Ruling \u00b7 Material Handling Systems and Material Handling Equipment",
+      "href": "https://www.dor.sc.gov/sales-use-tax-material-handling-systems-and-material-handling-equipment-0"
+    },
+    {
+      "cite": "South Carolina RR13-2",
+      "title": "Revenue Ruling \u00b7 Sales to Government Employees, Foreign Diplomats, and Other Similar Employees While on Official Business",
+      "href": "https://www.dor.sc.gov/accommodations-tax-sales-use-tax-sales-government-employees-foreign-diplomats-and-other-similar-employees-while-official-business-1"
+    },
+    {
+      "cite": "South Carolina PLR12-2",
+      "title": "Private Letter Ruling \u00b7 Application Service Provider Software and Claims and Billing Services",
+      "href": "https://www.dor.sc.gov/sales-use-tax-application-service-provider-software-and-claims-and-billing-services"
+    },
+    {
+      "cite": "South Carolina PLR12-1",
+      "title": "Private Letter Ruling \u00b7 Broadcasting Software for Radio and Television Stations and Cable Television Systems",
+      "href": "https://www.dor.sc.gov/sales-use-tax-broadcasting-software-radio-and-television-stations-and-cable-television-systems"
+    },
+    {
+      "cite": "South Carolina PLR12-4",
+      "title": "Private Letter Ruling \u00b7 Corporations Permitted to File a Consolidated Return",
+      "href": "https://www.dor.sc.gov/income-tax-corporations-permitted-file-consolidated-return"
+    },
+    {
+      "cite": "South Carolina RR12-1",
+      "title": "Revenue Ruling \u00b7 Electronically Delivered Software",
+      "href": "https://www.dor.sc.gov/sales-use-tax-electronically-delivered-software"
+    },
+    {
+      "cite": "South Carolina RR12-3",
+      "title": "Revenue Ruling \u00b7 Fundraising Events by Nonprofit Organizations",
+      "href": "https://www.dor.sc.gov/admissions-tax-alcohol-beverage-licensing-abl-sales-use-tax-fundraising-events-nonprofit-organizations"
+    },
+    {
+      "cite": "South Carolina RR12-2",
+      "title": "Revenue Ruling \u00b7 Monthly Fixed Charges Billed by a Natural Gas Utility",
+      "href": "https://www.dor.sc.gov/sales-use-tax-monthly-fixed-charges-billed-natural-gas-utility"
+    },
+    {
+      "cite": "South Carolina PLR12-3",
+      "title": "Private Letter Ruling \u00b7 Sales Tax on Amounts Recovered through Litigation or Guarantor Payments",
+      "href": "https://www.dor.sc.gov/income-tax-sales-tax-amounts-recovered-through-litigation-or-guarantor-payments"
+    },
+    {
+      "cite": "South Carolina PLR11-6",
+      "title": "Private Letter Ruling \u00b7 Availability of Biomass Energy Credits to Limited Liability Company",
+      "href": "https://www.dor.sc.gov/income-tax-availability-biomass-energy-credits-limited-liability-company"
+    },
+    {
+      "cite": "South Carolina PLR11-3",
+      "title": "Private Letter Ruling \u00b7 Buy All, Sell All Arrangement for the Sale of Electric Power",
+      "href": "https://www.dor.sc.gov/electric-power-tax-buy-all-sell-all-arrangement-sale-electric-power"
+    },
+    {
+      "cite": "South Carolina PLR11-2",
+      "title": "Private Letter Ruling \u00b7 Country Club Service Fee",
+      "href": "https://www.dor.sc.gov/admissions-tax-sales-use-tax-country-club-service-fee"
+    },
+    {
+      "cite": "South Carolina PLR11-4",
+      "title": "Private Letter Ruling \u00b7 Layaway Sales, Layaway Fees and Partial Payment Sales",
+      "href": "https://www.dor.sc.gov/sales-use-tax-layaway-sales-layaway-fees-and-partial-payment-sales"
+    },
+    {
+      "cite": "South Carolina PLR11-5",
+      "title": "Private Letter Ruling \u00b7 Loyalty Points Program - Cellular Telephone Provider",
+      "href": "https://www.dor.sc.gov/sales-use-tax-loyalty-points-program-cellular-telephone-provider"
+    },
+    {
+      "cite": "South Carolina RR11-3",
+      "title": "Revenue Ruling \u00b7 Medicines, Prosthetic Devices, Diabetic Supplies and Other Medical Supplies",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medicines-prosthetic-devices-diabetic-supplies-and-other-medical-supplies-0"
+    },
+    {
+      "cite": "South Carolina RR11-2",
+      "title": "Revenue Ruling \u00b7 Software and Software Maintenance Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-software-and-software-maintenance-contracts-0"
+    },
+    {
+      "cite": "South Carolina RR11-1",
+      "title": "Revenue Ruling \u00b7 Warranty and Maintenance Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-warranty-and-maintenance-contracts"
+    },
+    {
+      "cite": "South Carolina PLR11-1",
+      "title": "Private Letter Ruling \u00b7 Waterworks Utility Located in a Federal Enclave",
+      "href": "https://www.dor.sc.gov/corporate-license-fee-waterworks-utility-located-federal-enclave"
+    },
+    {
+      "cite": "South Carolina RR10-4",
+      "title": "Revenue Ruling \u00b7 Energy Star Appliance Rebate Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-energy-star-appliance-rebate-program"
+    },
+    {
+      "cite": "South Carolina TRR10-4",
+      "title": "Temporary Revenue Ruling \u00b7 Energy Star Appliance Rebate Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-energy-star-appliance-rebate-program-0"
+    },
+    {
+      "cite": "South Carolina RR10-5",
+      "title": "Revenue Ruling \u00b7 Federal Military Spouses Residency Relief Act",
+      "href": "https://www.dor.sc.gov/income-tax-federal-military-spouses-residency-relief-act"
+    },
+    {
+      "cite": "South Carolina TRR10-5",
+      "title": "Temporary Revenue Ruling \u00b7 Federal Military Spouses Residency Relief Act",
+      "href": "https://www.dor.sc.gov/income-tax-federal-military-spouses-residency-relief-act-0"
+    },
+    {
+      "cite": "South Carolina RR10-1",
+      "title": "Revenue Ruling \u00b7 Fundraising Events by Nonprofit Organizations",
+      "href": "https://www.dor.sc.gov/admissions-tax-alcohol-beverage-licensing-abl-alcohol-taxes-sales-use-tax-fundraising-events-nonprofit-organizations"
+    },
+    {
+      "cite": "South Carolina PLR10-1",
+      "title": "Private Letter Ruling \u00b7 Housekeeping and Similar Service Charges to Property Owner",
+      "href": "https://www.dor.sc.gov/sales-use-tax-housekeeping-and-similar-service-charges-property-owner"
+    },
+    {
+      "cite": "South Carolina RR10-6",
+      "title": "Revenue Ruling \u00b7 Low Speed Vehicles",
+      "href": "https://www.dor.sc.gov/sales-use-tax-low-speed-vehicles"
+    },
+    {
+      "cite": "South Carolina RR10-2",
+      "title": "Revenue Ruling \u00b7 Medicines, Prosthetic Devices, Diabetic Supplies and Other Medical Supplies",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medicines-prosthetic-devices-diabetic-supplies-and-other-medical-supplies"
+    },
+    {
+      "cite": "South Carolina RR10-10",
+      "title": "Revenue Ruling \u00b7 Net Metering Plans in which the Customer Retains Ownership of Electricity as Represented by Excess Renewable Energy",
+      "href": "https://www.dor.sc.gov/electric-power-tax-sales-use-tax-net-metering-plans-which-customer-retains-ownership-electricity-represented-excess-renewable-energy"
+    },
+    {
+      "cite": "South Carolina PLR10-2",
+      "title": "Private Letter Ruling \u00b7 Online Subscription Services",
+      "href": "https://www.dor.sc.gov/sales-use-tax-online-subscription-services"
+    },
+    {
+      "cite": "South Carolina RR10-3",
+      "title": "Revenue Ruling \u00b7 Replacement of Beer or Wine after Delivery by a Licensed Wholesaler",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-replacement-beer-or-wine-after-delivery-licensed-wholesaler"
+    },
+    {
+      "cite": "South Carolina RR10-7",
+      "title": "Revenue Ruling \u00b7 Sales Tax Holiday - List",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-tax-holiday-list"
+    },
+    {
+      "cite": "South Carolina RR10-8",
+      "title": "Revenue Ruling \u00b7 Sales Tax Holiday - Questions and Answers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-tax-holiday-questions-and-answers"
+    },
+    {
+      "cite": "South Carolina RR10-9",
+      "title": "Revenue Ruling \u00b7 Second Amendment Sales Tax Holiday for 2010",
+      "href": "https://www.dor.sc.gov/sales-use-tax-second-amendment-sales-tax-holiday-2010"
+    },
+    {
+      "cite": "South Carolina RR09-2",
+      "title": "Revenue Ruling \u00b7 Accommodations Furnished to Government Employees, Foreign Diplomats, and Nonprofit Organization Employees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-accommodations-furnished-government-employees-foreign-diplomats-and-nonprofit-organization-employees-0"
+    },
+    {
+      "cite": "South Carolina RR09-16",
+      "title": "Revenue Ruling \u00b7 Certain Nontaxable National Guard or Reserve Pay and Withholding for South Carolina Income Tax Purposes",
+      "href": "https://www.dor.sc.gov/income-tax-withholding-certain-nontaxable-national-guard-or-reserve-pay-and-withholding-south-carolina-income-tax-purposes"
+    },
+    {
+      "cite": "South Carolina RR09-3",
+      "title": "Revenue Ruling \u00b7 College Tuition Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-college-tuition-tax-credit-2"
+    },
+    {
+      "cite": "South Carolina RR09-11",
+      "title": "Revenue Ruling \u00b7 Federal \"Car Assistance Rebate System\"",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-car-assistance-rebate-system"
+    },
+    {
+      "cite": "South Carolina RR09-1",
+      "title": "Revenue Ruling \u00b7 Federal Government Credit Cards",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-government-credit-cards"
+    },
+    {
+      "cite": "South Carolina PLR09-2",
+      "title": "Private Letter Ruling \u00b7 Homeowners' Association Membership Assessment",
+      "href": "https://www.dor.sc.gov/admissions-tax-homeowners-association-membership-assessment"
+    },
+    {
+      "cite": "South Carolina RR09-4",
+      "title": "Revenue Ruling \u00b7 Internal Revenue Code 338(h)(10) Election",
+      "href": "https://www.dor.sc.gov/income-tax-internal-revenue-code-338h10-election"
+    },
+    {
+      "cite": "South Carolina RR09-6",
+      "title": "Revenue Ruling \u00b7 Late Fees Charged by Utilities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-late-fees-charged-utilities-0"
+    },
+    {
+      "cite": "South Carolina RR09-9",
+      "title": "Revenue Ruling \u00b7 Local Sales and Use Taxes and Catawba Tribal Sales and Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-local-sales-and-use-taxes-and-catawba-tribal-sales-and-use-tax"
+    },
+    {
+      "cite": "South Carolina RR09-15",
+      "title": "Revenue Ruling \u00b7 Phase-In of Single Sales Factor Apportionment Method",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-license-fee-phase-single-sales-factor-apportionment-method"
+    },
+    {
+      "cite": "South Carolina RR09-5",
+      "title": "Revenue Ruling \u00b7 Rental of Portable Toilets",
+      "href": "https://www.dor.sc.gov/sales-use-tax-rental-portable-toilets-0"
+    },
+    {
+      "cite": "South Carolina RR09-7",
+      "title": "Revenue Ruling \u00b7 Rentals to Transients at Residential Retirement Communities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-rentals-transients-residential-retirement-communities"
+    },
+    {
+      "cite": "South Carolina PLR09-1",
+      "title": "Private Letter Ruling \u00b7 Residential Water Heater Repair Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-residential-water-heater-repair-program"
+    },
+    {
+      "cite": "South Carolina RR09-8",
+      "title": "Revenue Ruling \u00b7 Sales by Nonprofit Organization - Loss of Exemption Because Benefit Inures to an Individual",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-nonprofit-organization-loss-exemption-because-benefit-inures-individual"
+    },
+    {
+      "cite": "South Carolina RR09-14",
+      "title": "Revenue Ruling \u00b7 Second Amendment Sales Tax Holiday for 2009",
+      "href": "https://www.dor.sc.gov/sales-use-tax-second-amendment-sales-tax-holiday-2009"
+    },
+    {
+      "cite": "South Carolina RR09-10",
+      "title": "Revenue Ruling \u00b7 State Tax Add-Backs",
+      "href": "https://www.dor.sc.gov/income-tax-state-tax-add-backs-0"
+    },
+    {
+      "cite": "South Carolina RR09-17",
+      "title": "Revenue Ruling \u00b7 Temporary Storage - Exclusion from the Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-temporary-storage-exclusion-use-tax"
+    },
+    {
+      "cite": "South Carolina RR09-12",
+      "title": "Revenue Ruling \u00b7 Tournament Participation Entry Fees",
+      "href": "https://www.dor.sc.gov/admissions-tax-tournament-participation-entry-fees"
+    },
+    {
+      "cite": "South Carolina RR09-13",
+      "title": "Revenue Ruling \u00b7 Withholding on Sales of Real and Associated Tangible Personal Property by Nonresidents",
+      "href": "https://www.dor.sc.gov/income-tax-withholding-sales-real-and-associated-tangible-personal-property-nonresidents-1"
+    },
+    {
+      "cite": "South Carolina PLR08-2",
+      "title": "Private Letter Ruling \u00b7 Automobile Leases and Vehicle Maintenance Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-automobile-leases-and-vehicle-maintenance-contracts"
+    },
+    {
+      "cite": "South Carolina PLR08-1",
+      "title": "Private Letter Ruling \u00b7 Charges for Gas Cylinders Provided to a Manufacturer",
+      "href": "https://www.dor.sc.gov/sales-use-tax-charges-gas-cylinders-provided-manufacturer"
+    },
+    {
+      "cite": "South Carolina RR08-8",
+      "title": "Revenue Ruling \u00b7 Collection of Casual Excise Tax and Use Tax on Sale of a Motor Vehicle, Motorcycle, Boat, Motor, Airplane, Trailer, etc.",
+      "href": "https://www.dor.sc.gov/sales-use-tax-casual-excise-tax-collection-casual-excise-tax-and-use-tax-sale-motor-vehicle-motorcycle-boat-motor-airplane-trailer-0"
+    },
+    {
+      "cite": "South Carolina RR08-4",
+      "title": "Revenue Ruling \u00b7 Federal Coupons for Television Converter Boxes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-coupons-television-converter-boxes"
+    },
+    {
+      "cite": "South Carolina RR08-12",
+      "title": "Revenue Ruling \u00b7 Motion Picture Production Company Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-motion-picture-production-company-exemption-0"
+    },
+    {
+      "cite": "South Carolina RR08-1",
+      "title": "Revenue Ruling \u00b7 Nexus",
+      "href": "https://www.dor.sc.gov/income-tax-nexus-1"
+    },
+    {
+      "cite": "South Carolina PLR08-3",
+      "title": "Private Letter Ruling \u00b7 Production of Genetically Enhanced Tree Seedlings for Sale",
+      "href": "https://www.dor.sc.gov/sales-use-tax-production-genetically-enhanced-tree-seedlings-sale"
+    },
+    {
+      "cite": "South Carolina RR08-5",
+      "title": "Revenue Ruling \u00b7 Purchases by Individuals 85 Years of Age and Older",
+      "href": "https://www.dor.sc.gov/sales-use-tax-purchases-individuals-85-years-age-and-older"
+    },
+    {
+      "cite": "South Carolina RR08-3",
+      "title": "Revenue Ruling \u00b7 Research and Development Machines",
+      "href": "https://www.dor.sc.gov/sales-use-tax-research-and-development-machines"
+    },
+    {
+      "cite": "South Carolina RR08-10",
+      "title": "Revenue Ruling \u00b7 Sale of Fire Trucks and Fire Fighting Equipment",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sale-fire-trucks-and-fire-fighting-equipment"
+    },
+    {
+      "cite": "South Carolina RR08-7",
+      "title": "Revenue Ruling \u00b7 Sales of Boats, Motors, and Boat Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-boats-motors-and-boat-trailers-0"
+    },
+    {
+      "cite": "South Carolina RR08-9",
+      "title": "Revenue Ruling \u00b7 Sales of Horse Trailers and Stock Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-horse-trailers-and-stock-trailers-0"
+    },
+    {
+      "cite": "South Carolina RR08-13",
+      "title": "Revenue Ruling \u00b7 Second Amendment Sales Tax Holiday",
+      "href": "https://www.dor.sc.gov/sales-use-tax-second-amendment-sales-tax-holiday"
+    },
+    {
+      "cite": "South Carolina RR08-2",
+      "title": "Revenue Ruling \u00b7 Tax Rate Reduction on Active Trade or Business Income from a Pass Through Business",
+      "href": "https://www.dor.sc.gov/income-tax-tax-rate-reduction-active-trade-or-business-income-pass-through-business-0"
+    },
+    {
+      "cite": "South Carolina RR08-6",
+      "title": "Revenue Ruling \u00b7 Use Tax Information for Individuals, Businesses and Nonprofits",
+      "href": "https://www.dor.sc.gov/sales-use-tax-use-tax-information-individuals-businesses-and-nonprofits-1"
+    },
+    {
+      "cite": "South Carolina RR08-11",
+      "title": "Revenue Ruling \u00b7 Withdrawals from Inventory for Use in South Carolina or Outside of South Carolina",
+      "href": "https://www.dor.sc.gov/sales-use-tax-withdrawals-inventory-use-south-carolina-or-outside-south-carolina"
+    },
+    {
+      "cite": "South Carolina PLR07-6",
+      "title": "Private Letter Ruling \u00b7 Compliance and Filing Service for Forms filed with the Securities and Exchange Commission",
+      "href": "https://www.dor.sc.gov/sales-use-tax-compliance-and-filing-service-forms-filed-securities-and-exchange-commission"
+    },
+    {
+      "cite": "South Carolina PLR07-3",
+      "title": "Private Letter Ruling \u00b7 Equipment and Services for Enhancement of wireless Communications within Buildings",
+      "href": "https://www.dor.sc.gov/sales-use-tax-equipment-and-services-enhancement-wireless-communications-within-buildings"
+    },
+    {
+      "cite": "South Carolina RR07-4",
+      "title": "Revenue Ruling \u00b7 Exemption for Unprepared Foods",
+      "href": "https://www.dor.sc.gov/sales-use-tax-exemption-unprepared-foods"
+    },
+    {
+      "cite": "South Carolina TRR07-4",
+      "title": "Temporary Revenue Ruling \u00b7 Exemption for Unprepared Foods",
+      "href": "https://www.dor.sc.gov/sales-use-tax-exemption-unprepared-foods-0"
+    },
+    {
+      "cite": "South Carolina PLR07-5",
+      "title": "Private Letter Ruling \u00b7 Federal National Mortgage Association",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-national-mortgage-association"
+    },
+    {
+      "cite": "South Carolina PLR07-2",
+      "title": "Private Letter Ruling \u00b7 Healthcare Communications Network",
+      "href": "https://www.dor.sc.gov/sales-use-tax-healthcare-communications-network"
+    },
+    {
+      "cite": "South Carolina RR07-1",
+      "title": "Revenue Ruling \u00b7 Job Tax Credit - County Rankings for 2007; Fee in Lieu of Property Taxes - Reduced Investment County; Tax Moratorium - Qualifying Counties",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-job-tax-credit-county-rankings-2007-fee-lieu-property-taxes-reduced-investment-county-tax-moratorium-0"
+    },
+    {
+      "cite": "South Carolina RR07-2",
+      "title": "Revenue Ruling \u00b7 Job Tax Credit - New Small Business Provisions",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-new-small-business-provisions-0"
+    },
+    {
+      "cite": "South Carolina TRR07-2",
+      "title": "Temporary Revenue Ruling \u00b7 Job Tax Credit - New Small Business Provisions",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-new-small-business-provisions-1"
+    },
+    {
+      "cite": "South Carolina RR07-3",
+      "title": "Revenue Ruling \u00b7 Nexus Creating Activities for Sales and Use Taxes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-nexus-creating-activities-sales-and-use-taxes"
+    },
+    {
+      "cite": "South Carolina PLR07-7",
+      "title": "Private Letter Ruling \u00b7 Sales of Photograph Prints via an Internet Website",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-photograph-prints-internet-website"
+    },
+    {
+      "cite": "South Carolina PLR07-4",
+      "title": "Private Letter Ruling \u00b7 Signs - Sales of Tangible Personal Property or Improvements to Realty",
+      "href": "https://www.dor.sc.gov/sales-use-tax-signs-sales-tangible-personal-property-or-improvements-realty"
+    },
+    {
+      "cite": "South Carolina PLR07-1",
+      "title": "Private Letter Ruling \u00b7 Surcharge on Short-Term Vehicle Rental Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-surcharge-short-term-vehicle-rental-contracts"
+    },
+    {
+      "cite": "South Carolina RR07-5",
+      "title": "Revenue Ruling \u00b7 Use Tax Information for Individuals, Businesses and Nonprofits",
+      "href": "https://www.dor.sc.gov/sales-use-tax-use-tax-information-individuals-businesses-and-nonprofits-0"
+    },
+    {
+      "cite": "South Carolina RR06-6",
+      "title": "Revenue Ruling \u00b7 Barges - Maximum Tax Provisions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-barges-maximum-tax-provisions"
+    },
+    {
+      "cite": "South Carolina RR06-8",
+      "title": "Revenue Ruling \u00b7 Communications - Ways or Means for the Transmission of the Voice or Messages and Other Communications",
+      "href": "https://www.dor.sc.gov/sales-use-tax-communications-ways-or-means-transmission-voice-or-messages-and-other-communications-0"
+    },
+    {
+      "cite": "South Carolina RR06-11",
+      "title": "Revenue Ruling \u00b7 Conveyance of Mineral Rights",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-conveyance-mineral-rights"
+    },
+    {
+      "cite": "South Carolina RR06-4",
+      "title": "Revenue Ruling \u00b7 Credit for Taxes Paid in Other States",
+      "href": "https://www.dor.sc.gov/sales-use-tax-credit-taxes-paid-other-states-3"
+    },
+    {
+      "cite": "South Carolina PLR06-1",
+      "title": "Private Letter Ruling \u00b7 DVD Movie Rentals Through Vending Machines",
+      "href": "https://www.dor.sc.gov/sales-use-tax-dvd-movie-rentals-through-vending-machines"
+    },
+    {
+      "cite": "South Carolina PLR06-2",
+      "title": "Private Letter Ruling \u00b7 Early Termination Fee - Taxable Communication Services",
+      "href": "https://www.dor.sc.gov/sales-use-tax-early-termination-fee-taxable-communication-services"
+    },
+    {
+      "cite": "South Carolina RR06-10",
+      "title": "Revenue Ruling \u00b7 Easements and Right of Ways",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-easements-and-right-ways"
+    },
+    {
+      "cite": "South Carolina RR06-1",
+      "title": "Revenue Ruling \u00b7 Nonresident Military Servicemembers",
+      "href": "https://www.dor.sc.gov/income-tax-nonresident-military-servicemembers"
+    },
+    {
+      "cite": "South Carolina RR06-7",
+      "title": "Revenue Ruling \u00b7 One-Time Thanksgiving Sales Tax Holiday",
+      "href": "https://www.dor.sc.gov/sales-use-tax-one-time-thanksgiving-sales-tax-holiday"
+    },
+    {
+      "cite": "South Carolina RR06-3",
+      "title": "Revenue Ruling \u00b7 Racing Gasoline",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-racing-gasoline"
+    },
+    {
+      "cite": "South Carolina RR06-5",
+      "title": "Revenue Ruling \u00b7 Sales Tax Rate Reduction for Unprepared Foods",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-tax-rate-reduction-unprepared-foods"
+    },
+    {
+      "cite": "South Carolina TRR06-5",
+      "title": "Temporary Revenue Ruling \u00b7 Sales Tax Rate Reduction for Unprepared Foods",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-tax-rate-reduction-unprepared-foods-0"
+    },
+    {
+      "cite": "South Carolina RR06-12",
+      "title": "Revenue Ruling \u00b7 Tax Rate Reduction on Active Trade or Business Income from a Pass Through Business",
+      "href": "https://www.dor.sc.gov/income-tax-tax-rate-reduction-active-trade-or-business-income-pass-through-business"
+    },
+    {
+      "cite": "South Carolina PLR06-3",
+      "title": "Private Letter Ruling \u00b7 Textile Communities Revitalization Act",
+      "href": "https://www.dor.sc.gov/income-tax-textile-communities-revitalization-act"
+    },
+    {
+      "cite": "South Carolina RR06-2",
+      "title": "Revenue Ruling \u00b7 Use Tax Information for Individuals, Businesses and Nonprofits",
+      "href": "https://www.dor.sc.gov/sales-use-tax-use-tax-information-individuals-businesses-and-nonprofits"
+    },
+    {
+      "cite": "South Carolina RR06-9",
+      "title": "Revenue Ruling \u00b7 Warranty, Maintenance and Similar Service Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-warranty-maintenance-and-similar-service-contracts-0"
+    },
+    {
+      "cite": "South Carolina RR05-3",
+      "title": "Revenue Ruling \u00b7 Aviation Gasoline",
+      "href": "https://www.dor.sc.gov/sales-use-tax-aviation-gasoline-0"
+    },
+    {
+      "cite": "South Carolina PLR05-2",
+      "title": "Private Letter Ruling \u00b7 Charges for Copies of Medical Records",
+      "href": "https://www.dor.sc.gov/sales-use-tax-charges-copies-medical-records"
+    },
+    {
+      "cite": "South Carolina PLR05-4",
+      "title": "Private Letter Ruling \u00b7 Communications Towers and Associated Buildings",
+      "href": "https://www.dor.sc.gov/sales-use-tax-communications-towers-and-associated-buildings"
+    },
+    {
+      "cite": "South Carolina RR05-8",
+      "title": "Revenue Ruling \u00b7 Deeds to Obtain Construction Loans",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-deeds-obtain-construction-loans"
+    },
+    {
+      "cite": "South Carolina RR05-2",
+      "title": "Revenue Ruling \u00b7 Federal Income Tax Conformity and Exceptions",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-federal-income-tax-conformity-and-exceptions"
+    },
+    {
+      "cite": "South Carolina TRR05-2",
+      "title": "Temporary Revenue Ruling \u00b7 Federal Income Tax Conformity and Exceptions",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-federal-income-tax-conformity-and-exceptions-0"
+    },
+    {
+      "cite": "South Carolina RR05-15",
+      "title": "Revenue Ruling \u00b7 FEMA and Red Cross Financial Assistance - Hurricane Katrina",
+      "href": "https://www.dor.sc.gov/sales-use-tax-fema-and-red-cross-financial-assistance-hurricane-katrina"
+    },
+    {
+      "cite": "South Carolina TRR05-15",
+      "title": "Temporary Revenue Ruling \u00b7 FEMA and Red Cross Financial Assistance - Hurricane Katrina",
+      "href": "https://www.dor.sc.gov/sales-use-tax-fema-and-red-cross-financial-assistance-hurricane-katrina-0"
+    },
+    {
+      "cite": "South Carolina RR05-1",
+      "title": "Revenue Ruling \u00b7 Fuel Surcharges by Retailers Delivering Tangible Personal Property",
+      "href": "https://www.dor.sc.gov/sales-use-tax-fuel-surcharges-retailers-delivering-tangible-personal-property"
+    },
+    {
+      "cite": "South Carolina RR05-6",
+      "title": "Revenue Ruling \u00b7 Hurricane Insurance - Additional Guest Charge",
+      "href": "https://www.dor.sc.gov/sales-use-tax-hurricane-insurance-additional-guest-charge"
+    },
+    {
+      "cite": "South Carolina RR05-5",
+      "title": "Revenue Ruling \u00b7 Job Tax Credit - Meaning of \"Expansion\"",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-meaning-expansion"
+    },
+    {
+      "cite": "South Carolina RR05-17",
+      "title": "Revenue Ruling \u00b7 Job Tax Credit - New Small Business Provisions",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-new-small-business-provisions"
+    },
+    {
+      "cite": "South Carolina RR05-11",
+      "title": "Revenue Ruling \u00b7 License Fee Based on Capital Stock and Paid-In or Capital Surplus - Computation and Proration Questions",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-license-fee-license-fee-based-capital-stock-and-paid-or-capital-surplus-computation-and-proration-questions"
+    },
+    {
+      "cite": "South Carolina RR05-16",
+      "title": "Revenue Ruling \u00b7 Local Sales and Use Taxes Remittance of the Tax by Retailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-local-sales-and-use-taxes-remittance-tax-retailers"
+    },
+    {
+      "cite": "South Carolina PLR05-3",
+      "title": "Private Letter Ruling \u00b7 Medical Device Implant",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medical-device-implant-0"
+    },
+    {
+      "cite": "South Carolina RR05-7",
+      "title": "Revenue Ruling \u00b7 Motion Picture Production Company Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-motion-picture-production-company-exemption"
+    },
+    {
+      "cite": "South Carolina RR05-14",
+      "title": "Revenue Ruling \u00b7 Places of Amusement",
+      "href": "https://www.dor.sc.gov/admissions-tax-places-amusement"
+    },
+    {
+      "cite": "South Carolina RR05-18",
+      "title": "Revenue Ruling \u00b7 Property Tax Exemption for Nonprofit Hospitals",
+      "href": "https://www.dor.sc.gov/property-tax-property-tax-exemption-nonprofit-hospitals"
+    },
+    {
+      "cite": "South Carolina PLR05-1",
+      "title": "Private Letter Ruling \u00b7 Radioactive Implant Seeds",
+      "href": "https://www.dor.sc.gov/sales-use-tax-radioactive-implant-seeds"
+    },
+    {
+      "cite": "South Carolina RR05-20",
+      "title": "Revenue Ruling \u00b7 Reporting and Taxation of Property Owned by a Manufacturer",
+      "href": "https://www.dor.sc.gov/property-tax-reporting-and-taxation-property-owned-manufacturer"
+    },
+    {
+      "cite": "South Carolina RR05-19",
+      "title": "Revenue Ruling \u00b7 Sale of Alcoholic Liquors, Beer and Wine for On-Premise Consumption on New Year's Day 2006",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-sale-alcoholic-liquors-beer-and-wine-premise-consumption-new-years-day-2006"
+    },
+    {
+      "cite": "South Carolina RR05-9",
+      "title": "Revenue Ruling \u00b7 Sales Tax Holiday",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-tax-holiday-6"
+    },
+    {
+      "cite": "South Carolina RR05-10",
+      "title": "Revenue Ruling \u00b7 Sales Tax Holiday",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-tax-holiday-7"
+    },
+    {
+      "cite": "South Carolina RR05-13",
+      "title": "Revenue Ruling \u00b7 Software and Software Maintenance Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-software-and-software-maintenance-contracts"
+    },
+    {
+      "cite": "South Carolina PLR05-5",
+      "title": "Private Letter Ruling \u00b7 Supplies Purchased for Management of Real Estate",
+      "href": "https://www.dor.sc.gov/sales-use-tax-supplies-purchased-management-real-estate"
+    },
+    {
+      "cite": "South Carolina RR05-4",
+      "title": "Revenue Ruling \u00b7 Trailers, Semitrailers and Pole Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-trailers-semitrailers-and-pole-trailers"
+    },
+    {
+      "cite": "South Carolina RR05-12",
+      "title": "Revenue Ruling \u00b7 Warranty, Maintenance and Similar Service Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-warranty-maintenance-and-similar-service-contracts"
+    },
+    {
+      "cite": "South Carolina RR04-2",
+      "title": "Revenue Ruling \u00b7 \"Transferor Affidavit\" Exception to Code Section 12-54-124 Upon the Transfer of Certain Assets",
+      "href": "https://www.dor.sc.gov/administrative-process-procedures-transferor-affidavit-exception-code-section-12-54-124-upon-transfer-certain-assets"
+    },
+    {
+      "cite": "South Carolina RR04-1",
+      "title": "Revenue Ruling \u00b7 Accommodations Furnished to Government Employees, Foreign Diplomats, and Nonprofit Organization Employees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-accommodations-furnished-government-employees-foreign-diplomats-and-nonprofit-organization-employees"
+    },
+    {
+      "cite": "South Carolina RR04-11",
+      "title": "Revenue Ruling \u00b7 Bingo Ticket Standards",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-ticket-standards"
+    },
+    {
+      "cite": "South Carolina RR04-5",
+      "title": "Revenue Ruling \u00b7 Charges for Copies of Medical Records by a Medical Professional",
+      "href": "https://www.dor.sc.gov/sales-use-tax-charges-copies-medical-records-medical-professional"
+    },
+    {
+      "cite": "South Carolina RR04-13",
+      "title": "Revenue Ruling \u00b7 Collection of Casual Excise Tax and Use Tax on Sale of a Motor Vehicle, Motorcycle, Boat, Motor, Airplane, Trailer, Etc.",
+      "href": "https://www.dor.sc.gov/sales-use-tax-casual-excise-tax-collection-casual-excise-tax-and-use-tax-sale-motor-vehicle-motorcycle-boat-motor-airplane-trailer"
+    },
+    {
+      "cite": "South Carolina RR04-15",
+      "title": "Revenue Ruling \u00b7 Communications - Ways or Means for the Transmission of the Voice or Messages and Other Communications",
+      "href": "https://www.dor.sc.gov/sales-use-tax-communications-ways-or-means-transmission-voice-or-messages-and-other-communications"
+    },
+    {
+      "cite": "South Carolina PLR04-2",
+      "title": "Private Letter Ruling \u00b7 Construction Debris Disposal Service",
+      "href": "https://www.dor.sc.gov/sales-use-tax-construction-debris-disposal-service"
+    },
+    {
+      "cite": "South Carolina RR04-3",
+      "title": "Revenue Ruling \u00b7 Contingent Fees in State Tax Matters",
+      "href": "https://www.dor.sc.gov/administrative-process-procedures-contingent-fees-state-tax-matters"
+    },
+    {
+      "cite": "South Carolina PLR04-1",
+      "title": "Private Letter Ruling \u00b7 Data Processing",
+      "href": "https://www.dor.sc.gov/sales-use-tax-data-processing"
+    },
+    {
+      "cite": "South Carolina RR04-6",
+      "title": "Revenue Ruling \u00b7 Deed Recording Fee",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-deed-recording-fee"
+    },
+    {
+      "cite": "South Carolina RR04-9",
+      "title": "Revenue Ruling \u00b7 Federal Government Construction Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-government-construction-contracts"
+    },
+    {
+      "cite": "South Carolina RR04-8",
+      "title": "Revenue Ruling \u00b7 Fundraising Events by Nonprofit Organizations",
+      "href": "https://www.dor.sc.gov/sales-use-tax-admissions-tax-alcohol-beverage-licensing-abl-fundraising-events-nonprofit-organizations-1"
+    },
+    {
+      "cite": "South Carolina PLR04-5",
+      "title": "Private Letter Ruling \u00b7 Medical Device Implant",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medical-device-implant"
+    },
+    {
+      "cite": "South Carolina PLR04-6",
+      "title": "Private Letter Ruling \u00b7 Personal Property Leased to the Federal Government",
+      "href": "https://www.dor.sc.gov/property-tax-personal-property-leased-federal-government"
+    },
+    {
+      "cite": "South Carolina RR04-10",
+      "title": "Revenue Ruling \u00b7 Personal Watercrafts - Maximum Tax Provisions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-personal-watercrafts-maximum-tax-provisions"
+    },
+    {
+      "cite": "South Carolina RR04-14",
+      "title": "Revenue Ruling \u00b7 Property Exemption Under Code Section 12-37-220(C)",
+      "href": "https://www.dor.sc.gov/property-tax-property-exemption-under-code-section-12-37-220c"
+    },
+    {
+      "cite": "South Carolina PLR04-4",
+      "title": "Private Letter Ruling \u00b7 Rental Fee for LP Gas Storage Tank",
+      "href": "https://www.dor.sc.gov/sales-use-tax-rental-fee-lp-gas-storage-tank"
+    },
+    {
+      "cite": "South Carolina RR04-7",
+      "title": "Revenue Ruling \u00b7 Sales and Use Tax Machine Exemption; Springs Industries, Inc. V. SCDOR (99-ALJ-17-0153-CC); Anonymous Taxpayer v. SCDOR (02-ALJ-17-0350-CC)",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-and-use-tax-machine-exemption-springs-industries-inc-v-scdor-99-alj-17-0153-cc-anonymous"
+    },
+    {
+      "cite": "South Carolina PLR04-3",
+      "title": "Private Letter Ruling \u00b7 Sales Between Related Entities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-between-related-entities"
+    },
+    {
+      "cite": "South Carolina RR04-4",
+      "title": "Revenue Ruling \u00b7 Telephone Calling Cards",
+      "href": "https://www.dor.sc.gov/sales-use-tax-telephone-calling-cards-0"
+    },
+    {
+      "cite": "South Carolina RR04-12",
+      "title": "Revenue Ruling \u00b7 Vacation Homes, Second Homes, and Places of Abode",
+      "href": "https://www.dor.sc.gov/accommodations-tax-vacation-homes-second-homes-and-places-abode"
+    },
+    {
+      "cite": "South Carolina PLR03-1",
+      "title": "Private Letter Ruling \u00b7 Allocation and Apportionment of ABC Licensee Income",
+      "href": "https://www.dor.sc.gov/income-tax-allocation-and-apportionment-abc-licensee-income"
+    },
+    {
+      "cite": "South Carolina PLR03-2",
+      "title": "Private Letter Ruling \u00b7 DSL Internet Access",
+      "href": "https://www.dor.sc.gov/sales-use-tax-dsl-internet-access"
+    },
+    {
+      "cite": "South Carolina RR03-3",
+      "title": "Revenue Ruling \u00b7 Gifts - Multistate Transactions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-gifts-multistate-transactions"
+    },
+    {
+      "cite": "South Carolina RR03-2",
+      "title": "Revenue Ruling \u00b7 Medicines, Prosthetic Devices and Other Medical Supplies",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medicines-prosthetic-devices-and-other-medical-supplies"
+    },
+    {
+      "cite": "South Carolina RR03-4",
+      "title": "Revenue Ruling \u00b7 Nexus Creating Activities for Income Taxes",
+      "href": "https://www.dor.sc.gov/income-tax-nexus-creating-activities-income-taxes"
+    },
+    {
+      "cite": "South Carolina RR03-5",
+      "title": "Revenue Ruling \u00b7 Software",
+      "href": "https://www.dor.sc.gov/sales-use-tax-software"
+    },
+    {
+      "cite": "South Carolina RR03-6",
+      "title": "Revenue Ruling \u00b7 State Tax Add-Backs",
+      "href": "https://www.dor.sc.gov/income-tax-state-tax-add-backs"
+    },
+    {
+      "cite": "South Carolina RR03-1",
+      "title": "Revenue Ruling \u00b7 Universal Service Fund Surcharge",
+      "href": "https://www.dor.sc.gov/sales-use-tax-universal-service-fund-surcharge"
+    },
+    {
+      "cite": "South Carolina PLR03-3",
+      "title": "Private Letter Ruling \u00b7 XYZ Ventilator System",
+      "href": "https://www.dor.sc.gov/sales-use-tax-xyz-ventilator-system"
+    },
+    {
+      "cite": "South Carolina PRO02-2",
+      "title": "Private Revenue Opinion \u00b7 Lease of Motor Vehicles in IRC Section 1031 Transactions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-lease-motor-vehicles-irc-section-1031-transactions"
+    },
+    {
+      "cite": "South Carolina PRO02-1",
+      "title": "Private Revenue Opinion \u00b7 Liability for Beer Excise Tax",
+      "href": "https://www.dor.sc.gov/alcohol-taxes-liability-beer-excise-tax"
+    },
+    {
+      "cite": "South Carolina PRO02-4",
+      "title": "Private Revenue Opinion \u00b7 Liability for Personal Property Taxes for Leased Property",
+      "href": "https://www.dor.sc.gov/property-tax-liability-personal-property-taxes-leased-property"
+    },
+    {
+      "cite": "South Carolina PRO02-5",
+      "title": "Private Revenue Opinion \u00b7 Medicines Sold by the South Carolina Department of Health and Environmental Control Central Pharmacy",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medicines-sold-south-carolina-department-health-and-environmental-control-central-pharmacy"
+    },
+    {
+      "cite": "South Carolina PRO02-3",
+      "title": "Private Revenue Opinion \u00b7 Textbooks - Software",
+      "href": "https://www.dor.sc.gov/sales-use-tax-textbooks-software"
+    },
+    {
+      "cite": "South Carolina PRO01-2",
+      "title": "Private Revenue Opinion \u00b7 Communications Grids",
+      "href": "https://www.dor.sc.gov/sales-use-tax-communications-grids"
+    },
+    {
+      "cite": "South Carolina PRO01-4",
+      "title": "Private Revenue Opinion \u00b7 Enteral Nutrition Formulas, Total Parenteral Nutritional Solutions, and Disposable Medical Supplies",
+      "href": "https://www.dor.sc.gov/sales-use-tax-enteral-nutrition-formulas-total-parenteral-nutritional-solutions-and-disposable-medical-supplies"
+    },
+    {
+      "cite": "South Carolina PRO01-5",
+      "title": "Private Revenue Opinion \u00b7 Events Conducted by a Nonprofit Religious Foundation",
+      "href": "https://www.dor.sc.gov/sales-use-tax-events-conducted-nonprofit-religious-foundation"
+    },
+    {
+      "cite": "South Carolina PRO01-3",
+      "title": "Private Revenue Opinion \u00b7 Hotel Restaurant Tour Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-hotel-restaurant-tour-program"
+    },
+    {
+      "cite": "South Carolina PRO01-1",
+      "title": "Private Revenue Opinion \u00b7 Use of the Headquarters Credit Against License Tax",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-license-fee-use-headquarters-credit-against-license-tax"
+    },
+    {
+      "cite": "South Carolina PRO00-5",
+      "title": "Private Revenue Opinion \u00b7 Communications Towers & Buildings",
+      "href": "https://www.dor.sc.gov/sales-use-tax-communications-towers-buildings"
+    },
+    {
+      "cite": "South Carolina PRO00-1",
+      "title": "Private Revenue Opinion \u00b7 Federal Facility",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-facility"
+    },
+    {
+      "cite": "South Carolina PRO00-2",
+      "title": "Private Revenue Opinion \u00b7 Mesh Bags Used in Shipping and Manufacturing",
+      "href": "https://www.dor.sc.gov/sales-use-tax-mesh-bags-used-shipping-and-manufacturing"
+    },
+    {
+      "cite": "South Carolina PRO00-3",
+      "title": "Private Revenue Opinion \u00b7 Proficiency Testing Materials",
+      "href": "https://www.dor.sc.gov/sales-use-tax-proficiency-testing-materials"
+    },
+    {
+      "cite": "South Carolina PRO00-4",
+      "title": "Private Revenue Opinion \u00b7 Transfer of Property to a Single Member Limited Liability Company",
+      "href": "https://www.dor.sc.gov/sales-use-tax-transfer-property-single-member-limited-liability-company"
+    },
+    {
+      "cite": "South Carolina RR99-13",
+      "title": "Revenue Ruling \u00b7 Bingo Paper Standards",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-paper-standards-0"
+    },
+    {
+      "cite": "South Carolina RR99-4",
+      "title": "Revenue Ruling \u00b7 College Tuition Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-college-tuition-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR99-1",
+      "title": "Revenue Ruling \u00b7 Computation of the Index of Taxpaying Ability",
+      "href": "https://www.dor.sc.gov/property-tax-computation-index-taxpaying-ability"
+    },
+    {
+      "cite": "South Carolina RR99-9",
+      "title": "Revenue Ruling \u00b7 Coupons and Discount Cards",
+      "href": "https://www.dor.sc.gov/sales-use-tax-coupons-and-discount-cards-0"
+    },
+    {
+      "cite": "South Carolina RR99-6",
+      "title": "Revenue Ruling \u00b7 Credit Against License Tax for Utilities",
+      "href": "https://www.dor.sc.gov/income-tax-credit-against-license-tax-utilities"
+    },
+    {
+      "cite": "South Carolina RR99-12",
+      "title": "Revenue Ruling \u00b7 Credit Card payment of Delinquent Taxes",
+      "href": "https://www.dor.sc.gov/administrative-refunds-payments-credit-card-payment-delinquent-taxes"
+    },
+    {
+      "cite": "South Carolina PLR99-4",
+      "title": "Private Letter Ruling \u00b7 Discount Card Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-discount-card-program"
+    },
+    {
+      "cite": "South Carolina PLR99-3",
+      "title": "Private Letter Ruling \u00b7 Ethylene Concentrate and Generator Used to Ripen Produce at Warehouse",
+      "href": "https://www.dor.sc.gov/sales-use-tax-ethylene-concentrate-and-generator-used-ripen-produce-warehouse"
+    },
+    {
+      "cite": "South Carolina RR99-3",
+      "title": "Revenue Ruling \u00b7 Farm Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-farm-trailers"
+    },
+    {
+      "cite": "South Carolina RR99-8",
+      "title": "Revenue Ruling \u00b7 Federal Employee Credit Cards",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-employee-credit-cards"
+    },
+    {
+      "cite": "South Carolina RR99-2",
+      "title": "Revenue Ruling \u00b7 I.R.C. Section 1031 Tax Deferred Exchanges",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-irc-section-1031-tax-deferred-exchanges"
+    },
+    {
+      "cite": "South Carolina RR99-5",
+      "title": "Revenue Ruling \u00b7 Job Tax Credit Computation",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-computation"
+    },
+    {
+      "cite": "South Carolina RR99-7",
+      "title": "Revenue Ruling \u00b7 Maximum Payout - Inducements",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-maximum-payout-inducements-0"
+    },
+    {
+      "cite": "South Carolina RR99-10",
+      "title": "Revenue Ruling \u00b7 Motion Picture Project Credits",
+      "href": "https://www.dor.sc.gov/income-tax-motion-picture-project-credits"
+    },
+    {
+      "cite": "South Carolina RR99-11",
+      "title": "Revenue Ruling \u00b7 Per Capita Income Figures for State and Counties",
+      "href": "https://www.dor.sc.gov/income-tax-capita-income-figures-state-and-counties-0"
+    },
+    {
+      "cite": "South Carolina PLR99-1",
+      "title": "Private Letter Ruling \u00b7 Sale of Feed for Horses",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sale-feed-horses"
+    },
+    {
+      "cite": "South Carolina PLR99-2",
+      "title": "Private Letter Ruling \u00b7 Sales & Lease v. Financing Agreement",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-lease-v-financing-agreement"
+    },
+    {
+      "cite": "South Carolina PLR98-3",
+      "title": "Private Letter Ruling \u00b7 ABC Card Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-abc-card-program"
+    },
+    {
+      "cite": "South Carolina RR98-12",
+      "title": "Revenue Ruling \u00b7 Ad Valorem Taxation of Boats",
+      "href": "https://www.dor.sc.gov/property-tax-ad-valorem-taxation-boats"
+    },
+    {
+      "cite": "South Carolina RR98-2",
+      "title": "Revenue Ruling \u00b7 Banks - Real Versus Personal Property",
+      "href": "https://www.dor.sc.gov/property-tax-banks-real-versus-personal-property"
+    },
+    {
+      "cite": "South Carolina RR98-18",
+      "title": "Revenue Ruling \u00b7 Catawba Indian Claims Settlement Act",
+      "href": "https://www.dor.sc.gov/sales-use-tax-catawba-indian-claims-settlement-act"
+    },
+    {
+      "cite": "South Carolina RR98-21",
+      "title": "Revenue Ruling \u00b7 Charges by Hotels and Motels",
+      "href": "https://www.dor.sc.gov/sales-use-tax-accommodations-tax-charges-hotels-and-motels-0"
+    },
+    {
+      "cite": "South Carolina RR98-19",
+      "title": "Revenue Ruling \u00b7 Computer Aided Designs Systems and Computer Aided Manufacturing Systems",
+      "href": "https://www.dor.sc.gov/sales-use-tax-computer-aided-designs-systems-and-computer-aided-manufacturing-systems"
+    },
+    {
+      "cite": "South Carolina RR98-15",
+      "title": "Revenue Ruling \u00b7 Coupons and Discount Cards",
+      "href": "https://www.dor.sc.gov/sales-use-tax-coupons-and-discount-cards"
+    },
+    {
+      "cite": "South Carolina RR98-14",
+      "title": "Revenue Ruling \u00b7 Deductibility of Commissions Paid to Foreign Sales Corporations",
+      "href": "https://www.dor.sc.gov/income-tax-deductibility-commissions-paid-foreign-sales-corporations"
+    },
+    {
+      "cite": "South Carolina RR98-1",
+      "title": "Revenue Ruling \u00b7 Definition of \"Immediate Family Member\"",
+      "href": "https://www.dor.sc.gov/property-tax-definition-immediate-family-member"
+    },
+    {
+      "cite": "South Carolina RR98-8",
+      "title": "Revenue Ruling \u00b7 Drop Shipments",
+      "href": "https://www.dor.sc.gov/sales-use-tax-drop-shipments"
+    },
+    {
+      "cite": "South Carolina RR98-5",
+      "title": "Revenue Ruling \u00b7 Exchange Agreements - Membership Accommodations and Timeshare Resorts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-exchange-agreements-membership-accommodations-and-timeshare-resorts-0"
+    },
+    {
+      "cite": "South Carolina RR98-16",
+      "title": "Revenue Ruling \u00b7 Fundraising Events by Nonprofit Organizations",
+      "href": "https://www.dor.sc.gov/sales-use-tax-admissions-tax-alcohol-beverage-licensing-abl-fundraising-events-nonprofit-organizations"
+    },
+    {
+      "cite": "South Carolina PLR98-1",
+      "title": "Private Letter Ruling \u00b7 Imaging Service",
+      "href": "https://www.dor.sc.gov/sales-use-tax-imaging-service"
+    },
+    {
+      "cite": "South Carolina RR98-10",
+      "title": "Revenue Ruling \u00b7 Job Tax Credit and the Corporate Office Facility Definition",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-job-tax-credit-and-corporate-office-facility-definition"
+    },
+    {
+      "cite": "South Carolina RR98-20",
+      "title": "Revenue Ruling \u00b7 Kerosene",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-kerosene"
+    },
+    {
+      "cite": "South Carolina RR98-4",
+      "title": "Revenue Ruling \u00b7 Late Fees Charged by Utilities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-late-fees-charged-utilities"
+    },
+    {
+      "cite": "South Carolina RR98-9",
+      "title": "Revenue Ruling \u00b7 Medical Products - Artery Disease",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medical-products-artery-disease"
+    },
+    {
+      "cite": "South Carolina RR98-3",
+      "title": "Revenue Ruling \u00b7 Nexus",
+      "href": "https://www.dor.sc.gov/income-tax-nexus-0"
+    },
+    {
+      "cite": "South Carolina PLR98-4",
+      "title": "Private Letter Ruling \u00b7 Propane Gas - Residential Use",
+      "href": "https://www.dor.sc.gov/sales-use-tax-propane-gas-residential-use"
+    },
+    {
+      "cite": "South Carolina RR98-23",
+      "title": "Revenue Ruling \u00b7 Protesting a Beer and Wine Permit or an Alcoholic Liquors License (Minibottle or Retail Liquor Store License)",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-protesting-beer-and-wine-permit-or-alcoholic-liquors-license-minibottle-or-retail-liquor-store"
+    },
+    {
+      "cite": "South Carolina PLR98-2",
+      "title": "Private Letter Ruling \u00b7 Qualification for the Economic Impact Zone Investment Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-qualification-economic-impact-zone-investment-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR98-17",
+      "title": "Revenue Ruling \u00b7 Reimbursement of the Additional Depreciation Allowed for Manufacturer's Machinery and Equipment",
+      "href": "https://www.dor.sc.gov/property-tax-reimbursement-additional-depreciation-allowed-manufacturers-machinery-and-equipment"
+    },
+    {
+      "cite": "South Carolina RR98-13",
+      "title": "Revenue Ruling \u00b7 Sale of Bingo Cards For More or Less Than Face Value",
+      "href": "https://www.dor.sc.gov/bingo-tax-sale-bingo-cards-more-or-less-face-value"
+    },
+    {
+      "cite": "South Carolina RR98-11",
+      "title": "Revenue Ruling \u00b7 Single Member Limited Liability Company",
+      "href": "https://www.dor.sc.gov/income-tax-single-member-limited-liability-company"
+    },
+    {
+      "cite": "South Carolina RR98-7",
+      "title": "Revenue Ruling \u00b7 Withholding of Distributions to \"Fictitious Charity\"",
+      "href": "https://www.dor.sc.gov/bingo-tax-withholding-distributions-fictitious-charity"
+    },
+    {
+      "cite": "South Carolina RR97-19",
+      "title": "Revenue Ruling \u00b7 Allocation of Revenue Received from a Property Located in a Joint County Industrial or Business Park",
+      "href": "https://www.dor.sc.gov/property-tax-allocation-revenue-received-property-located-joint-county-industrial-or-business-park"
+    },
+    {
+      "cite": "South Carolina RR97-8",
+      "title": "Revenue Ruling \u00b7 Availability of Economic Impact Zone Investment Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-availability-economic-impact-zone-investment-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR97-12",
+      "title": "Revenue Ruling \u00b7 Aviation Gasoline",
+      "href": "https://www.dor.sc.gov/sales-use-tax-aviation-gasoline"
+    },
+    {
+      "cite": "South Carolina RR97-16",
+      "title": "Revenue Ruling \u00b7 Bingo Card Charges Distributed to the Nonprofit Organization",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-card-charges-distributed-nonprofit-organization"
+    },
+    {
+      "cite": "South Carolina RR97-17",
+      "title": "Revenue Ruling \u00b7 Bingo Funds; Delivery to the Nonprofit's Representative Member; Deposit into the Bingo Account",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-funds-delivery-nonprofits-representative-member-deposit-bingo-account"
+    },
+    {
+      "cite": "South Carolina RR97-11",
+      "title": "Revenue Ruling \u00b7 Bingo Paper Standards",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-paper-standards"
+    },
+    {
+      "cite": "South Carolina RR97-3",
+      "title": "Revenue Ruling \u00b7 Charges by Hotels and Motels",
+      "href": "https://www.dor.sc.gov/sales-use-tax-accommodations-tax-charges-hotels-and-motels"
+    },
+    {
+      "cite": "South Carolina RR97-10",
+      "title": "Revenue Ruling \u00b7 City and County Cable Franchise Fees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-city-and-county-cable-franchise-fees"
+    },
+    {
+      "cite": "South Carolina RR97-9",
+      "title": "Revenue Ruling \u00b7 Domicile and Organizational Requirements",
+      "href": "https://www.dor.sc.gov/bingo-tax-domicile-and-organizational-requirements-0"
+    },
+    {
+      "cite": "South Carolina RR97-22",
+      "title": "Revenue Ruling \u00b7 Exchange Agreements - Membership Accommodations and Timeshare Resorts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-exchange-agreements-membership-accommodations-and-timeshare-resorts"
+    },
+    {
+      "cite": "South Carolina PLR97-1",
+      "title": "Private Letter Ruling \u00b7 Golf Carts with Electric Battery Chargers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-golf-carts-electric-battery-chargers"
+    },
+    {
+      "cite": "South Carolina RR97-20",
+      "title": "Revenue Ruling \u00b7 Local Fees and Taxes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-local-fees-and-taxes"
+    },
+    {
+      "cite": "South Carolina RR97-13",
+      "title": "Revenue Ruling \u00b7 Local Taxes - \"Paid Admissions\"",
+      "href": "https://www.dor.sc.gov/admissions-tax-local-taxes-paid-admissions"
+    },
+    {
+      "cite": "South Carolina RR97-6",
+      "title": "Revenue Ruling \u00b7 Material Handling Systems and Material Handling Equipment",
+      "href": "https://www.dor.sc.gov/sales-use-tax-material-handling-systems-and-material-handling-equipment"
+    },
+    {
+      "cite": "South Carolina RR97-21",
+      "title": "Revenue Ruling \u00b7 Mobile Property and Fee-in-Lieu of Property Taxes",
+      "href": "https://www.dor.sc.gov/property-tax-mobile-property-and-fee-lieu-property-taxes"
+    },
+    {
+      "cite": "South Carolina RR97-7",
+      "title": "Revenue Ruling \u00b7 Personal Service Income of Resident Partners",
+      "href": "https://www.dor.sc.gov/income-tax-personal-service-income-resident-partners"
+    },
+    {
+      "cite": "South Carolina RR97-15",
+      "title": "Revenue Ruling \u00b7 Public Law 86-272 and South Carolina Income Tax",
+      "href": "https://www.dor.sc.gov/income-tax-public-law-86-272-and-south-carolina-income-tax"
+    },
+    {
+      "cite": "South Carolina PLR97-2",
+      "title": "Private Letter Ruling \u00b7 Qualified Recycling Facilities",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-sales-use-tax-qualified-recycling-facilities"
+    },
+    {
+      "cite": "South Carolina PLR97-6",
+      "title": "Private Letter Ruling \u00b7 Sale of ABC Mobile Home Park",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sale-abc-mobile-home-park"
+    },
+    {
+      "cite": "South Carolina RR97-1",
+      "title": "Revenue Ruling \u00b7 Sales of Fire Trucks and Fire Fighting Equipment",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-fire-trucks-and-fire-fighting-equipment"
+    },
+    {
+      "cite": "South Carolina RR97-5",
+      "title": "Revenue Ruling \u00b7 Sales of Travel Trailers to Nonresidents",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-travel-trailers-nonresidents"
+    },
+    {
+      "cite": "South Carolina PLR97-4",
+      "title": "Private Letter Ruling \u00b7 Security System",
+      "href": "https://www.dor.sc.gov/sales-use-tax-security-system-0"
+    },
+    {
+      "cite": "South Carolina PLR97-5",
+      "title": "Private Letter Ruling \u00b7 Security System",
+      "href": "https://www.dor.sc.gov/sales-use-tax-security-system-1"
+    },
+    {
+      "cite": "South Carolina RR97-14",
+      "title": "Revenue Ruling \u00b7 Statute of Limitations for Claims for Refund",
+      "href": "https://www.dor.sc.gov/administrative-refunds-payments-statute-limitations-claims-refund"
+    },
+    {
+      "cite": "South Carolina RR97-2",
+      "title": "Revenue Ruling \u00b7 Tax Waivers and Inventories",
+      "href": "https://www.dor.sc.gov/estate-gift-tax-tax-waivers-and-inventories"
+    },
+    {
+      "cite": "South Carolina PLR97-3",
+      "title": "Private Letter Ruling \u00b7 Taxation of Land Owned by a Public University but leased to a Greek Fraternity Corporation for Construction of Greek Letter Housing and the taxation of any Fraternity Housing Construction thereon",
+      "href": "https://www.dor.sc.gov/property-tax-taxation-land-owned-public-university-leased-greek-fraternity-corporation-construction-greek-letter"
+    },
+    {
+      "cite": "South Carolina RR97-23",
+      "title": "Revenue Ruling \u00b7 Telephone Calling Cards",
+      "href": "https://www.dor.sc.gov/sales-use-tax-telephone-calling-cards"
+    },
+    {
+      "cite": "South Carolina RR96-9",
+      "title": "Revenue Ruling \u00b7 Cherokee County School District #1 Sales and Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-cherokee-county-school-district-1-sales-and-use-tax"
+    },
+    {
+      "cite": "South Carolina RR96-8",
+      "title": "Revenue Ruling \u00b7 City and County Tourism and Restaurant Fees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-city-and-county-tourism-and-restaurant-fees"
+    },
+    {
+      "cite": "South Carolina RR96-2",
+      "title": "Revenue Ruling \u00b7 Coin Operated Devices",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-coin-operated-devices-0"
+    },
+    {
+      "cite": "South Carolina RR96-11",
+      "title": "Revenue Ruling \u00b7 Credit Against License Tax for Utilities",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-license-fee-credit-against-license-tax-utilities"
+    },
+    {
+      "cite": "South Carolina RR96-1",
+      "title": "Revenue Ruling \u00b7 Disability Retirement",
+      "href": "https://www.dor.sc.gov/income-tax-disability-retirement"
+    },
+    {
+      "cite": "South Carolina RR96-3",
+      "title": "Revenue Ruling \u00b7 Electronic Delivery of Computer Software",
+      "href": "https://www.dor.sc.gov/sales-use-tax-electronic-delivery-computer-software"
+    },
+    {
+      "cite": "South Carolina RR96-7",
+      "title": "Revenue Ruling \u00b7 Federal Employee Travel",
+      "href": "https://www.dor.sc.gov/accommodations-tax-federal-employee-travel"
+    },
+    {
+      "cite": "South Carolina RR96-4",
+      "title": "Revenue Ruling \u00b7 Nuclear Pharmacies - Radioactive Isotopes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-nuclear-pharmacies-radioactive-isotopes"
+    },
+    {
+      "cite": "South Carolina RR96-10",
+      "title": "Revenue Ruling \u00b7 South Carolina Business Development Corporation",
+      "href": "https://www.dor.sc.gov/income-tax-south-carolina-business-development-corporation"
+    },
+    {
+      "cite": "South Carolina RR96-5",
+      "title": "Revenue Ruling \u00b7 Subsistence Allowance for Firefighters and EMS Personnel",
+      "href": "https://www.dor.sc.gov/income-tax-subsistence-allowance-firefighters-and-ems-personnel"
+    },
+    {
+      "cite": "South Carolina PLR95-7",
+      "title": "Private Letter Ruling \u00b7 Apportionment Factor",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-license-fee-apportionment-factor"
+    },
+    {
+      "cite": "South Carolina PLR95-9",
+      "title": "Private Letter Ruling \u00b7 Apportionment Factor",
+      "href": "https://www.dor.sc.gov/income-tax-apportionment-factor"
+    },
+    {
+      "cite": "South Carolina PLR95-10",
+      "title": "Private Letter Ruling \u00b7 Bank Reorganizations",
+      "href": "https://www.dor.sc.gov/bank-tax-bank-reorganizations"
+    },
+    {
+      "cite": "South Carolina PLR95-6",
+      "title": "Private Letter Ruling \u00b7 Blood Glucose Meters",
+      "href": "https://www.dor.sc.gov/sales-use-tax-blood-glucose-meters"
+    },
+    {
+      "cite": "South Carolina RR95-3",
+      "title": "Revenue Ruling \u00b7 Brew-on-Premises Operations",
+      "href": "https://www.dor.sc.gov/alcohol-taxes-alcohol-beverage-licensing-abl-brew-premises-operations"
+    },
+    {
+      "cite": "South Carolina RR95-12",
+      "title": "Revenue Ruling \u00b7 Collection of Casual Excise Tax and Use Tax",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-collection-casual-excise-tax-and-use-tax"
+    },
+    {
+      "cite": "South Carolina RR95-11",
+      "title": "Revenue Ruling \u00b7 Commercial Housing of Poultry and Livestock",
+      "href": "https://www.dor.sc.gov/sales-use-tax-commercial-housing-poultry-and-livestock"
+    },
+    {
+      "cite": "South Carolina RR95-9",
+      "title": "Revenue Ruling \u00b7 Conversion of Partnership to Limited Liability Company",
+      "href": "https://www.dor.sc.gov/income-tax-sales-use-tax-conversion-partnership-limited-liability-company"
+    },
+    {
+      "cite": "South Carolina RR95-5",
+      "title": "Revenue Ruling \u00b7 Corporate License Fees",
+      "href": "https://www.dor.sc.gov/corporate-license-fee-corporate-license-fees"
+    },
+    {
+      "cite": "South Carolina PLR95-4",
+      "title": "Private Letter Ruling \u00b7 Food Service",
+      "href": "https://www.dor.sc.gov/sales-use-tax-food-service"
+    },
+    {
+      "cite": "South Carolina RR95-17",
+      "title": "Revenue Ruling \u00b7 Form WH-1601 - Deposit Coupon, Interest on Late Deposits",
+      "href": "https://www.dor.sc.gov/withholding-form-wh-1601-deposit-coupon-interest-late-deposits-0"
+    },
+    {
+      "cite": "South Carolina PLR95-2",
+      "title": "Private Letter Ruling \u00b7 Income of a Nonresident Limited Partner",
+      "href": "https://www.dor.sc.gov/income-tax-income-nonresident-limited-partner"
+    },
+    {
+      "cite": "South Carolina RR95-8",
+      "title": "Revenue Ruling \u00b7 Incorporation of a Church under the South Carolina Nonprofit Act",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-incorporation-church-under-south-carolina-nonprofit-act"
+    },
+    {
+      "cite": "South Carolina PLR95-3",
+      "title": "Private Letter Ruling \u00b7 Job Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-0"
+    },
+    {
+      "cite": "South Carolina PLR95-5",
+      "title": "Private Letter Ruling \u00b7 Job Tax Credit and Job Development Fee",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit-and-job-development-fee"
+    },
+    {
+      "cite": "South Carolina RR95-4",
+      "title": "Revenue Ruling \u00b7 Minimum Age Requirement",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-minimum-age-requirement"
+    },
+    {
+      "cite": "South Carolina RR95-10",
+      "title": "Revenue Ruling \u00b7 Multi Player Video Gaming Devices",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-multi-player-video-gaming-devices"
+    },
+    {
+      "cite": "South Carolina PLR95-8",
+      "title": "Private Letter Ruling \u00b7 Pollution Control Machine",
+      "href": "https://www.dor.sc.gov/sales-use-tax-pollution-control-machine"
+    },
+    {
+      "cite": "South Carolina RR95-6",
+      "title": "Revenue Ruling \u00b7 Purchases by Restaurants",
+      "href": "https://www.dor.sc.gov/sales-use-tax-purchases-restaurants-0"
+    },
+    {
+      "cite": "South Carolina RR95-18",
+      "title": "Revenue Ruling \u00b7 Redemption of Property",
+      "href": "https://www.dor.sc.gov/property-tax-redemption-property"
+    },
+    {
+      "cite": "South Carolina RR95-7",
+      "title": "Revenue Ruling \u00b7 Regulation - Single Place or Premises",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-regulation-single-place-or-premises-0"
+    },
+    {
+      "cite": "South Carolina RR95-13",
+      "title": "Revenue Ruling \u00b7 Regulation - Single Place or Premises",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-regulation-single-place-or-premises-1"
+    },
+    {
+      "cite": "South Carolina RR95-15",
+      "title": "Revenue Ruling \u00b7 Retirement Income Deduction",
+      "href": "https://www.dor.sc.gov/income-tax-retirement-income-deduction"
+    },
+    {
+      "cite": "South Carolina TAM95-1",
+      "title": "Technical Advice Memorandum \u00b7 Security System",
+      "href": "https://www.dor.sc.gov/sales-use-tax-security-system"
+    },
+    {
+      "cite": "South Carolina TAM95-2",
+      "title": "Technical Advice Memorandum \u00b7 Sight-Seeing Tours",
+      "href": "https://www.dor.sc.gov/admissions-tax-sight-seeing-tours"
+    },
+    {
+      "cite": "South Carolina PLR95-1",
+      "title": "Private Letter Ruling \u00b7 Soft Drink Exemption",
+      "href": "https://www.dor.sc.gov/soft-drink-tax-soft-drink-exemption"
+    },
+    {
+      "cite": "South Carolina RR95-1",
+      "title": "Revenue Ruling \u00b7 Taxation of Personal Property Located in a Timeshare Unit or Other Vacation Home",
+      "href": "https://www.dor.sc.gov/property-tax-taxation-personal-property-located-timeshare-unit-or-other-vacation-home"
+    },
+    {
+      "cite": "South Carolina RR95-2",
+      "title": "Revenue Ruling \u00b7 Transfer of Licenses",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-transfer-licenses"
+    },
+    {
+      "cite": "South Carolina RR95-16",
+      "title": "Revenue Ruling \u00b7 Use of Tax From Major Tourism Facilities",
+      "href": "https://www.dor.sc.gov/property-tax-use-tax-major-tourism-facilities"
+    },
+    {
+      "cite": "South Carolina TAM94-1",
+      "title": "Technical Advice Memorandum \u00b7 \"Hole-in-One Game\"",
+      "href": "https://www.dor.sc.gov/admissions-tax-hole-one-game"
+    },
+    {
+      "cite": "South Carolina RR94-6",
+      "title": "Revenue Ruling \u00b7 Agent, Promoter or Representative of the House",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-agent-promoter-or-representative-house"
+    },
+    {
+      "cite": "South Carolina RR94-10",
+      "title": "Revenue Ruling \u00b7 Agent, Promoter or Representative of the House",
+      "href": "https://www.dor.sc.gov/bingo-tax-agent-promoter-or-representative-house"
+    },
+    {
+      "cite": "South Carolina TAM94-2",
+      "title": "Technical Advice Memorandum \u00b7 Apportionment Ratio",
+      "href": "https://www.dor.sc.gov/income-tax-apportionment-ratio"
+    },
+    {
+      "cite": "South Carolina RR94-8",
+      "title": "Revenue Ruling \u00b7 Beer Price Promotions",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-beer-price-promotions"
+    },
+    {
+      "cite": "South Carolina RR94-7",
+      "title": "Revenue Ruling \u00b7 Computation of Tobacco Tax",
+      "href": "https://www.dor.sc.gov/cigarette-tobacco-taxes-computation-tobacco-tax"
+    },
+    {
+      "cite": "South Carolina TAM94-3",
+      "title": "Technical Advice Memorandum \u00b7 Computer System",
+      "href": "https://www.dor.sc.gov/sales-use-tax-computer-system"
+    },
+    {
+      "cite": "South Carolina RR94-5",
+      "title": "Revenue Ruling \u00b7 Electronic Payment for Beer and Wine Purchases from Wholesalers",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-electronic-payment-beer-and-wine-purchases-wholesalers"
+    },
+    {
+      "cite": "South Carolina PLR94-2",
+      "title": "Private Letter Ruling \u00b7 Federal Government - XYZ",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-government-xyz"
+    },
+    {
+      "cite": "South Carolina PLR94-4",
+      "title": "Private Letter Ruling \u00b7 Food Service for Educational Institutions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-food-service-educational-institutions"
+    },
+    {
+      "cite": "South Carolina PLR94-7",
+      "title": "Private Letter Ruling \u00b7 Grease and Oil Used in Manufacturing Machinery",
+      "href": "https://www.dor.sc.gov/sales-use-tax-grease-and-oil-used-manufacturing-machinery"
+    },
+    {
+      "cite": "South Carolina PLR94-5",
+      "title": "Private Letter Ruling \u00b7 Job Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-job-tax-credit"
+    },
+    {
+      "cite": "South Carolina RR94-1",
+      "title": "Revenue Ruling \u00b7 Legislative Agencies",
+      "href": "https://www.dor.sc.gov/sales-use-tax-legislative-agencies-1"
+    },
+    {
+      "cite": "South Carolina RR94-4",
+      "title": "Revenue Ruling \u00b7 Malt Coolers - Code Section 61-9-1010; Unlawful Acts of Registered Producers and Wholesalers",
+      "href": "https://www.dor.sc.gov/alcohol-beverage-licensing-abl-malt-coolers-code-section-61-9-1010-unlawful-acts-registered-producers-and-wholesalers"
+    },
+    {
+      "cite": "South Carolina PLR94-10",
+      "title": "Private Letter Ruling \u00b7 Manufacturer/Contractor",
+      "href": "https://www.dor.sc.gov/sales-use-tax-manufacturercontractor"
+    },
+    {
+      "cite": "South Carolina RR94-2",
+      "title": "Revenue Ruling \u00b7 Manufacturers and Construction Contractors",
+      "href": "https://www.dor.sc.gov/sales-use-tax-manufacturers-and-construction-contractors-0"
+    },
+    {
+      "cite": "South Carolina PLR94-3",
+      "title": "Private Letter Ruling \u00b7 Materials Used in Road Construction",
+      "href": "https://www.dor.sc.gov/sales-use-tax-materials-used-road-construction"
+    },
+    {
+      "cite": "South Carolina PLR94-6",
+      "title": "Private Letter Ruling \u00b7 Meals Sold to School Children",
+      "href": "https://www.dor.sc.gov/sales-use-tax-meals-sold-school-children"
+    },
+    {
+      "cite": "South Carolina PLR94-8",
+      "title": "Private Letter Ruling \u00b7 Nexus",
+      "href": "https://www.dor.sc.gov/income-tax-nexus"
+    },
+    {
+      "cite": "South Carolina RR94-3",
+      "title": "Revenue Ruling \u00b7 Paid Admissions",
+      "href": "https://www.dor.sc.gov/admissions-tax-paid-admissions"
+    },
+    {
+      "cite": "South Carolina PLR94-1",
+      "title": "Private Letter Ruling \u00b7 Property Shipped Overseas",
+      "href": "https://www.dor.sc.gov/property-tax-sales-use-tax-property-shipped-overseas"
+    },
+    {
+      "cite": "South Carolina PLR94-11",
+      "title": "Private Letter Ruling \u00b7 Research and Development Machinery",
+      "href": "https://www.dor.sc.gov/sales-use-tax-research-and-development-machinery-0"
+    },
+    {
+      "cite": "South Carolina RR94-9",
+      "title": "Revenue Ruling \u00b7 Retirement Income of a Surviving Spouse",
+      "href": "https://www.dor.sc.gov/income-tax-retirement-income-surviving-spouse-1"
+    },
+    {
+      "cite": "South Carolina RR94-11",
+      "title": "Revenue Ruling \u00b7 School and Library Books - Printed Form or Alternative Forms",
+      "href": "https://www.dor.sc.gov/sales-use-tax-school-and-library-books-printed-form-or-alternative-forms"
+    },
+    {
+      "cite": "South Carolina PLR94-12",
+      "title": "Private Letter Ruling \u00b7 Type of Coin-Operated Device License Required",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-type-coin-operated-device-license-required"
+    },
+    {
+      "cite": "South Carolina PLR94-9",
+      "title": "Private Letter Ruling \u00b7 Withholding on Performers",
+      "href": "https://www.dor.sc.gov/income-tax-withholding-performers"
+    },
+    {
+      "cite": "South Carolina PLR93-3",
+      "title": "Private Letter Ruling \u00b7 Apportionment of Income - Motor Carrier",
+      "href": "https://www.dor.sc.gov/income-tax-apportionment-income-motor-carrier"
+    },
+    {
+      "cite": "South Carolina RR93-5",
+      "title": "Revenue Ruling \u00b7 Bingo Proceeds - Code Section 12-21-3610",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-proceeds-code-section-12-21-3610"
+    },
+    {
+      "cite": "South Carolina RR93-1",
+      "title": "Revenue Ruling \u00b7 Charges By Automobile Rental Operation",
+      "href": "https://www.dor.sc.gov/sales-use-tax-charges-automobile-rental-operation"
+    },
+    {
+      "cite": "South Carolina RR93-4",
+      "title": "Revenue Ruling \u00b7 Charges for Maintenance or Support of Computer Software",
+      "href": "https://www.dor.sc.gov/sales-use-tax-charges-maintenance-or-support-computer-software"
+    },
+    {
+      "cite": "South Carolina RR93-3",
+      "title": "Revenue Ruling \u00b7 Domicile and Organizational Requirements",
+      "href": "https://www.dor.sc.gov/bingo-tax-domicile-and-organizational-requirements"
+    },
+    {
+      "cite": "South Carolina RR93-6",
+      "title": "Revenue Ruling \u00b7 Extended Warranties",
+      "href": "https://www.dor.sc.gov/sales-use-tax-extended-warranties"
+    },
+    {
+      "cite": "South Carolina TAM93-1",
+      "title": "Technical Advice Memorandum \u00b7 Form WH-1601 - Deposit Coupon; Interest on Late Deposits",
+      "href": "https://www.dor.sc.gov/withholding-form-wh-1601-deposit-coupon-interest-late-deposits"
+    },
+    {
+      "cite": "South Carolina RR93-11",
+      "title": "Revenue Ruling \u00b7 Leased Property",
+      "href": "https://www.dor.sc.gov/property-tax-leased-property"
+    },
+    {
+      "cite": "South Carolina PLR93-7",
+      "title": "Private Letter Ruling \u00b7 Machines and Equipment Stored and Repaired in South Carolina",
+      "href": "https://www.dor.sc.gov/sales-use-tax-machines-and-equipment-stored-and-repaired-south-carolina"
+    },
+    {
+      "cite": "South Carolina RR93-7",
+      "title": "Revenue Ruling \u00b7 Manufacturing Machinery and Equipment",
+      "href": "https://www.dor.sc.gov/property-tax-manufacturing-machinery-and-equipment-0"
+    },
+    {
+      "cite": "South Carolina PLR93-5",
+      "title": "Private Letter Ruling \u00b7 Medicine - Code Section 12-36-2120(28)",
+      "href": "https://www.dor.sc.gov/sales-use-tax-medicine-code-section-12-36-212028"
+    },
+    {
+      "cite": "South Carolina RR93-2",
+      "title": "Revenue Ruling \u00b7 Racing gasoline and Other Racing Fuels",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-racing-gasoline-and-other-racing-fuels"
+    },
+    {
+      "cite": "South Carolina PLR93-6",
+      "title": "Private Letter Ruling \u00b7 Research and Development Machinery",
+      "href": "https://www.dor.sc.gov/sales-use-tax-research-and-development-machinery"
+    },
+    {
+      "cite": "South Carolina PLR93-2",
+      "title": "Private Letter Ruling \u00b7 Reserved Recreational Vehicle Parking",
+      "href": "https://www.dor.sc.gov/accommodations-tax-reserved-recreational-vehicle-parking"
+    },
+    {
+      "cite": "South Carolina RR93-12",
+      "title": "Revenue Ruling \u00b7 Retirement Income of a Surviving Spouse",
+      "href": "https://www.dor.sc.gov/income-tax-retirement-income-surviving-spouse"
+    },
+    {
+      "cite": "South Carolina PLR93-4",
+      "title": "Private Letter Ruling \u00b7 Sale of Oysters by Fisherman",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sale-oysters-fisherman"
+    },
+    {
+      "cite": "South Carolina RR93-8",
+      "title": "Revenue Ruling \u00b7 Sales of Horse Trailers and Stock Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-horse-trailers-and-stock-trailers"
+    },
+    {
+      "cite": "South Carolina RR93-9",
+      "title": "Revenue Ruling \u00b7 Sales of Meals, Educational and Medical Institutions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-meals-educational-and-medical-institutions"
+    },
+    {
+      "cite": "South Carolina PLR93-8",
+      "title": "Private Letter Ruling \u00b7 Taxation of Trust Fund",
+      "href": "https://www.dor.sc.gov/income-tax-taxation-trust-fund"
+    },
+    {
+      "cite": "South Carolina RR93-10",
+      "title": "Revenue Ruling \u00b7 The Effect of 15 U.S.C. Section 381 on South Carolina's Imposition of Income Tax",
+      "href": "https://www.dor.sc.gov/income-tax-effect-15-usc-section-381-south-carolinas-imposition-income-tax-0"
+    },
+    {
+      "cite": "South Carolina PLR93-1",
+      "title": "Private Letter Ruling \u00b7 The XYZ Shopper - Advertising Publication",
+      "href": "https://www.dor.sc.gov/sales-use-tax-xyz-shopper-advertising-publication"
+    },
+    {
+      "cite": "South Carolina RR93-13",
+      "title": "Revenue Ruling \u00b7 Vehicle Declared a Total Loss by an Insurance Company",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-vehicle-declared-total-loss-insurance-company"
+    },
+    {
+      "cite": "South Carolina RR92-16",
+      "title": "Revenue Ruling \u00b7 \"Two Anyway Bingo\" Games; \"Almost Two Anyway Bingo\" Games",
+      "href": "https://www.dor.sc.gov/bingo-tax-two-anyway-bingo-games-almost-two-anyway-bingo-games"
+    },
+    {
+      "cite": "South Carolina RR92-9",
+      "title": "Revenue Ruling \u00b7 Administration of Bank Taxes",
+      "href": "https://www.dor.sc.gov/bank-tax-administration-bank-taxes"
+    },
+    {
+      "cite": "South Carolina PLR92-6",
+      "title": "Private Letter Ruling \u00b7 Breath Alcohol Tester Machine",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-breath-alcohol-tester-machine"
+    },
+    {
+      "cite": "South Carolina PLR92-9",
+      "title": "Private Letter Ruling \u00b7 Chimney Stack",
+      "href": "https://www.dor.sc.gov/sales-use-tax-chimney-stack"
+    },
+    {
+      "cite": "South Carolina RR92-7",
+      "title": "Revenue Ruling \u00b7 Deeds and Other conveyances of Realty Liability; Master in Equity Deeds; State Government; Federal Government; Certain Federal Instrumentalities and Federally Chartered Institutions",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-deeds-and-other-conveyances-realty-liability-master-equity-deeds-state-government-federal-government"
+    },
+    {
+      "cite": "South Carolina RR92-14",
+      "title": "Revenue Ruling \u00b7 Deeds and Other conveyances of Realty Liability; Master in Equity Deeds; State Government; Federal Government; Certain Federal Instrumentalities and Federally Chartered Institutions",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-deeds-and-other-conveyances-realty-liability-master-equity-deeds-state-government-federal-government-0"
+    },
+    {
+      "cite": "South Carolina PLR92-5",
+      "title": "Private Letter Ruling \u00b7 Dinner Attraction",
+      "href": "https://www.dor.sc.gov/admissions-tax-sales-use-tax-dinner-attraction"
+    },
+    {
+      "cite": "South Carolina PLR92-4",
+      "title": "Private Letter Ruling \u00b7 Electrical Devices Sold by Prescription",
+      "href": "https://www.dor.sc.gov/sales-use-tax-electrical-devices-sold-prescription"
+    },
+    {
+      "cite": "South Carolina RR92-4",
+      "title": "Revenue Ruling \u00b7 Electricity Used at Apartment Complexes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-electricity-used-apartment-complexes"
+    },
+    {
+      "cite": "South Carolina PLR92-3",
+      "title": "Private Letter Ruling \u00b7 Federal Government",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-government"
+    },
+    {
+      "cite": "South Carolina RR92-13",
+      "title": "Revenue Ruling \u00b7 Foreign Dividend Income",
+      "href": "https://www.dor.sc.gov/income-tax-foreign-dividend-income"
+    },
+    {
+      "cite": "South Carolina PLR92-8",
+      "title": "Private Letter Ruling \u00b7 Guided Tissue Regeneration Device",
+      "href": "https://www.dor.sc.gov/sales-use-tax-guided-tissue-regeneration-device"
+    },
+    {
+      "cite": "South Carolina RR92-11",
+      "title": "Revenue Ruling \u00b7 Manufacturers and Construction Contractors",
+      "href": "https://www.dor.sc.gov/sales-use-tax-manufacturers-and-construction-contractors"
+    },
+    {
+      "cite": "South Carolina PLR92-10",
+      "title": "Private Letter Ruling \u00b7 Manufacturing Machine - Sale/Leaseback",
+      "href": "https://www.dor.sc.gov/sales-use-tax-manufacturing-machine-saleleaseback"
+    },
+    {
+      "cite": "South Carolina PLR92-11",
+      "title": "Private Letter Ruling \u00b7 Membership Fees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-membership-fees"
+    },
+    {
+      "cite": "South Carolina RR92-1",
+      "title": "Revenue Ruling \u00b7 Membership Fees to Health Clubs, Spas, Etc.",
+      "href": "https://www.dor.sc.gov/admissions-tax-membership-fees-health-clubs-spas-etc-2"
+    },
+    {
+      "cite": "South Carolina RR92-2",
+      "title": "Revenue Ruling \u00b7 Outboard Motors",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-outboard-motors"
+    },
+    {
+      "cite": "South Carolina RR92-8",
+      "title": "Revenue Ruling \u00b7 Prizes and Games",
+      "href": "https://www.dor.sc.gov/bingo-tax-prizes-and-games"
+    },
+    {
+      "cite": "South Carolina RR92-3",
+      "title": "Revenue Ruling \u00b7 Purchases by Restaurants",
+      "href": "https://www.dor.sc.gov/sales-use-tax-purchases-restaurants"
+    },
+    {
+      "cite": "South Carolina PLR92-7",
+      "title": "Private Letter Ruling \u00b7 Qualified Real Estate Investment Trust Subsidiary",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-license-fee-qualified-real-estate-investment-trust-subsidiary"
+    },
+    {
+      "cite": "South Carolina PLR92-2",
+      "title": "Private Letter Ruling \u00b7 Redevelopment Commission - Corporate Annual Report and License Fee",
+      "href": "https://www.dor.sc.gov/corporate-license-fee-redevelopment-commission-corporate-annual-report-and-license-fee"
+    },
+    {
+      "cite": "South Carolina RR92-12",
+      "title": "Revenue Ruling \u00b7 Sales of Boats, Motors,, and Boat Trailers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-boats-motors-and-boat-trailers"
+    },
+    {
+      "cite": "South Carolina RR92-15",
+      "title": "Revenue Ruling \u00b7 State Government and its Political Subdivisions",
+      "href": "https://www.dor.sc.gov/sales-use-tax-state-government-and-its-political-subdivisions"
+    },
+    {
+      "cite": "South Carolina RR92-10",
+      "title": "Revenue Ruling \u00b7 Transfers Subject To the Casual Excise Tax",
+      "href": "https://www.dor.sc.gov/casual-excise-tax-transfers-subject-casual-excise-tax"
+    },
+    {
+      "cite": "South Carolina PLR92-1",
+      "title": "Private Letter Ruling \u00b7 Treatment of Capital Gain and Capital Loss Carryover",
+      "href": "https://www.dor.sc.gov/income-tax-treatment-capital-gain-and-capital-loss-carryover"
+    },
+    {
+      "cite": "South Carolina RR92-5",
+      "title": "Revenue Ruling \u00b7 Vending Machine Sales",
+      "href": "https://www.dor.sc.gov/sales-use-tax-vending-machine-sales"
+    },
+    {
+      "cite": "South Carolina RR91-1",
+      "title": "Revenue Ruling \u00b7 \"Written Contract of Sale\"/Long-term Capital Gains",
+      "href": "https://www.dor.sc.gov/income-tax-written-contract-salelong-term-capital-gains"
+    },
+    {
+      "cite": "South Carolina PLR91-5",
+      "title": "Private Letter Ruling \u00b7 ABC Country Club",
+      "href": "https://www.dor.sc.gov/admissions-tax-abc-country-club"
+    },
+    {
+      "cite": "South Carolina RR91-5",
+      "title": "Revenue Ruling \u00b7 Admissions Tax Exemption for Civic or Fraternal Organizations",
+      "href": "https://www.dor.sc.gov/admissions-tax-admissions-tax-exemption-civic-or-fraternal-organizations"
+    },
+    {
+      "cite": "South Carolina RR91-20",
+      "title": "Revenue Ruling \u00b7 Charges for Electronic Filing of Returns",
+      "href": "https://www.dor.sc.gov/sales-use-tax-charges-electronic-filing-returns"
+    },
+    {
+      "cite": "South Carolina TAM91-1",
+      "title": "Technical Advice Memorandum \u00b7 Checks Returned Due to Insufficient Funds",
+      "href": "https://www.dor.sc.gov/administrative-refunds-payments-checks-returned-due-insufficient-funds"
+    },
+    {
+      "cite": "South Carolina RR91-14",
+      "title": "Revenue Ruling \u00b7 Coin Activated Baseball Batting Machines",
+      "href": "https://www.dor.sc.gov/admissions-tax-coin-operated-devices-cod-coin-activated-baseball-batting-machines"
+    },
+    {
+      "cite": "South Carolina RR91-18",
+      "title": "Revenue Ruling \u00b7 Country Club Membership Dues",
+      "href": "https://www.dor.sc.gov/admissions-tax-country-club-membership-dues"
+    },
+    {
+      "cite": "South Carolina RR91-7",
+      "title": "Revenue Ruling \u00b7 Definition of Inventory for Property Tax Purposes",
+      "href": "https://www.dor.sc.gov/property-tax-definition-inventory-property-tax-purposes"
+    },
+    {
+      "cite": "South Carolina RR91-19",
+      "title": "Revenue Ruling \u00b7 Dental Prosthetic Devices - Dental Labs",
+      "href": "https://www.dor.sc.gov/sales-use-tax-dental-prosthetic-devices-dental-labs"
+    },
+    {
+      "cite": "South Carolina RR91-11",
+      "title": "Revenue Ruling \u00b7 Even/Odd or Wild Numbers",
+      "href": "https://www.dor.sc.gov/bingo-tax-evenodd-or-wild-numbers"
+    },
+    {
+      "cite": "South Carolina RR91-2",
+      "title": "Revenue Ruling \u00b7 Free Bingo Cards",
+      "href": "https://www.dor.sc.gov/bingo-tax-free-bingo-cards"
+    },
+    {
+      "cite": "South Carolina PLR91-3",
+      "title": "Private Letter Ruling \u00b7 Headquarters Credit for Personal Property",
+      "href": "https://www.dor.sc.gov/income-tax-headquarters-credit-personal-property"
+    },
+    {
+      "cite": "South Carolina PLR91-2",
+      "title": "Private Letter Ruling \u00b7 Headquarters Credit/Property Tax Abatement",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-headquarters-creditproperty-tax-abatement"
+    },
+    {
+      "cite": "South Carolina PLR91-1",
+      "title": "Private Letter Ruling \u00b7 High Purity Water Treatment System",
+      "href": "https://www.dor.sc.gov/sales-use-tax-high-purity-water-treatment-system"
+    },
+    {
+      "cite": "South Carolina RR91-15",
+      "title": "Revenue Ruling \u00b7 Interest Exempt from South Carolina Income Tax",
+      "href": "https://www.dor.sc.gov/income-tax-interest-exempt-south-carolina-income-tax"
+    },
+    {
+      "cite": "South Carolina RR91-3",
+      "title": "Revenue Ruling \u00b7 Laundry and Dry cleaning (Valet) Services Provided to Hotel Guests",
+      "href": "https://www.dor.sc.gov/sales-use-tax-laundry-and-dry-cleaning-valet-services-provided-hotel-guests"
+    },
+    {
+      "cite": "South Carolina RR91-9",
+      "title": "Revenue Ruling \u00b7 Lease or Rental of Tangible Personal Property",
+      "href": "https://www.dor.sc.gov/sales-use-tax-lease-or-rental-tangible-personal-property"
+    },
+    {
+      "cite": "South Carolina RR91-17",
+      "title": "Revenue Ruling \u00b7 Local Option Sales & Use Tax",
+      "href": "https://www.dor.sc.gov/property-tax-sales-use-tax-local-option-sales-use-tax"
+    },
+    {
+      "cite": "South Carolina RR91-13",
+      "title": "Revenue Ruling \u00b7 Machine Shop Activities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-machine-shop-activities"
+    },
+    {
+      "cite": "South Carolina RR91-6",
+      "title": "Revenue Ruling \u00b7 Manufacturing Machinery and Equipment",
+      "href": "https://www.dor.sc.gov/property-tax-manufacturing-machinery-and-equipment"
+    },
+    {
+      "cite": "South Carolina TAM91-2",
+      "title": "Technical Advice Memorandum \u00b7 Modular Homes",
+      "href": "https://www.dor.sc.gov/sales-use-tax-modular-homes"
+    },
+    {
+      "cite": "South Carolina PLR91-4",
+      "title": "Private Letter Ruling \u00b7 Nexus - Activities Exceeding Solicitation",
+      "href": "https://www.dor.sc.gov/income-tax-nexus-activities-exceeding-solicitation"
+    },
+    {
+      "cite": "South Carolina PLR91-6",
+      "title": "Private Letter Ruling \u00b7 Prefabricated Structural Components",
+      "href": "https://www.dor.sc.gov/sales-use-tax-prefabricated-structural-components"
+    },
+    {
+      "cite": "South Carolina RR91-12",
+      "title": "Revenue Ruling \u00b7 Refund for Use Tax Collected and Remitted by an Out-of-State Retailer",
+      "href": "https://www.dor.sc.gov/sales-use-tax-refund-use-tax-collected-and-remitted-out-state-retailer"
+    },
+    {
+      "cite": "South Carolina RR91-16",
+      "title": "Revenue Ruling \u00b7 The Effect of 15 U.S.C. Section 381 on South Carolina's Imposition of Income Tax",
+      "href": "https://www.dor.sc.gov/income-tax-effect-15-usc-section-381-south-carolinas-imposition-income-tax"
+    },
+    {
+      "cite": "South Carolina RR91-8",
+      "title": "Revenue Ruling \u00b7 Water Treatment Plants",
+      "href": "https://www.dor.sc.gov/sales-use-tax-water-treatment-plants"
+    },
+    {
+      "cite": "South Carolina TAM90-11",
+      "title": "Technical Advice Memorandum \u00b7 Amusement Park",
+      "href": "https://www.dor.sc.gov/admissions-tax-amusement-park"
+    },
+    {
+      "cite": "South Carolina RR90-8",
+      "title": "Revenue Ruling \u00b7 Bingo Cards",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-cards"
+    },
+    {
+      "cite": "South Carolina TAM90-5",
+      "title": "Technical Advice Memorandum \u00b7 Boat Dockage and Storage Rentals",
+      "href": "https://www.dor.sc.gov/sales-use-tax-accommodations-tax-boat-dockage-and-storage-rentals"
+    },
+    {
+      "cite": "South Carolina TAM90-8",
+      "title": "Technical Advice Memorandum \u00b7 Coin Activated \"Baseball Batting Cages\"",
+      "href": "https://www.dor.sc.gov/admissions-tax-coin-activated-baseball-batting-cages"
+    },
+    {
+      "cite": "South Carolina RR90-9",
+      "title": "Revenue Ruling \u00b7 Coin Operated Devices",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-coin-operated-devices"
+    },
+    {
+      "cite": "South Carolina RR90-10",
+      "title": "Revenue Ruling \u00b7 Computerized Ticket Sales",
+      "href": "https://www.dor.sc.gov/admissions-tax-computerized-ticket-sales"
+    },
+    {
+      "cite": "South Carolina TAM90-4",
+      "title": "Technical Advice Memorandum \u00b7 Corporate Dissolution - Effect on Retail License Issuance of a Retail License",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-dissolution-effect-retail-license-issuance-retail-license"
+    },
+    {
+      "cite": "South Carolina RR90-1",
+      "title": "Revenue Ruling \u00b7 Dental Prosthetic Devices",
+      "href": "https://www.dor.sc.gov/sales-use-tax-dental-prosthetic-devices-1"
+    },
+    {
+      "cite": "South Carolina TAM90-7",
+      "title": "Technical Advice Memorandum \u00b7 Digital Display Machines",
+      "href": "https://www.dor.sc.gov/coin-operated-devices-cod-digital-display-machines"
+    },
+    {
+      "cite": "South Carolina PLR90-14",
+      "title": "Private Letter Ruling \u00b7 Electricity Used at a Wool Combing Plant",
+      "href": "https://www.dor.sc.gov/sales-use-tax-electricity-used-wool-combing-plant"
+    },
+    {
+      "cite": "South Carolina PLR90-7",
+      "title": "Private Letter Ruling \u00b7 Exemption",
+      "href": "https://www.dor.sc.gov/admissions-tax-exemption"
+    },
+    {
+      "cite": "South Carolina TAM90-3",
+      "title": "Technical Advice Memorandum \u00b7 Exemption of Rural Telephone Property",
+      "href": "https://www.dor.sc.gov/property-tax-exemption-rural-telephone-property"
+    },
+    {
+      "cite": "South Carolina PLR90-1",
+      "title": "Private Letter Ruling \u00b7 Federal Reserve Bank",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-reserve-bank"
+    },
+    {
+      "cite": "South Carolina PLR90-9",
+      "title": "Private Letter Ruling \u00b7 Freight Charges",
+      "href": "https://www.dor.sc.gov/sales-use-tax-freight-charges"
+    },
+    {
+      "cite": "South Carolina PLR90-3",
+      "title": "Private Letter Ruling \u00b7 Gamma Irradiator",
+      "href": "https://www.dor.sc.gov/sales-use-tax-gamma-irradiator"
+    },
+    {
+      "cite": "South Carolina PLR90-8",
+      "title": "Private Letter Ruling \u00b7 Hotel Travel Points Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-hotel-travel-points-program"
+    },
+    {
+      "cite": "South Carolina TAM90-10",
+      "title": "Technical Advice Memorandum \u00b7 Investment Income of Children Under Age 14",
+      "href": "https://www.dor.sc.gov/income-tax-investment-income-children-under-age-14"
+    },
+    {
+      "cite": "South Carolina PLR90-4",
+      "title": "Private Letter Ruling \u00b7 Law Firm - Telecopying",
+      "href": "https://www.dor.sc.gov/sales-use-tax-law-firm-telecopying"
+    },
+    {
+      "cite": "South Carolina RR90-11",
+      "title": "Revenue Ruling \u00b7 Local Option Sales & Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-property-tax-local-option-sales-use-tax"
+    },
+    {
+      "cite": "South Carolina PLR90-10",
+      "title": "Private Letter Ruling \u00b7 Meals - Nursing Care/Hospital Facilities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-meals-nursing-carehospital-facilities"
+    },
+    {
+      "cite": "South Carolina RR90-7",
+      "title": "Revenue Ruling \u00b7 Membership Fees To Heal Clubs, Spas, Etc.",
+      "href": "https://www.dor.sc.gov/admissions-tax-membership-fees-heal-clubs-spas-etc"
+    },
+    {
+      "cite": "South Carolina RR90-4",
+      "title": "Revenue Ruling \u00b7 Membership Fees to Health Clubs, Spas, Etc.",
+      "href": "https://www.dor.sc.gov/admissions-tax-membership-fees-health-clubs-spas-etc"
+    },
+    {
+      "cite": "South Carolina PLR90-2",
+      "title": "Private Letter Ruling \u00b7 Military Exemption - Autos",
+      "href": "https://www.dor.sc.gov/sales-use-tax-military-exemption-autos"
+    },
+    {
+      "cite": "South Carolina PLR90-11",
+      "title": "Private Letter Ruling \u00b7 Nonresident Military Sales Tax Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-nonresident-military-sales-tax-exemption"
+    },
+    {
+      "cite": "South Carolina TAM90-2",
+      "title": "Technical Advice Memorandum \u00b7 Refunds - Statute of Limitations",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-refunds-statute-limitations"
+    },
+    {
+      "cite": "South Carolina PLR90-6",
+      "title": "Private Letter Ruling \u00b7 Reorganization of Corporations",
+      "href": "https://www.dor.sc.gov/income-tax-reorganization-corporations"
+    },
+    {
+      "cite": "South Carolina TAM90-1",
+      "title": "Technical Advice Memorandum \u00b7 Reports",
+      "href": "https://www.dor.sc.gov/sales-use-tax-reports"
+    },
+    {
+      "cite": "South Carolina TAM90-9",
+      "title": "Technical Advice Memorandum \u00b7 Revocation of Promoter's License",
+      "href": "https://www.dor.sc.gov/bingo-tax-revocation-promoters-license"
+    },
+    {
+      "cite": "South Carolina RR90-2",
+      "title": "Revenue Ruling \u00b7 Sale of Bingo Cards and Packages",
+      "href": "https://www.dor.sc.gov/bingo-tax-sale-bingo-cards-and-packages"
+    },
+    {
+      "cite": "South Carolina PLR90-13",
+      "title": "Private Letter Ruling \u00b7 Sale/Leaseback - Financing Arrangement",
+      "href": "https://www.dor.sc.gov/sales-use-tax-saleleaseback-financing-arrangement"
+    },
+    {
+      "cite": "South Carolina TAM90-6",
+      "title": "Technical Advice Memorandum \u00b7 Software - Textbooks",
+      "href": "https://www.dor.sc.gov/sales-use-tax-software-textbooks"
+    },
+    {
+      "cite": "South Carolina PLR90-5",
+      "title": "Private Letter Ruling \u00b7 Textbooks",
+      "href": "https://www.dor.sc.gov/sales-use-tax-textbooks"
+    },
+    {
+      "cite": "South Carolina PLR90-12",
+      "title": "Private Letter Ruling \u00b7 U.S. Army Watercraft Program",
+      "href": "https://www.dor.sc.gov/sales-use-tax-us-army-watercraft-program"
+    },
+    {
+      "cite": "South Carolina RR90-6",
+      "title": "Revenue Ruling \u00b7 Video Club Memberships and Late Fees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-video-club-memberships-and-late-fees"
+    },
+    {
+      "cite": "South Carolina RR90-3",
+      "title": "Revenue Ruling \u00b7 Withholding on Sales of Real and Associated Tangible Personal Property by Nonresidents",
+      "href": "https://www.dor.sc.gov/income-tax-withholding-sales-real-and-associated-tangible-personal-property-nonresidents"
+    },
+    {
+      "cite": "South Carolina PLR89-14",
+      "title": "Private Letter Ruling \u00b7 Accounting Period Change",
+      "href": "https://www.dor.sc.gov/income-tax-accounting-period-change"
+    },
+    {
+      "cite": "South Carolina PLR89-18",
+      "title": "Private Letter Ruling \u00b7 Aircraft - Flight Instruction/Rentals",
+      "href": "https://www.dor.sc.gov/sales-use-tax-aircraft-flight-instructionrentals"
+    },
+    {
+      "cite": "South Carolina RR89-8",
+      "title": "Revenue Ruling \u00b7 Antique, Craft, Boat and Similar Shows",
+      "href": "https://www.dor.sc.gov/income-tax-antique-craft-boat-and-similar-shows"
+    },
+    {
+      "cite": "South Carolina TAM89-1",
+      "title": "Technical Advice Memorandum \u00b7 Artists and Craftsmen- Retail License",
+      "href": "https://www.dor.sc.gov/sales-use-tax-artists-and-craftsmen-retail-license"
+    },
+    {
+      "cite": "South Carolina TAM89-26",
+      "title": "Technical Advice Memorandum \u00b7 Auditorium/Promoters",
+      "href": "https://www.dor.sc.gov/admissions-tax-auditoriumpromoters"
+    },
+    {
+      "cite": "South Carolina RR89-20",
+      "title": "Revenue Ruling \u00b7 Backup Income Tax Withholding",
+      "href": "https://www.dor.sc.gov/income-tax-backup-income-tax-withholding-0"
+    },
+    {
+      "cite": "South Carolina RR89-18",
+      "title": "Revenue Ruling \u00b7 Bingo",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo"
+    },
+    {
+      "cite": "South Carolina RR89-23",
+      "title": "Revenue Ruling \u00b7 Bingo Policy - Frequently Asked Questions",
+      "href": "https://www.dor.sc.gov/bingo-tax-bingo-policy-frequently-asked-questions"
+    },
+    {
+      "cite": "South Carolina PLR89-8",
+      "title": "Private Letter Ruling \u00b7 Cash Discounts Allowed and Taken/Gross Proceeds of Sales",
+      "href": "https://www.dor.sc.gov/sales-use-tax-cash-discounts-allowed-and-takengross-proceeds-sales"
+    },
+    {
+      "cite": "South Carolina TAM89-21",
+      "title": "Technical Advice Memorandum \u00b7 Classification and Valuation of Manufacturer's Research & Development Equipment",
+      "href": "https://www.dor.sc.gov/property-tax-classification-and-valuation-manufacturers-research-development-equipment"
+    },
+    {
+      "cite": "South Carolina RR89-14",
+      "title": "Revenue Ruling \u00b7 Communications",
+      "href": "https://www.dor.sc.gov/sales-use-tax-communications"
+    },
+    {
+      "cite": "South Carolina PLR89-21",
+      "title": "Private Letter Ruling \u00b7 Computer Access Time",
+      "href": "https://www.dor.sc.gov/sales-use-tax-computer-access-time"
+    },
+    {
+      "cite": "South Carolina TAM89-25",
+      "title": "Technical Advice Memorandum \u00b7 Computer Access Time",
+      "href": "https://www.dor.sc.gov/sales-use-tax-computer-access-time-0"
+    },
+    {
+      "cite": "South Carolina PLR89-6",
+      "title": "Private Letter Ruling \u00b7 Computer Hardware, Software & Maintenance Contracts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-computer-hardware-software-maintenance-contracts"
+    },
+    {
+      "cite": "South Carolina TAM89-19",
+      "title": "Technical Advice Memorandum \u00b7 Confidentiality of Abandoned Property Records",
+      "href": "https://www.dor.sc.gov/income-tax-confidentiality-abandoned-property-records"
+    },
+    {
+      "cite": "South Carolina TAM89-15",
+      "title": "Technical Advice Memorandum \u00b7 Consolidated Return - Method of Computing South Carolina Net Income",
+      "href": "https://www.dor.sc.gov/income-tax-consolidated-return-method-computing-south-carolina-net-income"
+    },
+    {
+      "cite": "South Carolina RR89-11",
+      "title": "Revenue Ruling \u00b7 Construction Equipment Brought Into South Carolina",
+      "href": "https://www.dor.sc.gov/sales-use-tax-construction-equipment-brought-south-carolina"
+    },
+    {
+      "cite": "South Carolina PLR89-13",
+      "title": "Private Letter Ruling \u00b7 Corporate Income Tax",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-income-tax"
+    },
+    {
+      "cite": "South Carolina TAM89-6",
+      "title": "Technical Advice Memorandum \u00b7 Corporation Annual Report and License Fee",
+      "href": "https://www.dor.sc.gov/income-tax-corporation-annual-report-and-license-fee"
+    },
+    {
+      "cite": "South Carolina TAM89-16",
+      "title": "Technical Advice Memorandum \u00b7 Deduction for compensation Paid to Members of National Guard or Reserve Units",
+      "href": "https://www.dor.sc.gov/income-tax-deduction-compensation-paid-members-national-guard-or-reserve-units"
+    },
+    {
+      "cite": "South Carolina TAM89-10",
+      "title": "Technical Advice Memorandum \u00b7 Direct Pay Certificates/Contractors",
+      "href": "https://www.dor.sc.gov/sales-use-tax-direct-pay-certificatescontractors"
+    },
+    {
+      "cite": "South Carolina TAM89-23",
+      "title": "Technical Advice Memorandum \u00b7 Distributions from Individual Retirement Account (IRA)",
+      "href": "https://www.dor.sc.gov/income-tax-distributions-individual-retirement-account-ira"
+    },
+    {
+      "cite": "South Carolina TAM89-2",
+      "title": "Technical Advice Memorandum \u00b7 Election to Deduct Administration Expense",
+      "href": "https://www.dor.sc.gov/estate-gift-tax-income-tax-election-deduct-administration-expense"
+    },
+    {
+      "cite": "South Carolina RR89-5",
+      "title": "Revenue Ruling \u00b7 Electricity Used for Residential Purposes at Charleston Air Force Base",
+      "href": "https://www.dor.sc.gov/sales-use-tax-electricity-used-residential-purposes-charleston-air-force-base"
+    },
+    {
+      "cite": "South Carolina PLR89-3",
+      "title": "Private Letter Ruling \u00b7 Exemption",
+      "href": "https://www.dor.sc.gov/soft-drink-tax-exemption"
+    },
+    {
+      "cite": "South Carolina PLR89-11",
+      "title": "Private Letter Ruling \u00b7 Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-exemption"
+    },
+    {
+      "cite": "South Carolina RR89-3",
+      "title": "Revenue Ruling \u00b7 Exemption for Additions to Real Property of Manufacturers",
+      "href": "https://www.dor.sc.gov/property-tax-exemption-additions-real-property-manufacturers"
+    },
+    {
+      "cite": "South Carolina PLR89-7",
+      "title": "Private Letter Ruling \u00b7 Exemption from County Ad Valorem Taxes: Corporate Headquarters Credit; Job Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-exemption-county-ad-valorem-taxes-corporate-headquarters-credit-job-tax-credit"
+    },
+    {
+      "cite": "South Carolina PLR89-19",
+      "title": "Private Letter Ruling \u00b7 Exemption from Property Taxes & Income Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-property-tax-exemption-property-taxes-income-tax-credit"
+    },
+    {
+      "cite": "South Carolina PLR89-16",
+      "title": "Private Letter Ruling \u00b7 Farm Equipment - Exemption",
+      "href": "https://www.dor.sc.gov/sales-use-tax-farm-equipment-exemption"
+    },
+    {
+      "cite": "South Carolina TAM89-9",
+      "title": "Technical Advice Memorandum \u00b7 Freight and Installation Charges",
+      "href": "https://www.dor.sc.gov/sales-use-tax-freight-and-installation-charges"
+    },
+    {
+      "cite": "South Carolina RR89-17",
+      "title": "Revenue Ruling \u00b7 Hotels: Charges for Telephone Calls and Movies",
+      "href": "https://www.dor.sc.gov/sales-use-tax-accommodations-tax-hotels-charges-telephone-calls-and-movies"
+    },
+    {
+      "cite": "South Carolina TAM89-3",
+      "title": "Technical Advice Memorandum \u00b7 Income Tax Refunds - Statute of Limitations Provisions",
+      "href": "https://www.dor.sc.gov/income-tax-income-tax-refunds-statute-limitations-provisions"
+    },
+    {
+      "cite": "South Carolina PLR89-4",
+      "title": "Private Letter Ruling \u00b7 Individual Retirement Account",
+      "href": "https://www.dor.sc.gov/income-tax-individual-retirement-account"
+    },
+    {
+      "cite": "South Carolina TAM89-14",
+      "title": "Technical Advice Memorandum \u00b7 Infrastructure Credit",
+      "href": "https://www.dor.sc.gov/income-tax-infrastructure-credit"
+    },
+    {
+      "cite": "South Carolina TAM89-12",
+      "title": "Technical Advice Memorandum \u00b7 Interest & Penalties",
+      "href": "https://www.dor.sc.gov/income-tax-interest-penalties"
+    },
+    {
+      "cite": "South Carolina TAM89-17",
+      "title": "Technical Advice Memorandum \u00b7 Lemon Quench",
+      "href": "https://www.dor.sc.gov/soft-drink-tax-lemon-quench"
+    },
+    {
+      "cite": "South Carolina PLR89-2",
+      "title": "Private Letter Ruling \u00b7 Liability for the Soft Drink Tax",
+      "href": "https://www.dor.sc.gov/soft-drink-tax-liability-soft-drink-tax"
+    },
+    {
+      "cite": "South Carolina TAM89-13",
+      "title": "Technical Advice Memorandum \u00b7 Light Construction Equipment - $300 Cap",
+      "href": "https://www.dor.sc.gov/sales-use-tax-light-construction-equipment-300-cap"
+    },
+    {
+      "cite": "South Carolina PLR89-5",
+      "title": "Private Letter Ruling \u00b7 Long-term Capital Gains Refund Estimated Income Tax",
+      "href": "https://www.dor.sc.gov/income-tax-long-term-capital-gains-refund-estimated-income-tax"
+    },
+    {
+      "cite": "South Carolina PLR89-15",
+      "title": "Private Letter Ruling \u00b7 Manufacturer-Packaging Material and Machine Parts",
+      "href": "https://www.dor.sc.gov/sales-use-tax-manufacturer-packaging-material-and-machine-parts"
+    },
+    {
+      "cite": "South Carolina RR89-21",
+      "title": "Revenue Ruling \u00b7 Microfilm or Microfiche Copies",
+      "href": "https://www.dor.sc.gov/sales-use-tax-microfilm-or-microfiche-copies"
+    },
+    {
+      "cite": "South Carolina PLR89-17",
+      "title": "Private Letter Ruling \u00b7 Minority Business Credit",
+      "href": "https://www.dor.sc.gov/income-tax-minority-business-credit"
+    },
+    {
+      "cite": "South Carolina TAM89-22",
+      "title": "Technical Advice Memorandum \u00b7 Net Operating Loss on Consolidated Returns",
+      "href": "https://www.dor.sc.gov/income-tax-net-operating-loss-consolidated-returns"
+    },
+    {
+      "cite": "South Carolina PLR89-9",
+      "title": "Private Letter Ruling \u00b7 Nonresident Military Tax Exemption Certificates Form ST-178",
+      "href": "https://www.dor.sc.gov/sales-use-tax-nonresident-military-tax-exemption-certificates-form-st-178"
+    },
+    {
+      "cite": "South Carolina RR89-16",
+      "title": "Revenue Ruling \u00b7 Out-of-State Retailers' Liability for Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-out-state-retailers-liability-use-tax"
+    },
+    {
+      "cite": "South Carolina TAM89-5",
+      "title": "Technical Advice Memorandum \u00b7 Penalties - Failure to Pay",
+      "href": "https://www.dor.sc.gov/income-tax-penalties-failure-pay"
+    },
+    {
+      "cite": "South Carolina TAM89-7",
+      "title": "Technical Advice Memorandum \u00b7 Professional Associations",
+      "href": "https://www.dor.sc.gov/income-tax-professional-associations"
+    },
+    {
+      "cite": "South Carolina TAM89-8",
+      "title": "Technical Advice Memorandum \u00b7 Realty Transferred to a Partnership",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-realty-transferred-partnership"
+    },
+    {
+      "cite": "South Carolina PLR89-20",
+      "title": "Private Letter Ruling \u00b7 Realty, Held in Trust, Transferred to a Partnership",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-realty-held-trust-transferred-partnership"
+    },
+    {
+      "cite": "South Carolina RR89-2",
+      "title": "Revenue Ruling \u00b7 Refund Check",
+      "href": "https://www.dor.sc.gov/income-tax-refund-check"
+    },
+    {
+      "cite": "South Carolina TAM89-4",
+      "title": "Technical Advice Memorandum \u00b7 Refund of Gasoline and Motor Fuel Taxes",
+      "href": "https://www.dor.sc.gov/motor-fuel-user-fee-refund-gasoline-and-motor-fuel-taxes"
+    },
+    {
+      "cite": "South Carolina RR89-9",
+      "title": "Revenue Ruling \u00b7 Refunds or Credits",
+      "href": "https://www.dor.sc.gov/sales-use-tax-refunds-or-credits"
+    },
+    {
+      "cite": "South Carolina RR89-10",
+      "title": "Revenue Ruling \u00b7 Return Due Dates - IRC Section 338(h)(10) Election",
+      "href": "https://www.dor.sc.gov/income-tax-return-due-dates-irc-section-338h10-election"
+    },
+    {
+      "cite": "South Carolina PLR89-12",
+      "title": "Private Letter Ruling \u00b7 Sales at Military Post Exchange/Liability for the Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-military-post-exchangeliability-tax"
+    },
+    {
+      "cite": "South Carolina PLR89-10",
+      "title": "Private Letter Ruling \u00b7 Sales of Horse/Cattle Trailers and Semitrailers - $300 Cap",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-horsecattle-trailers-and-semitrailers-300-cap"
+    },
+    {
+      "cite": "South Carolina TAM89-18",
+      "title": "Technical Advice Memorandum \u00b7 Service Charges - Inactive Accounts",
+      "href": "https://www.dor.sc.gov/income-tax-service-charges-inactive-accounts"
+    },
+    {
+      "cite": "South Carolina RR89-7",
+      "title": "Revenue Ruling \u00b7 Settling Basins - Machine Exemption",
+      "href": "https://www.dor.sc.gov/settling-basins-machine-exemption"
+    },
+    {
+      "cite": "South Carolina RR89-6",
+      "title": "Revenue Ruling \u00b7 Six Year Statute of Limitations Applicable Returns",
+      "href": "https://www.dor.sc.gov/administrative-process-procedures-six-year-statute-limitations-applicable-returns"
+    },
+    {
+      "cite": "South Carolina RR89-4",
+      "title": "Revenue Ruling \u00b7 Six Year Statute of Limitations Retail Sales/Wholesale Sales",
+      "href": "https://www.dor.sc.gov/sales-use-tax-six-year-statute-limitations-retail-saleswholesale-sales"
+    },
+    {
+      "cite": "South Carolina TAM89-24",
+      "title": "Technical Advice Memorandum \u00b7 Subchapter S Corporation",
+      "href": "https://www.dor.sc.gov/income-tax-subchapter-s-corporation"
+    },
+    {
+      "cite": "South Carolina RR89-22",
+      "title": "Revenue Ruling \u00b7 Subscription Publications",
+      "href": "https://www.dor.sc.gov/sales-use-tax-subscription-publications"
+    },
+    {
+      "cite": "South Carolina TAM89-20",
+      "title": "Technical Advice Memorandum \u00b7 Substantial Understatement of Tax Code Section 12-54-155",
+      "href": "https://www.dor.sc.gov/income-tax-substantial-understatement-tax-code-section-12-54-155"
+    },
+    {
+      "cite": "South Carolina PLR89-1",
+      "title": "Private Letter Ruling \u00b7 Tax Credit for New Jobs",
+      "href": "https://www.dor.sc.gov/income-tax-tax-credit-new-jobs-0"
+    },
+    {
+      "cite": "South Carolina RR89-15",
+      "title": "Revenue Ruling \u00b7 Withholding on Sales of Real and Tangible Personal Property to Nonresidents",
+      "href": "https://www.dor.sc.gov/income-tax-withholding-sales-real-and-tangible-personal-property-nonresidents"
+    },
+    {
+      "cite": "South Carolina RR89-19",
+      "title": "Revenue Ruling \u00b7 Withholding on Sales of Real and Tangible Personal Property to Nonresidents",
+      "href": "https://www.dor.sc.gov/income-tax-withholding-sales-real-and-tangible-personal-property-nonresidents-0"
+    },
+    {
+      "cite": "South Carolina TAM88-1",
+      "title": "Technical Advice Memorandum \u00b7 Abandoned Property Interest",
+      "href": "https://www.dor.sc.gov/property-tax-abandoned-property-interest"
+    },
+    {
+      "cite": "South Carolina PLR88-18",
+      "title": "Private Letter Ruling \u00b7 ABC Guard Auxiliary and ABC Guard Auxiliary National Board, Inc.",
+      "href": "https://www.dor.sc.gov/sales-use-tax-abc-guard-auxiliary-and-abc-guard-auxiliary-national-board-inc"
+    },
+    {
+      "cite": "South Carolina PLR88-19",
+      "title": "Private Letter Ruling \u00b7 Activities Exceeding Solicitation Standard in PL 86-272",
+      "href": "https://www.dor.sc.gov/income-tax-activities-exceeding-solicitation-standard-pl-86-272"
+    },
+    {
+      "cite": "South Carolina PLR88-13",
+      "title": "Private Letter Ruling \u00b7 Admissions Fees - Museum",
+      "href": "https://www.dor.sc.gov/admissions-tax-admissions-fees-museum"
+    },
+    {
+      "cite": "South Carolina PLR88-9",
+      "title": "Private Letter Ruling \u00b7 Allocation of Moving Expense Deduction",
+      "href": "https://www.dor.sc.gov/income-tax-allocation-moving-expense-deduction-0"
+    },
+    {
+      "cite": "South Carolina RR88-4",
+      "title": "Revenue Ruling \u00b7 Allocation of Moving Expense Deduction",
+      "href": "https://www.dor.sc.gov/income-tax-allocation-moving-expense-deduction-1"
+    },
+    {
+      "cite": "South Carolina TAM88-12",
+      "title": "Technical Advice Memorandum \u00b7 Apportionment Ratio/Intangible Drilling Costs",
+      "href": "https://www.dor.sc.gov/income-tax-apportionment-ratiointangible-drilling-costs"
+    },
+    {
+      "cite": "South Carolina RR88-5",
+      "title": "Revenue Ruling \u00b7 Capitalized Costs Included on Property Tax Return",
+      "href": "https://www.dor.sc.gov/property-tax-capitalized-costs-included-property-tax-return"
+    },
+    {
+      "cite": "South Carolina PLR88-21",
+      "title": "Private Letter Ruling \u00b7 Catalogs Printed in South Carolina",
+      "href": "https://www.dor.sc.gov/sales-use-tax-catalogs-printed-south-carolina"
+    },
+    {
+      "cite": "South Carolina PLR88-15",
+      "title": "Private Letter Ruling \u00b7 Clearing House for Telephone Receivables",
+      "href": "https://www.dor.sc.gov/sales-use-tax-clearing-house-telephone-receivables"
+    },
+    {
+      "cite": "South Carolina RR88-7",
+      "title": "Revenue Ruling \u00b7 Coin-Operated Laundromats",
+      "href": "https://www.dor.sc.gov/sales-use-tax-coin-operated-laundromats"
+    },
+    {
+      "cite": "South Carolina RR88-10",
+      "title": "Revenue Ruling \u00b7 Computation of South Carolina Net Income on Consolidated Returns",
+      "href": "https://www.dor.sc.gov/income-tax-computation-south-carolina-net-income-consolidated-returns"
+    },
+    {
+      "cite": "South Carolina TAM88-8",
+      "title": "Technical Advice Memorandum \u00b7 Computation of South Carolina Net Income on Consolidated Returns",
+      "href": "https://www.dor.sc.gov/income-tax-computation-south-carolina-net-income-consolidated-returns-0"
+    },
+    {
+      "cite": "South Carolina PLR88-20",
+      "title": "Private Letter Ruling \u00b7 Containers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-containers"
+    },
+    {
+      "cite": "South Carolina TAM88-18",
+      "title": "Technical Advice Memorandum \u00b7 Corporate Extensions",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-extensions"
+    },
+    {
+      "cite": "South Carolina TAM88-13",
+      "title": "Technical Advice Memorandum \u00b7 Corporate License Fee",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-license-fee"
+    },
+    {
+      "cite": "South Carolina TAM88-10",
+      "title": "Technical Advice Memorandum \u00b7 Credit for Tax Paid to Another State",
+      "href": "https://www.dor.sc.gov/income-tax-credit-tax-paid-another-state"
+    },
+    {
+      "cite": "South Carolina PLR88-6",
+      "title": "Private Letter Ruling \u00b7 Credit for Use Tax Paid to Another State",
+      "href": "https://www.dor.sc.gov/sales-use-tax-credit-use-tax-paid-another-state"
+    },
+    {
+      "cite": "South Carolina TAM88-7",
+      "title": "Technical Advice Memorandum \u00b7 Deeds Conveying Realty to and from certain Federally Chartered Institutions",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-deeds-conveying-realty-and-certain-federally-chartered-institutions"
+    },
+    {
+      "cite": "South Carolina TAM88-9",
+      "title": "Technical Advice Memorandum \u00b7 Depreciation on Safe Harbor Lease Transactions",
+      "href": "https://www.dor.sc.gov/income-tax-depreciation-safe-harbor-lease-transactions"
+    },
+    {
+      "cite": "South Carolina TAM88-19",
+      "title": "Technical Advice Memorandum \u00b7 Divorce - Distribution of Property",
+      "href": "https://www.dor.sc.gov/administrative-refunds-payments-divorce-distribution-property"
+    },
+    {
+      "cite": "South Carolina PLR88-2",
+      "title": "Private Letter Ruling \u00b7 Drop Shipments by Manufacturers",
+      "href": "https://www.dor.sc.gov/sales-use-tax-drop-shipments-manufacturers"
+    },
+    {
+      "cite": "South Carolina PLR88-17",
+      "title": "Private Letter Ruling \u00b7 Election to File Consolidated Return",
+      "href": "https://www.dor.sc.gov/income-tax-election-file-consolidated-return"
+    },
+    {
+      "cite": "South Carolina TAM88-11",
+      "title": "Technical Advice Memorandum \u00b7 Electricity Used in Administrative Offices of Power Company",
+      "href": "https://www.dor.sc.gov/electric-power-tax-electricity-used-administrative-offices-power-company"
+    },
+    {
+      "cite": "South Carolina TAM88-4",
+      "title": "Technical Advice Memorandum \u00b7 Farm Sales",
+      "href": "https://www.dor.sc.gov/sales-use-tax-farm-sales"
+    },
+    {
+      "cite": "South Carolina TAM88-14",
+      "title": "Technical Advice Memorandum \u00b7 Federal Excise Tax on Tires and Fuels",
+      "href": "https://www.dor.sc.gov/sales-use-tax-federal-excise-tax-tires-and-fuels"
+    },
+    {
+      "cite": "South Carolina TAM88-6",
+      "title": "Technical Advice Memorandum \u00b7 Fuel Used for Roasting of Coffee Beans",
+      "href": "https://www.dor.sc.gov/sales-use-tax-fuel-used-roasting-coffee-beans"
+    },
+    {
+      "cite": "South Carolina PLR88-10",
+      "title": "Private Letter Ruling \u00b7 Fuel Used in Tugs",
+      "href": "https://www.dor.sc.gov/sales-use-tax-fuel-used-tugs"
+    },
+    {
+      "cite": "South Carolina RR88-2",
+      "title": "Revenue Ruling \u00b7 Golf Packages",
+      "href": "https://www.dor.sc.gov/accommodations-tax-golf-packages"
+    },
+    {
+      "cite": "South Carolina RR88-8",
+      "title": "Revenue Ruling \u00b7 Hotel Accommodations for Federal Employees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-hotel-accommodations-federal-employees"
+    },
+    {
+      "cite": "South Carolina PLR88-11",
+      "title": "Private Letter Ruling \u00b7 Income Year Used As Basis For Computing License Fee",
+      "href": "https://www.dor.sc.gov/income-tax-income-year-used-basis-computing-license-fee"
+    },
+    {
+      "cite": "South Carolina PLR88-5",
+      "title": "Private Letter Ruling \u00b7 Lease Cancellation Fees",
+      "href": "https://www.dor.sc.gov/sales-use-tax-lease-cancellation-fees"
+    },
+    {
+      "cite": "South Carolina PLR88-16",
+      "title": "Private Letter Ruling \u00b7 Motor Vehicle Sale to Nonresident",
+      "href": "https://www.dor.sc.gov/sales-use-tax-motor-vehicle-sale-nonresident"
+    },
+    {
+      "cite": "South Carolina PLR88-3",
+      "title": "Private Letter Ruling \u00b7 Non-Appropriated Funds Instrumentalities",
+      "href": "https://www.dor.sc.gov/sales-use-tax-non-appropriated-funds-instrumentalities"
+    },
+    {
+      "cite": "South Carolina TAM88-22",
+      "title": "Technical Advice Memorandum \u00b7 Penalty for Failure to File a Return",
+      "href": "https://www.dor.sc.gov/income-tax-penalty-failure-file-return"
+    },
+    {
+      "cite": "South Carolina RR88-1",
+      "title": "Revenue Ruling \u00b7 Penalty for Underpayment of Estimated Tax",
+      "href": "https://www.dor.sc.gov/income-tax-penalty-underpayment-estimated-tax-0"
+    },
+    {
+      "cite": "South Carolina TAM88-2",
+      "title": "Technical Advice Memorandum \u00b7 Penalty for Underpayment of Estimated Tax",
+      "href": "https://www.dor.sc.gov/income-tax-penalty-underpayment-estimated-tax-1"
+    },
+    {
+      "cite": "South Carolina TAM88-20",
+      "title": "Technical Advice Memorandum \u00b7 Products of the Farm, Grove, Vineyard and Garden",
+      "href": "https://www.dor.sc.gov/sales-use-tax-products-farm-grove-vineyard-and-garden"
+    },
+    {
+      "cite": "South Carolina RR88-11",
+      "title": "Revenue Ruling \u00b7 Promotional Tickets",
+      "href": "https://www.dor.sc.gov/admissions-tax-promotional-tickets"
+    },
+    {
+      "cite": "South Carolina PLR88-22",
+      "title": "Private Letter Ruling \u00b7 Prosthetic Devices Sold to Hospitals, Clinics & Doctors",
+      "href": "https://www.dor.sc.gov/sales-use-tax-prosthetic-devices-sold-hospitals-clinics-doctors"
+    },
+    {
+      "cite": "South Carolina PLR88-14",
+      "title": "Private Letter Ruling \u00b7 Real Estate Transfer",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-real-estate-transfer"
+    },
+    {
+      "cite": "South Carolina TAM88-15",
+      "title": "Technical Advice Memorandum \u00b7 Real Estate Transfers",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-real-estate-transfers"
+    },
+    {
+      "cite": "South Carolina PLR88-23",
+      "title": "Private Letter Ruling \u00b7 Sale of Aircraft Parts; Form ST-299",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sale-aircraft-parts-form-st-299"
+    },
+    {
+      "cite": "South Carolina TAM88-23",
+      "title": "Technical Advice Memorandum \u00b7 Sales by Veterinarians",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-veterinarians"
+    },
+    {
+      "cite": "South Carolina PLR88-4",
+      "title": "Private Letter Ruling \u00b7 Sales of United States Mint Constitution Coins",
+      "href": "https://www.dor.sc.gov/sales-use-tax-sales-united-states-mint-constitution-coins"
+    },
+    {
+      "cite": "South Carolina TAM88-17",
+      "title": "Technical Advice Memorandum \u00b7 Section 2032A Election",
+      "href": "https://www.dor.sc.gov/estate-gift-tax-section-2032a-election"
+    },
+    {
+      "cite": "South Carolina PLR88-7",
+      "title": "Private Letter Ruling \u00b7 Tax Exempt Status of County Jail Facility",
+      "href": "https://www.dor.sc.gov/property-tax-tax-exempt-status-county-jail-facility"
+    },
+    {
+      "cite": "South Carolina TAM88-3",
+      "title": "Technical Advice Memorandum \u00b7 Tax on Lump-Sum Distributions/Capital Gain Election",
+      "href": "https://www.dor.sc.gov/income-tax-tax-lump-sum-distributionscapital-gain-election"
+    },
+    {
+      "cite": "South Carolina PLR88-12",
+      "title": "Private Letter Ruling \u00b7 Taxability of Corporate Distribution from Out-of-State Corporation and Deductibility of Interest Expense Incurred to buy Out-of-State Stock",
+      "href": "https://www.dor.sc.gov/income-tax-taxability-corporate-distribution-out-state-corporation-and-deductibility-interest-expense-incurred"
+    },
+    {
+      "cite": "South Carolina PLR88-8",
+      "title": "Private Letter Ruling \u00b7 Taxation of Pre-need Burial Contract Service Trust Arrangements",
+      "href": "https://www.dor.sc.gov/income-tax-taxation-pre-need-burial-contract-service-trust-arrangements"
+    },
+    {
+      "cite": "South Carolina RR88-3",
+      "title": "Revenue Ruling \u00b7 Taxation of Pre-need Burial Contract Service Trust Arrangements",
+      "href": "https://www.dor.sc.gov/income-tax-taxation-pre-need-burial-contract-service-trust-arrangements-0"
+    },
+    {
+      "cite": "South Carolina RR88-6",
+      "title": "Revenue Ruling \u00b7 Timber Deeds",
+      "href": "https://www.dor.sc.gov/deed-recording-fee-timber-deeds-0"
+    },
+    {
+      "cite": "South Carolina TAM88-21",
+      "title": "Technical Advice Memorandum \u00b7 Withholding W-4",
+      "href": "https://www.dor.sc.gov/income-tax-withholding-w-4"
+    },
+    {
+      "cite": "South Carolina TAM87-13",
+      "title": "Technical Advice Memorandum \u00b7 $300 Sales/Use Tax Cap",
+      "href": "https://www.dor.sc.gov/sales-use-tax-300-salesuse-tax-cap"
+    },
+    {
+      "cite": "South Carolina PLR87-10",
+      "title": "Private Letter Ruling \u00b7 Abandoned Property",
+      "href": "https://www.dor.sc.gov/property-tax-abandoned-property"
+    },
+    {
+      "cite": "South Carolina RR87-9",
+      "title": "Revenue Ruling \u00b7 Ad Valorem Tax Designation of Land as Agricultural Use",
+      "href": "https://www.dor.sc.gov/property-tax-ad-valorem-tax-designation-land-agricultural-use"
+    },
+    {
+      "cite": "South Carolina PLR87-9",
+      "title": "Private Letter Ruling \u00b7 Clove Cigarettes",
+      "href": "https://www.dor.sc.gov/cigarette-tobacco-taxes-clove-cigarettes"
+    },
+    {
+      "cite": "South Carolina PLR87-5",
+      "title": "Private Letter Ruling \u00b7 Corporate Income Taxation of XYZ Company and Subsidiary, ABC, Inc.",
+      "href": "https://www.dor.sc.gov/income-tax-corporate-income-taxation-xyz-company-and-subsidiary-abc-inc"
+    },
+    {
+      "cite": "South Carolina PLR87-4",
+      "title": "Private Letter Ruling \u00b7 Depreciation Allowance - Valuation of Property",
+      "href": "https://www.dor.sc.gov/property-tax-depreciation-allowance-valuation-property"
+    },
+    {
+      "cite": "South Carolina TAM87-9",
+      "title": "Technical Advice Memorandum \u00b7 Estimated Assessments",
+      "href": "https://www.dor.sc.gov/income-tax-estimated-assessments"
+    },
+    {
+      "cite": "South Carolina RR87-4",
+      "title": "Revenue Ruling \u00b7 Exempt Interest",
+      "href": "https://www.dor.sc.gov/income-tax-exempt-interest"
+    },
+    {
+      "cite": "South Carolina RR87-6",
+      "title": "Revenue Ruling \u00b7 Exempt Interest",
+      "href": "https://www.dor.sc.gov/income-tax-exempt-interest-0"
+    },
+    {
+      "cite": "South Carolina TAM87-4",
+      "title": "Technical Advice Memorandum \u00b7 Exempt Interest",
+      "href": "https://www.dor.sc.gov/income-tax-exempt-interest-1"
+    },
+    {
+      "cite": "South Carolina PLR87-6",
+      "title": "Private Letter Ruling \u00b7 Exempt Interest - Dividends",
+      "href": "https://www.dor.sc.gov/income-tax-exempt-interest-dividends"
+    },
+    {
+      "cite": "South Carolina PLR87-1",
+      "title": "Private Letter Ruling \u00b7 Exemptions from Sales and Use Tax",
+      "href": "https://www.dor.sc.gov/sales-use-tax-exemptions-sales-and-use-tax"
+    },
+    {
+      "cite": "South Carolina TAM87-2",
+      "title": "Technical Advice Memorandum \u00b7 Extension for Filing - Penalty",
+      "href": "https://www.dor.sc.gov/income-tax-extension-filing-penalty"
+    },
+    {
+      "cite": "South Carolina TAM87-14",
+      "title": "Technical Advice Memorandum \u00b7 Extension For Filing - Penalty",
+      "href": "https://www.dor.sc.gov/income-tax-extension-filing-penalty-0"
+    },
+    {
+      "cite": "South Carolina RR87-2",
+      "title": "Revenue Ruling \u00b7 Income From Subchapter S Corporations",
+      "href": "https://www.dor.sc.gov/income-tax-income-subchapter-s-corporations"
+    },
+    {
+      "cite": "South Carolina PLR87-7",
+      "title": "Private Letter Ruling \u00b7 Income Tax Credit",
+      "href": "https://www.dor.sc.gov/income-tax-income-tax-credit"
+    },
+    {
+      "cite": "South Carolina TAM87-7",
+      "title": "Technical Advice Memorandum \u00b7 Interest Computation on Overpayment of Estimated Tax",
+      "href": "https://www.dor.sc.gov/income-tax-interest-computation-overpayment-estimated-tax"
+    },
+    {
+      "cite": "South Carolina RR87-3",
+      "title": "Revenue Ruling \u00b7 Interest on Bonds Issued by Puerto Rico",
+      "href": "https://www.dor.sc.gov/income-tax-interest-bonds-issued-puerto-rico"
+    },
+    {
+      "cite": "South Carolina TAM87-8",
+      "title": "Technical Advice Memorandum \u00b7 License Fee-Railroad Property",
+      "href": "https://www.dor.sc.gov/income-tax-license-fee-railroad-property"
+    },
+    {
+      "cite": "South Carolina PLR87-2",
+      "title": "Private Letter Ruling \u00b7 Lien Against the Estate of Mr. X, Warrant for Distraint",
+      "href": "https://www.dor.sc.gov/sales-use-tax-lien-against-estate-mr-x-warrant-distraint"
+    },
+    {
+      "cite": "South Carolina PLR87-12",
+      "title": "Private Letter Ruling \u00b7 Marital Deduction",
+      "href": "https://www.dor.sc.gov/property-tax-marital-deduction"
+    },
+    {
+      "cite": "South Carolina TAM87-6",
+      "title": "Technical Advice Memorandum \u00b7 Net Operating Loss Deduction - Nonresident Partner",
+      "href": "https://www.dor.sc.gov/income-tax-net-operating-loss-deduction-nonresident-partner"
+    },
+    {
+      "cite": "South Carolina TAM87-12",
+      "title": "Technical Advice Memorandum \u00b7 Net Operating Loss Deduction on Consolidated Return",
+      "href": "https://www.dor.sc.gov/income-tax-net-operating-loss-deduction-consolidated-return"
+    },
+    {
+      "cite": "South Carolina TAM87-10",
+      "title": "Technical Advice Memorandum \u00b7 Nonresident Partners Filing Single Returns",
+      "href": "https://www.dor.sc.gov/income-tax-nonresident-partners-filing-single-returns"
+    },
+    {
+      "cite": "South Carolina TAM87-15",
+      "title": "Technical Advice Memorandum \u00b7 Penalties for Failure to Withhold or Remit Tax Imposed by 12-9-820 and 12-54-40",
+      "href": "https://www.dor.sc.gov/income-tax-penalties-failure-withhold-or-remit-tax-imposed-12-9-820-and-12-54-40"
+    },
+    {
+      "cite": "South Carolina TAM87-3",
+      "title": "Technical Advice Memorandum \u00b7 Penalty For Failure to File and Failure to Pay",
+      "href": "https://www.dor.sc.gov/income-tax-penalty-failure-file-and-failure-pay"
+    },
+    {
+      "cite": "South Carolina TAM87-1",
+      "title": "Technical Advice Memorandum \u00b7 Penalty For Underpayment of Declaration of Estimated Tax",
+      "href": "https://www.dor.sc.gov/income-tax-penalty-underpayment-declaration-estimated-tax"
+    },
+    {
+      "cite": "South Carolina PLR87-11",
+      "title": "Private Letter Ruling \u00b7 Property Tax Exemption - New Manufacturing Establishment",
+      "href": "https://www.dor.sc.gov/property-tax-property-tax-exemption-new-manufacturing-establishment"
+    },
+    {
+      "cite": "South Carolina RR87-8",
+      "title": "Revenue Ruling \u00b7 Research and Development Machinery Sales/Use Tax Limitations",
+      "href": "https://www.dor.sc.gov/sales-use-tax-research-and-development-machinery-salesuse-tax-limitations"
+    },
+    {
+      "cite": "South Carolina TAM87-5",
+      "title": "Technical Advice Memorandum \u00b7 Residential Area Lights",
+      "href": "https://www.dor.sc.gov/sales-use-tax-residential-area-lights"
+    },
+    {
+      "cite": "South Carolina RR87-5",
+      "title": "Revenue Ruling \u00b7 Tax Credit for New Jobs",
+      "href": "https://www.dor.sc.gov/income-tax-tax-credit-new-jobs"
+    },
+    {
+      "cite": "South Carolina PLR87-8",
+      "title": "Private Letter Ruling \u00b7 Tax Status of XYZ's Thrift Store",
+      "href": "https://www.dor.sc.gov/income-tax-tax-status-xyzs-thrift-store"
+    },
+    {
+      "cite": "South Carolina PLR87-3",
+      "title": "Private Letter Ruling \u00b7 Taxation of Tire Shredding Machines",
+      "href": "https://www.dor.sc.gov/sales-use-tax-taxation-tire-shredding-machines"
+    },
+    {
+      "cite": "South Carolina RR87-1",
+      "title": "Revenue Ruling \u00b7 Transfers of Tangible Personal Property Pursuant to the Formation of a Corporation",
+      "href": "https://www.dor.sc.gov/sales-use-tax-transfers-tangible-personal-property-pursuant-formation-corporation"
+    }
+  ]
+}

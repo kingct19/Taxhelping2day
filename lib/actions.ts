@@ -10,7 +10,8 @@ import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { getStore } from "@/lib/store";
 import { buildSignedPdf } from "@/lib/pdf";
-import { documentKinds, isEfileSigner, isFilingJurisdiction, isFilingStatus, isRequestBlock, isTaskStatus, taxpayerTypes, type DocumentKind, type EfileSigner, type RequestState, type TaxpayerType } from "@/lib/types";
+import { formatBytes } from "@/lib/inbox-view";
+import { documentKinds, isConversationChannel, isEfileSigner, isFilingJurisdiction, isFilingStatus, isRequestBlock, isTaskStatus, taxpayerTypes, type ConversationChannel, type ConversationPatch, type DocumentKind, type EfileSigner, type RequestState, type TaxpayerType } from "@/lib/types";
 
 function isTaxpayerType(value: string): value is TaxpayerType {
   return taxpayerTypes.some((item) => item === value);
@@ -262,9 +263,95 @@ export async function postMessage(formData: FormData) {
     authorRole: profile.role,
     body,
     kind,
+    delivery: kind === "message" ? "sent" : null,
   });
   revalidatePath("/inbox");
   revalidatePath("/portal");
+}
+
+export async function updateConversation(id: string, patch: ConversationPatch) {
+  await requireProfile("staff");
+  if (!id) return;
+  await getStore().updateConversation(id, patch);
+  revalidatePath("/inbox");
+}
+
+export async function markConversationRead(id: string) {
+  await requireProfile("staff");
+  if (!id) return;
+  await getStore().markConversationRead(id);
+  revalidatePath("/inbox");
+}
+
+export async function createInboxConversation(input: { profileId: string; subject: string; channel: string; body: string }) {
+  const staff = await requireProfile("staff");
+  const channel: ConversationChannel = isConversationChannel(input.channel) ? input.channel : "chat";
+  const store = getStore();
+  const client = await store.getProfile(input.profileId);
+  if (!client || client.role !== "client") return null;
+  const conversation = await store.createConversation({
+    profileId: client.id,
+    subject: input.subject.trim() || client.name || client.email,
+    channel,
+    assigneeId: staff.id,
+    createdByMe: true,
+  });
+  const body = input.body.trim();
+  if (body) {
+    await store.addMessage({
+      profileId: client.id,
+      conversationId: conversation.id,
+      authorId: staff.id,
+      authorRole: "staff",
+      body,
+      kind: "message",
+      delivery: "sent",
+    });
+  }
+  revalidatePath("/inbox");
+  return client.id;
+}
+
+export async function sendConversationMessage(formData: FormData) {
+  const staff = await requireProfile("staff");
+  const conversationId = String(formData.get("conversationId") ?? "");
+  const body = String(formData.get("body") ?? "").trim();
+  const kind = String(formData.get("kind") ?? "message") === "note" ? "note" : "message";
+  const store = getStore();
+  const conversation = await store.getConversation(conversationId);
+  if (!conversation) return;
+  const files = formData.getAll("files").filter((item): item is File => item instanceof File && item.size > 0);
+  const attachments = [];
+  for (const file of files) {
+    const document = await store.addDocument({
+      profileId: conversation.profileId,
+      kind: "other",
+      filename: file.name || "attachment",
+      contentType: file.type || "application/octet-stream",
+      bytes: Buffer.from(await file.arrayBuffer()),
+    });
+    attachments.push({
+      id: document.id,
+      name: document.filename,
+      size: formatBytes(file.size),
+      type: file.type.startsWith("image/") ? "image" as const : "file" as const,
+      documentId: document.id,
+      url: `/files/documents/${document.id}`,
+    });
+  }
+  if (!body && attachments.length === 0) return;
+  await store.addMessage({
+    profileId: conversation.profileId,
+    conversationId: conversation.id,
+    authorId: staff.id,
+    authorRole: "staff",
+    body: body || "Attachment",
+    kind,
+    delivery: kind === "message" ? "sent" : null,
+    attachments,
+  });
+  revalidatePath("/inbox");
+  revalidatePath(`/contacts/${conversation.profileId}`);
 }
 
 export async function setFileFlags(formData: FormData) {
@@ -302,6 +389,8 @@ export async function saveIdentity(formData: FormData) {
   });
   revalidatePath("/inbox");
   revalidatePath("/tasks");
+  revalidatePath("/contacts");
+  revalidatePath(`/contacts/${clientId}`);
 }
 
 export async function setTaskStatus(formData: FormData) {

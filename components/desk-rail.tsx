@@ -31,13 +31,28 @@ const itemClass = (active: boolean) =>
       : "hover:bg-primary/10 hover:text-primary",
   );
 
-export function DeskRail({ items, homeHref, search }: { items: DeskItem[]; homeHref: string; search: DeskSearchItem[] }) {
+export function DeskRail({
+  items,
+  homeHref,
+  search,
+  inset = false,
+}: {
+  items: DeskItem[];
+  homeHref: string;
+  search: DeskSearchItem[];
+  inset?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
     <TooltipProvider>
-      <aside className="flex w-16 shrink-0 flex-col items-center border-r border-sidebar-border bg-sidebar pb-3 text-sidebar-foreground">
-        <div className="flex h-14 w-full items-center justify-center border-b border-sidebar-border">
+      <aside
+        className={cn(
+          "flex w-16 shrink-0 flex-col items-center bg-sidebar pb-3 text-sidebar-foreground",
+          inset ? "my-2 ml-2 overflow-hidden rounded-xl" : "border-r border-sidebar-border",
+        )}
+      >
+        <div className={cn("flex h-14 w-full items-center justify-center", !inset && "border-b border-sidebar-border")}>
           <Link href={homeHref} aria-label="TaxHelping2Day" className="flex size-9 items-center justify-center overflow-hidden rounded-md">
             <Image src="/brand/logo.jpg" alt="" width={36} height={36} className="size-9 object-cover" />
           </Link>

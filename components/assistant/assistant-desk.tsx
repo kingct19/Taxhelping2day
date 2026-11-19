@@ -6,12 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 
 const storageKey = "th2d-assistant-note";
 
-export function AssistantDesk() {
+export function AssistantDesk({ prompt }: { prompt?: string }) {
   const [note, setNote] = useState("");
 
   useEffect(() => {
+    if (prompt) {
+      setNote(prompt);
+      return;
+    }
     setNote(window.localStorage.getItem(storageKey) ?? "");
-  }, []);
+  }, [prompt]);
 
   function save(next: string) {
     setNote(next);
@@ -41,7 +45,7 @@ export function AssistantDesk() {
           </section>
           <section className="flex flex-col gap-1">
             <h2 className="text-sm font-medium">Sources</h2>
-            <p className="text-sm text-muted-foreground">Firm pages live in the Library. They are not connected here, and client uploads are not a source.</p>
+            <p className="text-sm text-muted-foreground">The Library holds the Internal Revenue Code, the Treasury regulations, and the official shelves for IRS, court, treaty, and state material. This note is not connected to them, and client uploads are not a source.</p>
           </section>
         </aside>
         <section className="flex min-h-0 flex-col gap-3 overflow-auto p-4">

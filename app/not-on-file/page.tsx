@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function NotOnFilePage() {
   return (
-    <main className="flex min-h-full items-center justify-center bg-background px-6 py-16">
+    <main className="site flex min-h-full items-center justify-center bg-background px-6 py-16 text-foreground">
       <div className="flex max-w-md flex-col gap-4">
         <h1 className="font-serif text-3xl">This email is not on file</h1>
         <p className="text-muted-foreground">

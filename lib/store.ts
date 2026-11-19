@@ -1,3 +1,5 @@
+import { blankConversation, conversationFromSupabase, normalizeConversation, normalizeMessage, parseAttachments, parseDelivery, seedConversations } from "@/lib/conversation";
+import { defaultSuggestions } from "@/lib/inbox-view";
 import { initialWorkflow, type TeamReturn, type Workflow } from "@/lib/return-workflow";
 import { randomBytes, randomUUID } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
@@ -7,6 +9,9 @@ import { decryptText, encryptText, hashToken, last4 } from "@/lib/crypto";
 import { staffEmails } from "@/lib/firm";
 import { normalizeRequestBlock, normalizeRequestState } from "@/lib/request-thread";
 import type {
+  Conversation,
+  ConversationChannel,
+  ConversationPatch,
   DocumentKind,
   DocumentRecord,
   ClientTask,
@@ -14,6 +19,8 @@ import type {
   FilingRecord,
   IdentityNote,
   Message,
+  MessageAttachment,
+  MessageDelivery,
   Profile,
   ProfileUpdate,
   Role,
@@ -43,6 +50,7 @@ type Database = {
   documents: StoredDocument[];
   signatures: StoredSignature[];
   messages: Message[];
+  conversations: Conversation[];
   tokens: MagicToken[];
   identityNotes: IdentityNote[];
   tasks: ClientTask[];
@@ -90,6 +98,17 @@ export type Store = {
   }): Promise<SignatureRecord>;
   readSignature(id: string): Promise<{ record: SignatureRecord; bytes: Buffer } | null>;
   listMessages(profileId: string): Promise<Message[]>;
+  listInbox(): Promise<{ conversations: Conversation[]; messages: Message[] }>;
+  getConversation(id: string): Promise<Conversation | null>;
+  createConversation(input: {
+    profileId: string;
+    subject: string;
+    channel: ConversationChannel;
+    assigneeId: string | null;
+    createdByMe: boolean;
+  }): Promise<Conversation>;
+  updateConversation(id: string, patch: ConversationPatch): Promise<Conversation | null>;
+  markConversationRead(id: string): Promise<void>;
   addMessage(input: {
     previousId?: string;
     requestState?: NonNullable<Message["requestState"]>;
@@ -98,10 +117,13 @@ export type Store = {
     documentId?: string;
     signatureId?: string;
     profileId: string;
+    conversationId?: string;
     authorId: string;
     authorRole: Role;
     body: string;
     kind: "message" | "event" | "note";
+    delivery?: MessageDelivery | null;
+    attachments?: MessageAttachment[];
   }): Promise<Message>;
   getIdentity(profileId: string): Promise<IdentityNote | null>;
   saveIdentity(input: IdentityNote): Promise<IdentityNote>;
@@ -117,7 +139,7 @@ const dataDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dataDir, "db.json");
 
 function emptyDb(): Database {
-  return { returns: [], profiles: [], documents: [], signatures: [], messages: [], tokens: [], identityNotes: [], tasks: [], staffAllowlist: [], filings: [], authorizations: [] };
+  return { returns: [], profiles: [], documents: [], signatures: [], messages: [], conversations: [], tokens: [], identityNotes: [], tasks: [], staffAllowlist: [], filings: [], authorizations: [] };
 }
 
 function readDb(raw: string): Database {
@@ -128,6 +150,7 @@ function readDb(raw: string): Database {
     documents: parsed.documents ?? [],
     signatures: parsed.signatures ?? [],
     messages: parsed.messages ?? [],
+    conversations: parsed.conversations ?? [],
     tokens: parsed.tokens ?? [],
     identityNotes: parsed.identityNotes ?? [],
     tasks: parsed.tasks ?? [],
@@ -142,7 +165,21 @@ function publicMessage(row: Message): Message {
     ...row,
     requestState: normalizeRequestState(row.requestState),
     requestBlock: normalizeRequestBlock(row.requestBlock),
+    ...normalizeMessage(row),
   };
+}
+
+function attachConversation(db: Database, message: Message) {
+  seedConversations(db.conversations, db.profiles, db.messages);
+  const explicit = message.conversationId ? db.conversations.find((item) => item.id === message.conversationId) : undefined;
+  const open = db.conversations
+    .filter((item) => item.profileId === message.profileId && item.status !== "closed" && !item.isSpam)
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
+  const conversation = explicit ?? open ?? blankConversation({ id: message.profileId, name: "", email: "Conversation", starred: false, snoozedUntil: null });
+  if (!explicit && !open) db.conversations.push(conversation);
+  conversation.updatedAt = message.createdAt;
+  if (message.authorRole === "client" && message.kind === "message") conversation.unreadCount += 1;
+  message.conversationId = conversation.id;
 }
 
 function blankTask(profileId: string, kind: TaskKind): ClientTask {
@@ -383,9 +420,56 @@ const localStore: Store = {
     });
   },
   async listMessages(profileId) {
-    return withDb(false, (db) =>
-      db.messages.filter((item) => item.profileId === profileId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map(publicMessage),
-    );
+    return withDb(true, (db) => {
+      seedConversations(db.conversations, db.profiles, db.messages);
+      return db.messages.filter((item) => item.profileId === profileId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map(publicMessage);
+    });
+  },
+  async listInbox() {
+    return withDb(true, (db) => {
+      seedConversations(db.conversations, db.profiles, db.messages);
+      return {
+        conversations: db.conversations.map((item) => normalizeConversation(item)),
+        messages: db.messages.map(publicMessage),
+      };
+    });
+  },
+  async getConversation(id) {
+    return withDb(false, (db) => {
+      const conversation = db.conversations.find((item) => item.id === id);
+      return conversation ? normalizeConversation(conversation) : null;
+    });
+  },
+  async createConversation(input) {
+    return withDb(true, (db) => {
+      const profile = db.profiles.find((item) => item.id === input.profileId);
+      const conversation = blankConversation(
+        profile ?? { id: input.profileId, name: "", email: input.subject, starred: false, snoozedUntil: null },
+        { subject: input.subject, channel: input.channel, assigneeId: input.assigneeId, createdByMe: input.createdByMe },
+      );
+      db.conversations.push(conversation);
+      return conversation;
+    });
+  },
+  async updateConversation(id, patch) {
+    return withDb(true, (db) => {
+      const conversation = db.conversations.find((item) => item.id === id);
+      if (!conversation) return null;
+      Object.assign(conversation, patch, { updatedAt: new Date().toISOString() });
+      return { ...conversation };
+    });
+  },
+  async markConversationRead(id) {
+    await withDb(true, (db) => {
+      const conversation = db.conversations.find((item) => item.id === id);
+      if (!conversation) return;
+      conversation.unreadCount = 0;
+      for (const message of db.messages) {
+        if (message.conversationId === id && message.authorRole === "client" && message.kind === "message") {
+          message.delivery = "seen";
+        }
+      }
+    });
   },
   async addMessage(input) {
     const message: Message = {
@@ -397,14 +481,18 @@ const localStore: Store = {
       body: input.body,
       kind: input.kind,
       createdAt: new Date().toISOString(),
+      conversationId: input.conversationId ?? null,
+      delivery: input.delivery ?? null,
+      attachments: input.attachments ?? [],
     };
     await withDb(true, (db) => {
-      if (input.previousId && db.messages.some(row => row.previousId === input.previousId)) {
+      if (input.previousId && db.messages.some((row) => row.previousId === input.previousId)) {
         throw new Error("This request already changed. Refresh to see the latest status.");
       }
+      attachConversation(db, message);
       db.messages.push(message);
     });
-    return message;
+    return publicMessage(message);
   },
   async listFilings(returnId) {
     return withDb(false, (db) => db.filings.filter((item) => !returnId || item.returnId === returnId));
@@ -824,17 +912,105 @@ function supabaseStore(client: SupabaseClient): Store {
       };
     },
     async listMessages(profileId) {
-      const { data, error } = await client
-        .from("messages")
-        .select("*")
-        .eq("profile_id", profileId)
-        .order("created_at");
-      if (error) {
-        throw new Error(error.message);
+      const inbox = await this.listInbox();
+      return inbox.messages.filter((item) => item.profileId === profileId);
+    },
+    async listInbox() {
+      const profiles = await this.listProfiles();
+      const { data, error } = await client.from("conversations").select("*");
+      if (error) throw new Error(error.message);
+      let conversations = ((data ?? []) as Record<string, unknown>[]).map(conversationFromSupabase);
+      const missing = profiles.filter((profile) => profile.role === "client" && !conversations.some((item) => item.profileId === profile.id));
+      if (missing.length > 0) {
+        const inserted = await client
+          .from("conversations")
+          .insert(missing.map((profile) => ({
+            profile_id: profile.id,
+            subject: profile.name || profile.email,
+            channel: "chat",
+            status: profile.snoozedUntil && new Date(profile.snoozedUntil).getTime() > Date.now() ? "snoozed" : "open",
+            priority: "none",
+            starred: profile.starred,
+            suggestions: defaultSuggestions,
+          })))
+          .select("*");
+        if (inserted.error) throw new Error(inserted.error.message);
+        const created = ((inserted.data ?? []) as Record<string, unknown>[]).map(conversationFromSupabase);
+        conversations = [...conversations, ...created];
+        for (const conversation of created) {
+          const linked = await client.from("messages").update({ conversation_id: conversation.id }).eq("profile_id", conversation.profileId).is("conversation_id", null);
+          if (linked.error) throw new Error(linked.error.message);
+        }
       }
-      return (data as Array<Record<string, string | null>>).map(messageFromSupabase);
+      const messages: Message[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const page = await client.from("messages").select("*").order("created_at").range(offset, offset + 499);
+        if (page.error) throw new Error(page.error.message);
+        messages.push(...((page.data ?? []) as Record<string, unknown>[]).map(messageFromSupabase));
+        if ((page.data ?? []).length < 500) break;
+      }
+      return { conversations, messages };
+    },
+    async getConversation(id) {
+      const { data, error } = await client.from("conversations").select("*").eq("id", id).maybeSingle();
+      if (error) throw new Error(error.message);
+      return data ? conversationFromSupabase(data as Record<string, unknown>) : null;
+    },
+    async createConversation(input) {
+      const profile = await this.getProfile(input.profileId);
+      const conversation = blankConversation(
+        profile ?? { id: input.profileId, name: "", email: input.subject, starred: false, snoozedUntil: null },
+        input,
+      );
+      const { data, error } = await client.from("conversations").insert({
+        id: conversation.id,
+        profile_id: conversation.profileId,
+        subject: conversation.subject,
+        channel: conversation.channel,
+        status: conversation.status,
+        priority: conversation.priority,
+        assignee_id: conversation.assigneeId,
+        team_inbox: conversation.teamInbox,
+        tags: conversation.tags,
+        unread_count: conversation.unreadCount,
+        starred: conversation.starred,
+        mentioned: conversation.mentioned,
+        created_by_me: conversation.createdByMe,
+        is_spam: conversation.isSpam,
+        suggestions: conversation.suggestions,
+        created_at: conversation.createdAt,
+        updated_at: conversation.updatedAt,
+      }).select("*").single();
+      if (error) throw new Error(error.message);
+      return conversationFromSupabase(data as Record<string, unknown>);
+    },
+    async updateConversation(id, patch) {
+      const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (patch.subject !== undefined) update.subject = patch.subject;
+      if (patch.channel !== undefined) update.channel = patch.channel;
+      if (patch.status !== undefined) update.status = patch.status;
+      if (patch.priority !== undefined) update.priority = patch.priority;
+      if (patch.assigneeId !== undefined) update.assignee_id = patch.assigneeId;
+      if (patch.teamInbox !== undefined) update.team_inbox = patch.teamInbox;
+      if (patch.tags !== undefined) update.tags = patch.tags;
+      if (patch.unreadCount !== undefined) update.unread_count = patch.unreadCount;
+      if (patch.starred !== undefined) update.starred = patch.starred;
+      if (patch.mentioned !== undefined) update.mentioned = patch.mentioned;
+      if (patch.createdByMe !== undefined) update.created_by_me = patch.createdByMe;
+      if (patch.isSpam !== undefined) update.is_spam = patch.isSpam;
+      if (patch.suggestions !== undefined) update.suggestions = patch.suggestions;
+      const { data, error } = await client.from("conversations").update(update).eq("id", id).select("*").maybeSingle();
+      if (error) throw new Error(error.message);
+      return data ? conversationFromSupabase(data as Record<string, unknown>) : null;
+    },
+    async markConversationRead(id) {
+      const cleared = await client.from("conversations").update({ unread_count: 0 }).eq("id", id);
+      if (cleared.error) throw new Error(cleared.error.message);
+      const seen = await client.from("messages").update({ delivery: "seen" }).eq("conversation_id", id).eq("author_role", "client").eq("kind", "message");
+      if (seen.error) throw new Error(seen.error.message);
     },
     async addMessage(input) {
+      const conversationId = await ensureConversationId(client, input.profileId, input.conversationId);
       const { data, error } = await client
         .from("messages")
         .insert({
@@ -843,6 +1019,9 @@ function supabaseStore(client: SupabaseClient): Store {
           author_role: input.authorRole,
           previous_id: input.previousId, request_state: input.requestState, request_block: input.requestBlock ?? null,
           return_id: input.returnId, document_id: input.documentId, signature_id: input.signatureId,
+          conversation_id: conversationId,
+          delivery: input.delivery ?? null,
+          attachments: input.attachments ?? [],
           body: input.body,
           kind: input.kind,
         })
@@ -851,7 +1030,18 @@ function supabaseStore(client: SupabaseClient): Store {
       if (error) {
         throw new Error(error.message);
       }
-      return messageFromSupabase(data as Record<string, string | null>);
+      const now = new Date().toISOString();
+      if (input.authorRole === "client" && input.kind === "message") {
+        const current = await client.from("conversations").select("unread_count").eq("id", conversationId).maybeSingle();
+        if (current.error) throw new Error(current.error.message);
+        const unread = Number((current.data as { unread_count?: number } | null)?.unread_count ?? 0) + 1;
+        const bumped = await client.from("conversations").update({ unread_count: unread, updated_at: now }).eq("id", conversationId);
+        if (bumped.error) throw new Error(bumped.error.message);
+      } else {
+        const touched = await client.from("conversations").update({ updated_at: now }).eq("id", conversationId);
+        if (touched.error) throw new Error(touched.error.message);
+      }
+      return messageFromSupabase(data as Record<string, unknown>);
     },
     async getIdentity(profileId) {
       const { data } = await client.from("identity_notes").select("*").eq("profile_id", profileId).maybeSingle();
@@ -1075,22 +1265,56 @@ function supabaseStore(client: SupabaseClient): Store {
   };
 }
 
-function messageFromSupabase(row: Record<string, string | null>): Message {
+async function ensureConversationId(client: SupabaseClient, profileId: string, conversationId?: string) {
+  if (conversationId) return conversationId;
+  const open = await client
+    .from("conversations")
+    .select("id")
+    .eq("profile_id", profileId)
+    .eq("is_spam", false)
+    .neq("status", "closed")
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  if (open.error) throw new Error(open.error.message);
+  const existing = (open.data?.[0] as { id: string } | undefined)?.id;
+  if (existing) return existing;
+  const profile = await client.from("profiles").select("name, email, starred, snoozed_until").eq("id", profileId).maybeSingle();
+  if (profile.error) throw new Error(profile.error.message);
+  const row = profile.data as { name?: string; email?: string; starred?: boolean; snoozed_until?: string | null } | null;
+  const snoozed = Boolean(row?.snoozed_until && new Date(row.snoozed_until).getTime() > Date.now());
+  const inserted = await client.from("conversations").insert({
+    profile_id: profileId,
+    subject: row?.name || row?.email || "Conversation",
+    channel: "chat",
+    status: snoozed ? "snoozed" : "open",
+    priority: "none",
+    starred: Boolean(row?.starred),
+    suggestions: defaultSuggestions,
+  }).select("id").single();
+  if (inserted.error) throw new Error(inserted.error.message);
+  return (inserted.data as { id: string }).id;
+}
+
+function messageFromSupabase(row: Record<string, unknown>): Message {
   const kind = row.kind === "note" || row.kind === "event" ? row.kind : "message";
+  const authorRole = row.author_role === "staff" ? "staff" : "client";
   return {
     id: String(row.id),
     profileId: String(row.profile_id),
     authorId: String(row.author_id),
-    authorRole: row.author_role === "staff" ? "staff" : "client",
-    previousId: row.previous_id,
-    requestState: normalizeRequestState(row.request_state),
-    requestBlock: normalizeRequestBlock(row.request_block),
-    returnId: row.return_id,
-    documentId: row.document_id,
-    signatureId: row.signature_id,
+    authorRole,
+    previousId: row.previous_id ? String(row.previous_id) : null,
+    requestState: normalizeRequestState(row.request_state == null ? null : String(row.request_state)),
+    requestBlock: normalizeRequestBlock(row.request_block == null ? null : String(row.request_block)),
+    returnId: row.return_id ? String(row.return_id) : null,
+    documentId: row.document_id ? String(row.document_id) : null,
+    signatureId: row.signature_id ? String(row.signature_id) : null,
     body: String(row.body ?? ""),
     kind,
     createdAt: String(row.created_at),
+    conversationId: row.conversation_id ? String(row.conversation_id) : null,
+    delivery: parseDelivery(row.delivery),
+    attachments: parseAttachments(row.attachments),
   };
 }
 

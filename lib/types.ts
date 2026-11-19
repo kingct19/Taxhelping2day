@@ -112,6 +112,18 @@ export type SignatureRecord = {
   userAgent: string;
 };
 
+export const messageDeliveries = ["sent", "seen", "not-seen"] as const;
+export type MessageDelivery = (typeof messageDeliveries)[number];
+
+export type MessageAttachment = {
+  id: string;
+  name: string;
+  size: string;
+  type: "image" | "file";
+  documentId: string | null;
+  url: string;
+};
+
 export type Message = {
   requestState?: RequestState | null;
   requestBlock?: RequestBlock | null;
@@ -126,7 +138,61 @@ export type Message = {
   body: string;
   kind: "message" | "event" | "note";
   createdAt: string;
+  conversationId: string | null;
+  delivery: MessageDelivery | null;
+  attachments: MessageAttachment[];
 };
+
+export const conversationChannels = ["chat", "email", "phone"] as const;
+export type ConversationChannel = (typeof conversationChannels)[number];
+
+export const conversationStatuses = ["open", "snoozed", "closed"] as const;
+export type ConversationStatus = (typeof conversationStatuses)[number];
+
+export const conversationPriorities = ["none", "low", "medium", "high", "urgent"] as const;
+export type ConversationPriority = (typeof conversationPriorities)[number];
+
+export const teamInboxIds = ["prep", "review", "client-care"] as const;
+export type TeamInboxId = (typeof teamInboxIds)[number];
+
+export type Conversation = {
+  id: string;
+  profileId: string;
+  subject: string;
+  channel: ConversationChannel;
+  status: ConversationStatus;
+  priority: ConversationPriority;
+  assigneeId: string | null;
+  teamInbox: TeamInboxId | null;
+  tags: string[];
+  unreadCount: number;
+  starred: boolean;
+  mentioned: boolean;
+  createdByMe: boolean;
+  isSpam: boolean;
+  suggestions: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ConversationPatch = Partial<
+  Pick<
+    Conversation,
+    | "subject"
+    | "channel"
+    | "status"
+    | "priority"
+    | "assigneeId"
+    | "teamInbox"
+    | "tags"
+    | "unreadCount"
+    | "starred"
+    | "mentioned"
+    | "createdByMe"
+    | "isSpam"
+    | "suggestions"
+  >
+>;
 
 export type IdentityNote = {
   profileId: string;
@@ -246,4 +312,24 @@ export function isFilingJurisdiction(value: string): value is FilingJurisdiction
 
 export function isEfileSigner(value: string): value is EfileSigner {
   return efileSigners.some((item) => item === value);
+}
+
+export function isConversationChannel(value: string): value is ConversationChannel {
+  return conversationChannels.some((item) => item === value);
+}
+
+export function isConversationStatus(value: string): value is ConversationStatus {
+  return conversationStatuses.some((item) => item === value);
+}
+
+export function isConversationPriority(value: string): value is ConversationPriority {
+  return conversationPriorities.some((item) => item === value);
+}
+
+export function isTeamInbox(value: string): value is TeamInboxId {
+  return teamInboxIds.some((item) => item === value);
+}
+
+export function isMessageDelivery(value: string): value is MessageDelivery {
+  return messageDeliveries.some((item) => item === value);
 }

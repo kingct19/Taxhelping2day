@@ -4,6 +4,21 @@ import { staffEmails } from "@/lib/firm";
 import { getStore } from "@/lib/store";
 import type { Profile } from "@/lib/types";
 
+export async function getStaffProfile(): Promise<Profile | null> {
+  const { isAuthenticated } = await auth();
+  if (!isAuthenticated) return null;
+  const user = await currentUser();
+  const email = user?.primaryEmailAddress?.emailAddress.toLowerCase();
+  if (!email) return null;
+  const store = getStore();
+  await store.ensureStaff();
+  const profile = await store.getProfileByEmail(email);
+  if (!profile || profile.role !== "staff") return null;
+  const staffAllowed = staffEmails().includes(email) || (await store.isStaffAllowed(email));
+  if (!staffAllowed) return null;
+  return profile;
+}
+
 export async function requireProfile(role?: Profile["role"]): Promise<Profile> {
   const { isAuthenticated } = await auth();
   if (!isAuthenticated) {

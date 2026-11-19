@@ -17,7 +17,7 @@ export default async function LibraryArticlePage({ params }: { params: Promise<{
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-14 shrink-0 items-center gap-3 border-b px-6">
         <Link href="/library" className="text-sm text-muted-foreground hover:text-foreground">
-          Articles
+          Library
         </Link>
         <h1 className="truncate text-base font-semibold">{article.title}</h1>
       </div>

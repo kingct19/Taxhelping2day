@@ -243,12 +243,12 @@ export function TaskWorkspace({ tasks, selectedId }: { tasks: TaskView[]; select
                     <Tooltip>
                       <TooltipTrigger
                         render={
-                          <Button variant="ghost" size="icon" nativeButton={false} render={<Link href={`/inbox?id=${task.profileId}`} />} aria-label="Open file">
+                          <Button variant="ghost" size="icon" nativeButton={false} render={<Link href={`/inbox?id=${task.profileId}`} />} aria-label="Open conversation">
                             <ExternalLinkIcon />
                           </Button>
                         }
                       />
-                      <TooltipContent>Open file</TooltipContent>
+                      <TooltipContent>Open conversation</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger

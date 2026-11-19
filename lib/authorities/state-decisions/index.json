@@ -1,0 +1,132 @@
+{
+  "alabama": {
+    "count": 1944,
+    "asOf": "2026-11-19",
+    "office": "Alabama Tax Tribunal"
+  },
+  "alaska": {
+    "count": 127,
+    "asOf": "2026-11-19",
+    "office": "Alaska Office of Administrative Hearings"
+  },
+  "california": {
+    "count": 410,
+    "asOf": "2026-11-19",
+    "office": "California Office of Tax Appeals"
+  },
+  "connecticut": {
+    "count": 13,
+    "asOf": "2026-11-19",
+    "office": "Connecticut Department of Revenue Services"
+  },
+  "georgia": {
+    "count": 5,
+    "asOf": "2026-11-19",
+    "office": "Georgia Tax Tribunal"
+  },
+  "idaho": {
+    "count": 165,
+    "asOf": "2026-11-19",
+    "office": "Idaho Board of Tax Appeals"
+  },
+  "illinois": {
+    "count": 34,
+    "asOf": "2026-11-19",
+    "office": "Illinois Independent Tax Tribunal"
+  },
+  "iowa": {
+    "count": 22,
+    "asOf": "2026-11-19",
+    "office": "Iowa Department of Revenue"
+  },
+  "kansas": {
+    "count": 25,
+    "asOf": "2026-11-19",
+    "office": "Kansas Board of Tax Appeals"
+  },
+  "louisiana": {
+    "count": 238,
+    "asOf": "2026-11-19",
+    "office": "Louisiana Board of Tax Appeals"
+  },
+  "maine": {
+    "count": 82,
+    "asOf": "2026-11-19",
+    "office": "Maine Board of Tax Appeals"
+  },
+  "maryland": {
+    "count": 128,
+    "asOf": "2026-11-19",
+    "office": "Maryland Tax Court"
+  },
+  "michigan": {
+    "count": 289,
+    "asOf": "2026-11-19",
+    "office": "Michigan Tax Tribunal"
+  },
+  "missouri": {
+    "count": 230,
+    "asOf": "2026-11-19",
+    "office": "Missouri Administrative Hearing Commission"
+  },
+  "nebraska": {
+    "count": 244,
+    "asOf": "2026-11-19",
+    "office": "Nebraska Department of Revenue"
+  },
+  "new-jersey": {
+    "count": 481,
+    "asOf": "2026-11-19",
+    "office": "New Jersey Tax Court"
+  },
+  "new-york": {
+    "count": 241,
+    "asOf": "2026-11-19",
+    "office": "New York Tax Appeals Tribunal"
+  },
+  "north-carolina": {
+    "count": 289,
+    "asOf": "2026-11-19",
+    "office": "North Carolina Department of Revenue"
+  },
+  "ohio": {
+    "count": 94,
+    "asOf": "2026-11-19",
+    "office": "Ohio Board of Tax Appeals"
+  },
+  "oregon": {
+    "count": 341,
+    "asOf": "2026-11-19",
+    "office": "Oregon Tax Court"
+  },
+  "south-carolina": {
+    "count": 724,
+    "asOf": "2026-11-19",
+    "office": "South Carolina Department of Revenue"
+  },
+  "tennessee": {
+    "count": 45,
+    "asOf": "2026-11-19",
+    "office": "Tennessee Department of Revenue"
+  },
+  "utah": {
+    "count": 193,
+    "asOf": "2026-11-19",
+    "office": "Utah State Tax Commission"
+  },
+  "vermont": {
+    "count": 139,
+    "asOf": "2026-11-19",
+    "office": "Vermont Department of Taxes"
+  },
+  "west-virginia": {
+    "count": 106,
+    "asOf": "2026-11-19",
+    "office": "West Virginia Office of Tax Appeals"
+  },
+  "wisconsin": {
+    "count": 708,
+    "asOf": "2026-11-19",
+    "office": "Wisconsin Tax Appeals Commission"
+  }
+}

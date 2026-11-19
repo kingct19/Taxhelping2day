@@ -3,7 +3,7 @@ import { AuthShowcase } from "@/components/auth/auth-showcase";
 
 export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="h-dvh lg:grid lg:grid-cols-2">
+    <div className="site h-dvh bg-background text-foreground lg:grid lg:grid-cols-2">
       <div className="flex h-full items-center justify-center sm:px-6 md:px-8">
         <div className="flex w-full flex-col gap-6 p-6 sm:max-w-lg">{children}</div>
       </div>
