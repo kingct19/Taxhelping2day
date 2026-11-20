@@ -5,7 +5,7 @@ export default async function PortalLayout({ children }: { children: React.React
   await requireProfile("client");
   return (
     <DeskShell side="client">
-      <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-6 overflow-auto px-4 py-8">{children}</div>
+      <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-6 overflow-auto px-4 py-6 pb-8 md:py-8">{children}</div>
     </DeskShell>
   );
 }

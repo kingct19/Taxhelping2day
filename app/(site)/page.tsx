@@ -36,7 +36,7 @@ export default function HomePage() {
   return (
     <>
       <section className="bg-foreground text-background">
-        <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-16 lg:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:py-20">
           <div className="flex max-w-3xl flex-col gap-6">
             <p className="text-xs font-medium tracking-[0.2em] text-primary uppercase">{firm.serviceLine}</p>
             <h1 className="font-serif text-4xl leading-[1.08] text-balance md:text-6xl">
@@ -68,7 +68,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto flex max-w-6xl flex-col gap-12 px-6 py-16 md:py-24">
+      <section className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-16 sm:px-6 md:py-24">
         <div className="grid items-center gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-16">
           <Link href="/about/laura-wallace" className="group flex flex-col gap-4">
             <CoverImage
@@ -107,7 +107,7 @@ export default function HomePage() {
       </section>
 
       <section className="border-y border-border bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-16 md:py-24">
+        <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 md:py-24">
           <SectionIntro
             eyebrow="Services"
             title="Services tailored to your needs"
@@ -132,7 +132,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-16 md:py-24">
+      <section className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 md:py-24">
         <SectionIntro eyebrow="Why clients stay" title="Why families and businesses trust us" />
         <div className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
           {reasons.map((reason, index) => (
@@ -146,7 +146,7 @@ export default function HomePage() {
       </section>
 
       <section className="border-y border-border bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-16 sm:px-6 md:py-20">
           <SectionIntro
             eyebrow="Service area"
             title="Where we work"
@@ -158,8 +158,8 @@ export default function HomePage() {
               <Link key={area.slug} href={`/service-areas/${area.slug}`} className="group relative overflow-hidden rounded-2xl">
                 <CoverImage src={area.image} alt="" sizes="(min-width: 1024px) 22vw, 50vw" className="aspect-[4/3]" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-4 text-white">
-                  <span className="font-serif text-xl">{area.name}</span>
+                <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-3 text-white sm:p-4">
+                  <span className="font-serif text-lg leading-tight text-balance sm:text-xl">{area.name}</span>
                   {area.home ? <span className="text-xs tracking-[0.16em] text-primary uppercase">Office</span> : null}
                 </div>
               </Link>
@@ -168,7 +168,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl items-start gap-10 px-6 py-16 md:py-24 lg:grid-cols-[0.85fr_1.15fr]">
+      <section className="mx-auto grid max-w-6xl items-start gap-10 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[0.85fr_1.15fr]">
         <CoverImage
           src={processPhoto.src}
           alt={processPhoto.alt}
@@ -190,14 +190,14 @@ export default function HomePage() {
       </section>
 
       <section className="bg-foreground text-background">
-        <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-6 py-16 md:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:py-20">
           <p className="text-xs font-medium tracking-[0.2em] text-primary uppercase">Contact</p>
           <h2 className="font-serif text-4xl text-balance md:text-5xl">How can we help you?</h2>
           <p className="max-w-xl text-lg leading-8 text-background/75">
             Call or write. We will tell you whether we can take the work, and what it will cost, before anything begins.
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <a href={firm.phoneHref} className="font-serif text-3xl text-primary">
+            <a href={firm.phoneHref} className="max-w-full font-serif text-2xl break-words text-primary sm:text-3xl">
               {firm.phone}
             </a>
             <Link href="/contact" className={buttonPrimary}>

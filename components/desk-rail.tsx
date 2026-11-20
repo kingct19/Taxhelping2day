@@ -36,11 +36,13 @@ export function DeskRail({
   homeHref,
   search,
   inset = false,
+  className,
 }: {
   items: DeskItem[];
   homeHref: string;
   search: DeskSearchItem[];
   inset?: boolean;
+  className?: string;
 }) {
   const pathname = usePathname();
 
@@ -50,6 +52,7 @@ export function DeskRail({
         className={cn(
           "flex w-16 shrink-0 flex-col items-center bg-sidebar pb-3 text-sidebar-foreground",
           inset ? "my-2 ml-2 overflow-hidden rounded-xl" : "border-r border-sidebar-border",
+          className,
         )}
       >
         <div className={cn("flex h-14 w-full items-center justify-center", !inset && "border-b border-sidebar-border")}>

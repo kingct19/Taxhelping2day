@@ -19,6 +19,7 @@ const firmPages = [
   ["Tax center", "/resources/tax-center"],
   ["Questions", "/faq"],
   ["Privacy", "/privacy"],
+  ["Terms of agreement", "/terms"],
   ["Disclaimer", "/disclaimer"],
   ["Photo credits", "/photo-credits"],
   ["Client portal", "/login"],

@@ -59,7 +59,7 @@ export default async function DocumentsPage() {
       <ul className="flex flex-col gap-2">
         {documents.map((document) => (
           <li key={document.id}>
-            <a className="underline" href={`/files/documents/${document.id}`}>
+            <a className="break-all underline" href={`/files/documents/${document.id}`}>
               {documentKindLabel(document.kind)} — {document.filename}
             </a>
           </li>

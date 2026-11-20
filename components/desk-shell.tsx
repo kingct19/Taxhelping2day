@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { DeskRail, type DeskItem } from "@/components/desk-rail";
 import type { DeskSearchItem } from "@/components/desk/desk-search";
+import { PortalTabBar, PortalTopBar } from "@/components/portal-mobile-nav";
 import { cn } from "@/lib/utils";
 
 const staffItems: DeskItem[] = [
@@ -57,10 +58,14 @@ export function DeskShell({ side, children }: { side: "staff" | "client"; childr
   const homeHref = side === "staff" ? "/inbox" : "/portal";
   const portal = side === "client";
 
+  const search = side === "staff" ? staffSearch : clientSearch;
+
   return (
-    <div className={cn("flex h-dvh overflow-hidden bg-background", portal && "portal")}>
-      <DeskRail items={items} homeHref={homeHref} search={side === "staff" ? staffSearch : clientSearch} inset={portal} />
-      <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden", portal && "ml-2")}>{children}</div>
+    <div className={cn("flex h-dvh overflow-hidden bg-background", portal && "portal flex-col md:flex-row")}>
+      {portal ? <PortalTopBar search={search} /> : null}
+      <DeskRail items={items} homeHref={homeHref} search={search} inset={portal} className={portal ? "max-md:hidden" : undefined} />
+      <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden", portal && "md:ml-2")}>{children}</div>
+      {portal ? <PortalTabBar /> : null}
     </div>
   );
 }

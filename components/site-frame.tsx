@@ -20,7 +20,7 @@ export function SiteFrame({
   return (
     <div>
       <div className="border-b border-white/10 bg-foreground text-background">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-14 md:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-14 sm:px-6 md:py-20">
           <div className="flex flex-col gap-4">
             {eyebrow ? <p className="text-xs font-medium tracking-[0.2em] text-primary uppercase">{eyebrow}</p> : null}
             <h1 className="max-w-3xl font-serif text-4xl leading-[1.1] text-balance md:text-5xl">{title}</h1>
@@ -37,7 +37,7 @@ export function SiteFrame({
           ) : null}
         </div>
       </div>
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-12 md:py-16 lg:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[minmax(0,1fr)_17rem]">
         <article className="site-copy flex min-w-0 flex-col gap-10">{children}</article>
         <aside className="h-fit rounded-2xl border border-border bg-white p-5 lg:sticky lg:top-24">
           <p className="font-serif text-lg">Services</p>
