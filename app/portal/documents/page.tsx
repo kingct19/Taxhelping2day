@@ -30,7 +30,7 @@ export default async function DocumentsPage() {
           );
         })}
       </ul>
-      <form action={uploadDocument} className="flex flex-col gap-4">
+      <form id="upload" action={uploadDocument} className="flex flex-col gap-4">
         <FieldGroup>
           <Field>
             <FieldLabel>Type</FieldLabel>

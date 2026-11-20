@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { DeskRail, type DeskItem } from "@/components/desk-rail";
 import type { DeskSearchItem } from "@/components/desk/desk-search";
-import { PortalTabBar, PortalTopBar } from "@/components/portal-mobile-nav";
+import { DeskNotch, type NotchAction, type NotchDestination } from "@/components/portal-mobile-nav";
 import { cn } from "@/lib/utils";
 
 const staffItems: DeskItem[] = [
@@ -53,6 +53,17 @@ const clientItems: DeskItem[] = [
 
 const clientSearch: DeskSearchItem[] = clientItems.map((item) => ({ href: item.href, label: item.label, group: "Portal" }));
 
+const portalActions: NotchAction[] = [
+  { href: "/portal/documents#upload", label: "Upload a document" },
+  { href: "/portal#message", label: "Message the firm" },
+];
+
+const staffActions: NotchAction[] = [{ href: "/contacts", label: "Invite a client" }];
+
+function notchDestinations(items: DeskItem[]): NotchDestination[] {
+  return items.map((item) => ({ href: item.href, label: item.label, icon: item.icon }));
+}
+
 export function DeskShell({ side, children }: { side: "staff" | "client"; children: React.ReactNode }) {
   const items = side === "staff" ? staffItems : clientItems;
   const homeHref = side === "staff" ? "/inbox" : "/portal";
@@ -61,11 +72,10 @@ export function DeskShell({ side, children }: { side: "staff" | "client"; childr
   const search = side === "staff" ? staffSearch : clientSearch;
 
   return (
-    <div className={cn("flex h-dvh overflow-hidden bg-background", portal && "portal flex-col md:flex-row")}>
-      {portal ? <PortalTopBar search={search} /> : null}
-      <DeskRail items={items} homeHref={homeHref} search={search} inset={portal} className={portal ? "max-md:hidden" : undefined} />
+    <div className={cn("flex h-dvh overflow-hidden bg-background", portal && "portal md:flex-row")}>
+      <DeskRail items={items} homeHref={homeHref} search={search} inset={portal} className="max-md:hidden" />
       <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden", portal && "md:ml-2")}>{children}</div>
-      {portal ? <PortalTabBar /> : null}
+      <DeskNotch label={portal ? "Portal" : "Desk"} destinations={notchDestinations(items)} actions={portal ? portalActions : staffActions} search={search} />
     </div>
   );
 }

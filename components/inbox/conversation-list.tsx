@@ -79,7 +79,7 @@ export function ConversationList({
         {conversations.length === 0 ? (
           <p className="p-6 text-center text-sm text-muted-foreground">No conversations here.</p>
         ) : (
-          <ul className="flex flex-col gap-1 p-3">
+          <ul className="flex flex-col gap-1 p-3 pb-28 md:pb-3">
             {conversations.map((conversation) => (
               <ConversationListItem
                 key={conversation.id}
