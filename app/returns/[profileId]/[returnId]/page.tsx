@@ -1,8 +1,11 @@
 import { EfilePanel } from "@/components/efile-panel";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { EngagementPacket } from "@/components/engagement-packet";
+import { EngagementPanel } from "@/components/engagement-panel";
 import { DocumentRequests } from "@/components/document-requests";
 import { FilingLedger } from "@/components/filing-ledger";
 import Link from "next/link";
+import { SubpageNav } from "@/components/subpage-nav";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,12 +22,13 @@ import { taxpayerTypeLabel } from "@/lib/types";
 
 const selectStyle = "h-8 w-full rounded-lg border bg-background px-2 text-sm";
 
-export default async function ReviewPage({ params }: { params: Promise<{ profileId: string; returnId: string }> }) {
+export default async function ReviewPage({ params, searchParams }: { params: Promise<{ profileId: string; returnId: string }>; searchParams: Promise<{ conflict?: string }> }) {
   await requireProfile("staff");
   const { profileId, returnId } = await params;
+  const query = await searchParams;
   const store = getStore();
-  const [team, documents, signatures, messages, profiles, filings, authorizations] = await Promise.all([
-    store.listTeamReturns(), store.listDocuments(profileId), store.listSignatures(profileId), store.listMessages(profileId), store.listProfiles(), store.listFilings(returnId), store.listAuthorizations(returnId),
+  const [team, documents, signatures, messages, profiles, filings, authorizations, invoices] = await Promise.all([
+    store.listTeamReturns(), store.listDocuments(profileId), store.listSignatures(profileId), store.listMessages(profileId), store.listProfiles(), store.listFilings(returnId), store.listAuthorizations(returnId), store.listInvoices(returnId),
   ]);
   const item = team.find((row) => row.id === returnId && row.profileId === profileId);
   if (!item) notFound();
@@ -65,7 +69,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ profile
   return (
     <main className="mx-auto grid w-full max-w-5xl content-start gap-8 overflow-auto px-6 py-6">
       <header className="grid gap-4">
-        <Link href="/returns" className="text-sm text-muted-foreground underline">All returns</Link>
+        <SubpageNav
+          backHref="/returns"
+          backLabel="Back to returns"
+          crumbs={[{ href: "/returns", label: "Returns" }, { label: `${item.taxYear} ${taxpayerTypeLabel(item.taxpayerType)}` }]}
+        />
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold">{clientName}</h1>
@@ -79,8 +87,16 @@ export default async function ReviewPage({ params }: { params: Promise<{ profile
               <Link className="underline" href={`/contacts/${profileId}`}>Customer file</Link>
             </p>
           </div>
-          <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
+            {item.waitingOn ? <Badge variant="warning">{item.waitingOn === "client" ? "Waiting on client" : "Waiting on firm"}</Badge> : null}
+          </div>
         </div>
+        {query.conflict ? (
+          <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            This return changed before you saved. Refresh and apply the change again.
+          </p>
+        ) : null}
         <div className="rounded-lg border bg-card px-4 py-3">
           <p className="text-xs font-medium text-muted-foreground">Do this next</p>
           <p className="mt-1 font-medium">{next.headline}</p>
@@ -96,7 +112,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ profile
               <h2 className="text-sm font-medium">Files on this return</h2>
               <p className="mt-1 text-sm text-muted-foreground">Mark a file reviewed after you have looked at it for this year.</p>
             </div>
-            {files.length === 0 ? <p className="text-sm text-muted-foreground">No files yet.</p> : null}
+            {files.length === 0 ? <LiniqoEmpty {...liniqo.folder} className="px-0 py-4" artClassName="size-24">No files yet.</LiniqoEmpty> : null}
             {files.map((file) => {
               const preview = `${file.href}?preview=1`;
               const image = file.contentType.startsWith("image/");
@@ -125,6 +141,17 @@ export default async function ReviewPage({ params }: { params: Promise<{ profile
           </section>
         </div>
         <aside className="grid content-start gap-6">
+          {client ? (
+            <EngagementPanel
+              item={item}
+              profile={client}
+              signatures={signatures}
+              threads={threads}
+              authorizations={authorizations}
+              invoice={invoices[0] ?? null}
+              filings={filings}
+            />
+          ) : null}
           <form action={save} className="grid gap-2 rounded-lg border p-4">
             <label htmlFor="request" className="text-sm font-medium">Ask the customer</label>
             <Textarea id="request" name="detail" required maxLength={1000} placeholder="Which document or correction do you need?" />
@@ -167,12 +194,6 @@ export default async function ReviewPage({ params }: { params: Promise<{ profile
             <summary className="cursor-pointer text-sm font-medium">Assign this return</summary>
             <p className="mt-2 text-xs text-muted-foreground">Who is preparing it, and when it is due.</p>
             <form action={saveReturnWorkflow.bind(null, item.id, item.revision)} className="mt-3 grid gap-3 text-sm">
-              <label className="grid gap-1">
-                Where it stands
-                <select className={selectStyle} name="stage" defaultValue={item.stage}>
-                  {Object.entries(stages).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-                </select>
-              </label>
               <label className="grid gap-1">
                 Preparer
                 <select className={selectStyle} name="owner" defaultValue={item.owner ?? ""}>

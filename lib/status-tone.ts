@@ -5,17 +5,23 @@ export type StatusTone = "info" | "progress" | "warning" | "attention" | "accent
 
 export function stageTone(stage: Stage): StatusTone {
   switch (stage) {
-    case "intake":
+    case "lead":
       return "info";
-    case "waiting":
+    case "onboarding":
+      return "accent";
+    case "documents":
       return "warning";
     case "preparation":
       return "progress";
     case "review":
       return "attention";
-    case "followup":
+    case "approval":
       return "accent";
-    case "closed":
+    case "filing":
+      return "progress";
+    case "delivery":
+      return "success";
+    case "renewal":
       return "neutral";
     default: {
       const exhaustive: never = stage;

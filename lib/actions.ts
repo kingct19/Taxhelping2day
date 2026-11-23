@@ -1,7 +1,9 @@
 "use server";
 
-import { stages, type Workflow } from "@/lib/return-workflow";
+import { nextStage, sendBackTarget, stages } from "@/lib/return-workflow";
 import { deriveStage, filingPrompt } from "@/lib/next-action";
+import { advanceBlocker, organizerBody, sendBackBlocker } from "@/lib/engagement";
+import { documentRequests } from "@/lib/season";
 import { requestRoot, requestThreads } from "@/lib/request-thread";
 import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -11,7 +13,7 @@ import { requireProfile } from "@/lib/auth";
 import { getStore } from "@/lib/store";
 import { buildSignedPdf } from "@/lib/pdf";
 import { formatBytes } from "@/lib/inbox-view";
-import { documentKinds, isConversationChannel, isEfileSigner, isFilingJurisdiction, isFilingStatus, isRequestBlock, isTaskStatus, taxpayerTypes, type ConversationChannel, type ConversationPatch, type DocumentKind, type EfileSigner, type RequestState, type TaxpayerType } from "@/lib/types";
+import { documentKinds, isConversationChannel, isEfileSigner, isFilingJurisdiction, isFilingStatus, isInvoiceStatus, isLeadSource, isRequestBlock, isTaskStatus, serviceLines, taxpayerTypes, type ConversationChannel, type ConversationPatch, type DocumentKind, type EfileSigner, type RequestState, type TaxpayerType } from "@/lib/types";
 
 function isTaxpayerType(value: string): value is TaxpayerType {
   return taxpayerTypes.some((item) => item === value);
@@ -49,6 +51,7 @@ function revalidateReturn(profileId: string, returnId: string) {
   revalidatePath("/returns");
   revalidatePath("/portal");
   revalidatePath("/portal/efile");
+  revalidatePath("/dashboard");
   revalidatePath("/inbox");
 }
 
@@ -435,22 +438,227 @@ export async function createTaxReturn(profileId: string, data: FormData) {
 export async function saveReturnWorkflow(id: string, revision: number, data: FormData) {
   await requireProfile("staff");
   const store = getStore();
-  const stage = String(data.get("stage") ?? "");
   const owner = String(data.get("owner") ?? "") || null;
   const due = String(data.get("due") ?? "") || null;
   const nextAction = String(data.get("nextAction") ?? "").trim();
   const parsedDate = due && new Date(due + "T00:00:00Z");
-  if (!Object.hasOwn(stages, stage) || nextAction.length > 500 ||
-      (parsedDate && (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== due))) {
-    throw new Error("Check the return stage, date, and handoff note.");
+  if (nextAction.length > 500 || (parsedDate && (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== due))) {
+    throw new Error("Check the due date and the handoff note.");
   }
   if (owner && (await store.getProfile(owner))?.role !== "staff") throw new Error("Choose a staff member.");
   const current = (await store.listTeamReturns()).find((row) => row.id === id);
   if (!current || current.revision !== revision) redirect("/returns?conflict=1");
-  const resumeStage = stage === "waiting" ? (current.stage === "waiting" ? current.resumeStage : current.stage) : null;
-  const saved = await store.updateWorkflow(id, { revision, stage: stage as Workflow["stage"], owner, due, nextAction, resumeStage });
+  const saved = await store.updateWorkflow(id, { ...current, revision, owner, due, nextAction });
   revalidatePath("/returns");
   if (!saved) redirect("/returns?conflict=1");
+}
+
+function selectedServices(data: FormData) {
+  return serviceLines.filter((line) => data.getAll("services").includes(line));
+}
+
+function amountCents(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) return null;
+  const [whole, fraction = ""] = trimmed.split(".");
+  const cents = Number(whole) * 100 + Number((fraction + "00").slice(0, 2));
+  return Number.isSafeInteger(cents) ? cents : null;
+}
+
+async function gateContext(profileId: string, returnId: string) {
+  const store = getStore();
+  const [profile, signatures, messages, authorizations, invoices, filings, team] = await Promise.all([
+    store.getProfile(profileId),
+    store.listSignatures(profileId),
+    store.listMessages(profileId),
+    store.listAuthorizations(returnId),
+    store.listInvoices(returnId),
+    store.listFilings(returnId),
+    store.listTeamReturns(),
+  ]);
+  const workflow = team.find((row) => row.id === returnId && row.profileId === profileId) ?? null;
+  const threads = requestThreads(messages.filter((row) => row.returnId === returnId));
+  return { store, profile, signatures, messages, authorizations, invoice: invoices[0] ?? null, filings, workflow, threads };
+}
+
+async function seedOrganizer(profileId: string, returnId: string, authorId: string, taxpayerType: TaxpayerType) {
+  const store = getStore();
+  const messages = await store.listMessages(profileId);
+  const threads = requestThreads(messages.filter((row) => row.returnId === returnId));
+  for (const request of documentRequests(taxpayerType).filter((item) => item.required)) {
+    if (threads.some((thread) => thread.root.body.startsWith(`Organizer: ${request.title}.`))) continue;
+    await store.addMessage({
+      profileId,
+      returnId,
+      authorId,
+      authorRole: "staff",
+      kind: "message",
+      body: organizerBody(request.title, request.detail),
+      requestState: "open",
+      requestBlock: "start",
+    });
+  }
+}
+
+export async function sendOrganizer(profileId: string, returnId: string) {
+  const staff = await requireProfile("staff");
+  const store = getStore();
+  const [profile, team] = await Promise.all([store.getProfile(profileId), store.listTeamReturns()]);
+  const item = team.find((row) => row.id === returnId && row.profileId === profileId);
+  if (!profile || profile.role !== "client" || !item) throw new Error("Return not found.");
+  if (item.stage !== "documents") throw new Error("The organizer is part of document collection.");
+  await seedOrganizer(profileId, returnId, staff.id, profile.taxpayerType);
+  await syncRequestStage(profileId, returnId);
+  revalidateReturn(profileId, returnId);
+}
+
+export async function saveEngagementFacts(id: string, revision: number, data: FormData) {
+  await requireProfile("staff");
+  const source = String(data.get("source") ?? "");
+  if (!isLeadSource(source)) throw new Error("Choose how this client arrived.");
+  const store = getStore();
+  const current = (await store.listTeamReturns()).find((row) => row.id === id);
+  if (!current || current.revision !== revision) redirect("/returns?conflict=1");
+  const saved = await store.updateWorkflow(id, { ...current, revision, source, services: selectedServices(data) });
+  revalidateReturn(current.profileId, id);
+  if (!saved) redirect(`/returns/${current.profileId}/${id}?conflict=1`);
+}
+
+export async function advanceEngagement(id: string, revision: number, data: FormData) {
+  const staff = await requireProfile("staff");
+  const note = String(data.get("note") ?? "").trim();
+  if (note.length > 500) throw new Error("Use 500 characters or fewer.");
+  const current = (await getStore().listTeamReturns()).find((row) => row.id === id);
+  if (!current || current.revision !== revision) redirect("/returns?conflict=1");
+  const context = await gateContext(current.profileId, id);
+  const profile = context.profile;
+  const workflow = context.workflow;
+  if (!profile || !workflow) throw new Error("Return not found.");
+  const blocker = advanceBlocker({ ...context, workflow, profile, note });
+  if (blocker) throw new Error(blocker);
+  const stage = nextStage(current.stage);
+  if (!stage) throw new Error("This engagement has no further stage.");
+  if (stage === "documents") await seedOrganizer(current.profileId, id, staff.id, profile.taxpayerType);
+  const messages = await context.store.listMessages(current.profileId);
+  const derived = deriveStage({ ...current, stage }, requestThreads(messages.filter((row) => row.returnId === id)));
+  const now = new Date().toISOString();
+  const saved = await context.store.updateWorkflow(id, {
+    ...current,
+    revision,
+    stage,
+    waitingOn: derived.waitingOn,
+    nextAction: note || derived.nextAction,
+    reviewerId: current.stage === "review" ? staff.id : current.reviewerId,
+    reviewedAt: current.stage === "review" ? now : current.reviewedAt,
+    deliveredAt: current.stage === "delivery" ? now : current.deliveredAt,
+    archivedAt: current.stage === "delivery" ? now : current.archivedAt,
+  });
+  if (!saved) redirect(`/returns/${current.profileId}/${id}?conflict=1`);
+  if (current.stage === "review" && note) {
+    await context.store.addMessage({
+      profileId: current.profileId, returnId: id, authorId: staff.id, authorRole: "staff", kind: "note",
+      body: `Reviewer approval: ${note}`,
+    });
+  }
+  if (current.stage === "delivery") {
+    await context.store.addMessage({
+      profileId: current.profileId, returnId: id, authorId: staff.id, authorRole: "staff", kind: "event",
+      body: "Delivered the return and archived the file.",
+    });
+  }
+  revalidateReturn(current.profileId, id);
+}
+
+export async function sendBackEngagement(id: string, revision: number, data: FormData) {
+  const staff = await requireProfile("staff");
+  const reason = String(data.get("reason") ?? "").trim();
+  if (!reason || reason.length > 500) throw new Error("Say what has to change.");
+  const store = getStore();
+  const current = (await store.listTeamReturns()).find((row) => row.id === id);
+  if (!current || current.revision !== revision) redirect("/returns?conflict=1");
+  const filings = await store.listFilings(id);
+  const blocker = sendBackBlocker(current.stage, filings);
+  if (blocker) throw new Error(blocker);
+  const stage = sendBackTarget(current.stage);
+  if (!stage) throw new Error("This stage cannot be sent back.");
+  const messages = await store.listMessages(current.profileId);
+  const derived = deriveStage({ ...current, stage }, requestThreads(messages.filter((row) => row.returnId === id)));
+  const saved = await store.updateWorkflow(id, {
+    ...current,
+    revision,
+    stage,
+    waitingOn: derived.waitingOn,
+    nextAction: reason,
+    reviewerId: null,
+    reviewedAt: null,
+  });
+  if (!saved) redirect(`/returns/${current.profileId}/${id}?conflict=1`);
+  await store.addMessage({
+    profileId: current.profileId, returnId: id, authorId: staff.id, authorRole: "staff", kind: "note",
+    body: `Sent back to ${stages[stage]}: ${reason}`,
+  });
+  revalidateReturn(current.profileId, id);
+}
+
+export async function saveInvoiceRecord(profileId: string, returnId: string, data: FormData) {
+  await requireProfile("staff");
+  const status = String(data.get("status") ?? "");
+  const instructions = String(data.get("instructions") ?? "").trim();
+  const cents = amountCents(String(data.get("amount") ?? ""));
+  if (!isInvoiceStatus(status) || cents == null || instructions.length > 1000) {
+    throw new Error("Enter the fee, the invoice status, and payment instructions.");
+  }
+  const store = getStore();
+  const item = (await store.listTeamReturns()).find((row) => row.id === returnId && row.profileId === profileId);
+  if (!item) throw new Error("Return not found.");
+  await store.saveInvoice({ returnId, amountCents: cents, status, instructions });
+  revalidateReturn(profileId, returnId);
+}
+
+export async function createLead(data: FormData) {
+  await requireProfile("staff");
+  const email = String(data.get("email") ?? "").trim().toLowerCase();
+  const name = String(data.get("name") ?? "").trim();
+  const source = String(data.get("source") ?? "");
+  const entity = String(data.get("entity") ?? "").trim();
+  const taxpayerType = String(data.get("type") ?? "");
+  const taxYear = Number(data.get("year"));
+  if (!name || !email.includes("@") || !isLeadSource(source) || !isTaxpayerType(taxpayerType) || !entity || entity.length > 150) {
+    throw new Error("Enter the name, email, source, taxpayer, and return.");
+  }
+  if (!Number.isInteger(taxYear) || taxYear < 1900 || taxYear > 9999) throw new Error("Enter a four-digit tax year.");
+  const store = getStore();
+  const client = await store.createClient({ email, name });
+  if (client.role !== "client") throw new Error("That email belongs to a teammate.");
+  const existing = (await store.listReturns(client.id)).find((item) => item.taxYear === taxYear && item.taxpayerType === taxpayerType && item.entity.toLowerCase() === entity.toLowerCase());
+  if (existing) throw new Error("That return is already open.");
+  await store.createReturn({ profileId: client.id, taxYear, entity, taxpayerType, source, services: [] });
+  revalidatePath("/contacts");
+  revalidatePath("/returns");
+  redirect("/returns?stage=lead");
+}
+
+export async function openNextYear(profileId: string, returnId: string) {
+  await requireProfile("staff");
+  const store = getStore();
+  const current = (await store.listTeamReturns()).find((row) => row.id === returnId && row.profileId === profileId);
+  if (!current) throw new Error("Return not found.");
+  if (current.stage !== "renewal") throw new Error("Move the file to year-round services before opening next year.");
+  const taxYear = current.taxYear + 1;
+  if (taxYear > 9999) throw new Error("Next year is out of range.");
+  const existing = (await store.listReturns(profileId)).find((item) => item.taxYear === taxYear && item.taxpayerType === current.taxpayerType && item.entity.toLowerCase() === current.entity.toLowerCase());
+  if (existing) throw new Error("Next year is already open.");
+  await store.createReturn({
+    profileId,
+    taxYear,
+    entity: current.entity,
+    taxpayerType: current.taxpayerType,
+    source: "returning",
+    services: current.services,
+  });
+  revalidatePath("/returns");
+  revalidatePath(`/contacts/${profileId}`);
+  redirect("/returns?stage=lead");
 }
 
 export async function recordIntakeReview(profileId: string, returnId: string, data: FormData) {
@@ -562,8 +770,12 @@ export async function saveFiling(profileId: string, returnId: string, form: Form
   if (status === "signature") await ensureAuthorizations(profileId, returnId, item.returnVersion);
   const messages = await store.listMessages(profileId);
   const derived = deriveStage(item, requestThreads(messages.filter((row) => row.returnId === returnId)));
-  const forced = derived.stage === "waiting" || derived.nextAction.startsWith("Review:");
-  await store.updateWorkflow(returnId, { ...item, ...(forced ? derived : { stage: "followup", resumeStage: item.resumeStage, nextAction: filingPrompt(saved) }) });
+  const nextAction = derived.waitingOn || derived.nextAction.startsWith("Review:") || derived.nextAction.startsWith("Still waiting:")
+    ? derived.nextAction
+    : item.stage === "filing"
+      ? filingPrompt(saved)
+      : item.nextAction;
+  await store.updateWorkflow(returnId, { ...item, waitingOn: derived.waitingOn, nextAction });
   revalidateReturn(profileId, returnId);
 }
 
@@ -575,7 +787,15 @@ export async function requestSignatures(profileId: string, returnId: string) {
   await ensureAuthorizations(profileId, returnId, item.returnVersion);
   await store.addMessage({ profileId, returnId, authorId: staff.id, authorRole: "staff", kind: "event", body: `Asked for Form 8879 on version ${item.returnVersion}.` });
   const fresh = (await store.listTeamReturns()).find((row) => row.id === returnId);
-  if (fresh) await store.updateWorkflow(returnId, { ...fresh, stage: "followup", nextAction: "Collect Form 8879 before e-file" });
+  if (fresh) {
+    const messages = await store.listMessages(profileId);
+    const derived = deriveStage(fresh, requestThreads(messages.filter((row) => row.returnId === returnId)));
+    await store.updateWorkflow(returnId, {
+      ...fresh,
+      waitingOn: derived.waitingOn,
+      nextAction: derived.waitingOn ? derived.nextAction : "Collect Form 8879 before e-file",
+    });
+  }
   revalidateReturn(profileId, returnId);
 }
 
@@ -589,7 +809,15 @@ export async function reviseReturn(profileId: string, returnId: string) {
   await ensureAuthorizations(profileId, returnId, version);
   await store.addMessage({ profileId, returnId, authorId: staff.id, authorRole: "staff", kind: "event", body: `Return version ${version}. Form 8879 must be signed again.` });
   const fresh = (await store.listTeamReturns()).find((row) => row.id === returnId);
-  if (fresh) await store.updateWorkflow(returnId, { ...fresh, stage: "followup", nextAction: "Collect Form 8879 before e-file" });
+  if (fresh) {
+    const messages = await store.listMessages(profileId);
+    const derived = deriveStage(fresh, requestThreads(messages.filter((row) => row.returnId === returnId)));
+    await store.updateWorkflow(returnId, {
+      ...fresh,
+      waitingOn: derived.waitingOn,
+      nextAction: derived.waitingOn ? derived.nextAction : "Collect Form 8879 before e-file",
+    });
+  }
   revalidateReturn(profileId, returnId);
 }
 

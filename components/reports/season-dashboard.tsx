@@ -1,19 +1,36 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDownIcon, ArrowUpIcon, CircleCheckIcon, InboxIcon, ScaleIcon, TimerIcon } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { ActivityIcon, ArrowRightIcon, ArrowUpIcon, ArrowDownIcon, ChartColumnIcon, FileTextIcon, LightbulbIcon, ListTodoIcon, PieChartIcon, SendIcon, UserRoundIcon, UsersIcon } from "lucide-react";
+import { EChartsBarChart } from "@/components/evilcharts/charts/echarts-bar-chart";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
+import { EChartsPieChart } from "@/components/evilcharts/charts/echarts-pie-chart";
+import type { ChartConfig } from "@/components/evilcharts/ui/echarts-chart";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { seasonLabel, seasonStages, type SeasonStage } from "@/lib/season";
-import { taskTitle, taxpayerTypeLabel, taxpayerTypes, type TaskKind, type TaskStatus, type TaxpayerType } from "@/lib/types";
+import { initials } from "@/lib/inbox-view";
+import type { SeasonStage } from "@/lib/season";
+import { stageOrder, stages, type Stage, type WaitingOn } from "@/lib/return-workflow";
+import { stageTone } from "@/lib/status-tone";
+import { taxpayerTypeLabel, taxpayerTypes, type TaskKind, type TaskStatus, type TaxpayerType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export type DashboardFile = {
+  id: string;
+  profileId: string;
   name: string;
   email: string;
   createdAt: string;
-  stage: SeasonStage;
+  taxYear: number;
+  entity: string;
+  stage: Stage;
+  waitingOn: WaitingOn;
+  season: SeasonStage;
   taxpayerType: TaxpayerType;
   poa: boolean;
   identity: boolean;
@@ -35,6 +52,12 @@ const ranges: { id: Range; label: string; days: number | null }[] = [
   { id: "all", label: "All time", days: null },
 ];
 
+const phases = [
+  { id: "start", label: "Getting started", stages: ["lead", "onboarding", "documents"] },
+  { id: "desk", label: "On the desk", stages: ["preparation", "review", "approval"] },
+  { id: "file", label: "Filing and delivery", stages: ["filing", "delivery", "renewal"] },
+] as const;
+
 function inWindow(iso: string, start: number, end: number) {
   const time = new Date(iso).getTime();
   return time >= start && time < end;
@@ -51,336 +74,402 @@ function formatDelta(value: number) {
   return `${text}%`;
 }
 
-export function SeasonDashboard({ files, tasks }: { files: DashboardFile[]; tasks: DashboardTask[] }) {
+function firstName(name: string) {
+  const trimmed = name.trim();
+  const local = trimmed.includes("@") ? trimmed.split("@")[0] : trimmed;
+  const word = local.split(/[\s._-]+/)[0] || "there";
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function greeting(now: number) {
+  const hour = new Date(now).getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+const seriesConfig = {
+  individual: { label: "Individual", colors: { light: ["#1a1a1a"], dark: ["#f4f4f5"] } },
+  business: { label: "Business", colors: { light: ["#8a8175"], dark: ["#a1a1aa"] } },
+  nonprofit: { label: "Non-profit", colors: { light: ["#c6a15a"], dark: ["#e4c98a"] } },
+} satisfies ChartConfig;
+
+const phaseConfig = {
+  start: { label: "Getting started", colors: { light: ["#1a1a1a"], dark: ["#f4f4f5"] } },
+  desk: { label: "On the desk", colors: { light: ["#8a8175"], dark: ["#a1a1aa"] } },
+  file: { label: "Filing and delivery", colors: { light: ["#c6a15a"], dark: ["#e4c98a"] } },
+} satisfies ChartConfig;
+
+function fileUrgency(file: DashboardFile) {
+  if (file.waitingOn === "staff") return 0;
+  if (file.waitingOn === "client") return 1;
+  if (file.stage === "delivery" || file.stage === "renewal") return 3;
+  return 2;
+}
+
+function phaseTone(id: (typeof phases)[number]["id"]) {
+  switch (id) {
+    case "start":
+      return "bg-chart-5";
+    case "desk":
+      return "bg-chart-3";
+    case "file":
+      return "bg-chart-2";
+    default: {
+      const exhaustive: never = id;
+      return exhaustive;
+    }
+  }
+}
+
+function CardHeading({ icon: Icon, title }: { icon: typeof FileTextIcon; title: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Icon className="size-4 text-muted-foreground" />
+      <p className="text-sm font-medium">{title}</p>
+    </div>
+  );
+}
+
+export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardFile[]; tasks: DashboardTask[]; now: number; name: string }) {
   const [range, setRange] = useState<Range>("30d");
   const window = ranges.find((item) => item.id === range) ?? ranges[1];
 
   const stats = useMemo(() => {
-    const now = Date.now();
     const days = window.days;
     const start = days === null ? 0 : now - days * 86_400_000;
     const previousStart = days === null ? 0 : start - days * 86_400_000;
     const currentFiles = files.filter((file) => inWindow(file.createdAt, start, now + 1));
     const previousFiles = days === null ? [] : files.filter((file) => inWindow(file.createdAt, previousStart, start));
-    const openTasks = tasks.filter((task) => task.status === "open");
-    const doneTasks = tasks.filter((task) => task.status === "done" && inWindow(task.updatedAt, start, now + 1));
-    const previousDone = days === null ? [] : tasks.filter((task) => task.status === "done" && inWindow(task.updatedAt, previousStart, start));
-    const ready = currentFiles.filter((file) => file.stage === "ready");
-    const previousReady = previousFiles.filter((file) => file.stage === "ready");
-    const signed = currentFiles.filter((file) => file.poa);
-    const previousSigned = previousFiles.filter((file) => file.poa);
-    return { currentFiles, previousFiles, openTasks, doneTasks, previousDone, ready, previousReady, signed, previousSigned, start, now };
-  }, [files, tasks, window.days]);
+    return { currentFiles, previousFiles, start };
+  }, [files, window.days, now]);
 
-  const weeks = useMemo(() => {
-    const buckets = 8;
-    const span = window.days ?? 56;
-    const end = Date.now();
-    return Array.from({ length: buckets }, (_, index) => {
-      const bucketEnd = end - ((buckets - index - 1) * span * 86_400_000) / buckets;
-      const bucketStart = end - ((buckets - index) * span * 86_400_000) / buckets;
+  const buckets = useMemo(() => {
+    const count = 12;
+    const span = window.days ?? 84;
+    return Array.from({ length: count }, (_, index) => {
+      const bucketEnd = now - ((count - index - 1) * span * 86_400_000) / count;
+      const bucketStart = now - ((count - index) * span * 86_400_000) / count;
+      const opened = files.filter((file) => inWindow(file.createdAt, bucketStart, bucketEnd));
       return {
         label: new Date(bucketEnd).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        opened: files.filter((file) => inWindow(file.createdAt, bucketStart, bucketEnd)).length,
-        done: tasks.filter((task) => task.status === "done" && inWindow(task.updatedAt, bucketStart, bucketEnd)).length,
+        counts: taxpayerTypes.map((type) => opened.filter((file) => file.taxpayerType === type).length),
+        total: opened.length,
       };
     });
-  }, [files, tasks, window.days]);
+  }, [files, now, window.days]);
 
-  const maxBar = Math.max(1, ...weeks.flatMap((week) => [week.opened, week.done]));
-  const cards = [
-    {
-      key: "files",
-      label: "Client files",
-      value: String(stats.currentFiles.length),
-      subtitle: "Opened this period",
-      delta: percentChange(stats.currentFiles.length, stats.previousFiles.length),
-      positive: stats.currentFiles.length >= stats.previousFiles.length,
-      icon: InboxIcon,
-      iconClass: "bg-primary/10 text-primary",
-    },
-    {
-      key: "tasks",
-      label: "Open tasks",
-      value: String(stats.openTasks.length),
-      subtitle: "Still on the desk",
-      delta: percentChange(stats.doneTasks.length, stats.previousDone.length),
-      positive: stats.doneTasks.length >= stats.previousDone.length,
-      icon: TimerIcon,
-      iconClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    },
-    {
-      key: "ready",
-      label: "Ready to prepare",
-      value: String(stats.ready.length),
-      subtitle: "Files with a complete season",
-      delta: percentChange(stats.ready.length, stats.previousReady.length),
-      positive: stats.ready.length >= stats.previousReady.length,
-      icon: CircleCheckIcon,
-      iconClass: "bg-green-500/10 text-green-600 dark:text-green-400",
-    },
-    {
-      key: "poa",
-      label: "Form 2848 signed",
-      value: String(stats.signed.length),
-      subtitle: "Of the files opened this period",
-      delta: percentChange(stats.signed.length, stats.previousSigned.length),
-      positive: stats.signed.length >= stats.previousSigned.length,
-      icon: ScaleIcon,
-      iconClass: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-    },
-  ];
+  const openedDelta = percentChange(stats.currentFiles.length, stats.previousFiles.length);
+  const live = files.length;
+  const phaseCounts = phases.map((phase) => ({
+    ...phase,
+    count: files.filter((file) => (phase.stages as readonly Stage[]).includes(file.stage)).length,
+  }));
+  const previousStart = window.days === null ? 0 : stats.start - window.days * 86_400_000;
+  const newClients = new Set(stats.currentFiles.map((file) => file.profileId)).size;
+  const previousClients = new Set(stats.previousFiles.map((file) => file.profileId)).size;
+  const clientDelta = percentChange(newClients, previousClients);
+  const currentTasks = tasks.filter((task) => inWindow(task.createdAt, stats.start, now + 1));
+  const previousTasks = window.days === null ? [] : tasks.filter((task) => inWindow(task.createdAt, previousStart, stats.start));
+  const taskDelta = percentChange(currentTasks.length, previousTasks.length);
+  const seasonData = buckets.map((bucket) => ({
+    label: bucket.label,
+    individual: bucket.counts[0] ?? 0,
+    business: bucket.counts[1] ?? 0,
+    nonprofit: bucket.counts[2] ?? 0,
+  }));
+  const phaseSlices = phaseCounts
+    .filter((phase) => phase.count > 0)
+    .map((phase) => ({ phase: phase.id, count: phase.count }));
+  const onStaff = files.filter((file) => file.waitingOn === "staff").length;
+  const onClient = files.filter((file) => file.waitingOn === "client").length;
+  const notWaiting = files.length - onStaff - onClient;
+  const missingIdentity = files.filter((file) => !file.identity).length;
+  const missingPoa = files.filter((file) => !file.poa).length;
+  const openTaskCount = tasks.filter((task) => task.status === "open").length;
+  const delivered = files.filter((file) => file.stage === "delivery" || file.stage === "renewal").length;
+  const deskFiles = [...files]
+    .sort((a, b) => fileUrgency(a) - fileUrgency(b) || stageOrder.indexOf(a.stage) - stageOrder.indexOf(b.stage))
+    .slice(0, 6);
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex h-14 shrink-0 items-center gap-3 border-b px-4 sm:px-6">
-        <h1 className="text-base font-semibold">Dashboard</h1>
-        <label className="ml-auto">
-          <span className="sr-only">Range</span>
-          <select
-            value={range}
-            onChange={(event) => {
-              const next = ranges.find((item) => item.id === event.target.value);
-              if (next) setRange(next.id);
-            }}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
-          >
-            {ranges.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="min-h-0 flex-1 overflow-auto">
-        <div className="flex flex-col gap-4 p-4 sm:p-6 lg:gap-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:gap-6 xl:grid-cols-4">
-            {cards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <Card key={card.key} className="shadow-none">
-                  <CardContent className="flex flex-row items-start justify-between gap-2">
-                    <div className="flex min-w-0 flex-col gap-1">
-                      <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
-                      <h4 className="truncate text-2xl font-medium tabular-nums">{card.value}</h4>
-                      <p className="flex flex-wrap items-center gap-x-1.5 text-xs">
-                        <span className={cn("flex items-center gap-0.5 font-medium", card.positive ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400")}>
-                          {card.delta >= 0 ? <ArrowUpIcon className="size-3.5" /> : <ArrowDownIcon className="size-3.5" />}
-                          {formatDelta(card.delta)}
-                        </span>
-                        <span className="text-muted-foreground">{card.subtitle}</span>
-                      </p>
-                    </div>
-                    <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-md", card.iconClass)}>
-                      <Icon className="size-4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+    <div className="min-h-0 flex-1 overflow-auto">
+      <div className="flex flex-col gap-4 p-4">
+        <div className="grid grid-cols-12 gap-4">
+          <Card className="relative col-span-12 shadow-none xl:col-span-8 lg:min-h-48">
+            <CardContent className="flex flex-col gap-4 lg:pe-64">
+              <div className="flex max-w-md flex-col gap-3">
+                <h1 className="text-2xl font-semibold tracking-tight">{greeting(now)}, {firstName(name)}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {live === 0
+                    ? "No returns are open yet. A lead from Contacts starts the season."
+                    : "Stay informed with today's desk. Here is the work still moving."}
+                </p>
+                <Button nativeButton={false} className="mt-2 w-fit rounded-lg" render={<Link href="/returns" />}>
+                  View returns
+                  <ArrowRightIcon />
+                </Button>
+              </div>
+            </CardContent>
+            <Image
+              src="/images/backgrounds/analytic-user.svg"
+              alt=""
+              width={222}
+              height={182}
+              unoptimized
+              className="absolute bottom-0 end-8 hidden lg:block dark:hidden"
+            />
+            <Image
+              src="/images/backgrounds/analytic-user-dark.svg"
+              alt=""
+              width={222}
+              height={188}
+              unoptimized
+              className="absolute bottom-0 end-8 hidden dark:lg:block"
+            />
+          </Card>
 
-          <div className="grid gap-4 lg:gap-6 xl:grid-cols-3">
-            <Card className="xl:col-span-2">
-              <CardHeader className="border-b">
+          <Card className="col-span-12 shadow-none xl:col-span-4">
+            <CardContent className="flex h-full flex-col gap-4">
+              <CardHeading icon={LightbulbIcon} title="Waiting now" />
+              <div>
+                <p className="text-3xl font-semibold tabular-nums">{onStaff.toLocaleString("en-US")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">waiting on you</p>
+              </div>
+              <ul className="mt-auto flex flex-col gap-3 text-sm">
+                <li className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">On the client</span>
+                  <span className="tabular-nums">{onClient.toLocaleString("en-US")}</span>
+                </li>
+                <li className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Not waiting</span>
+                  <span className="tabular-nums">{notWaiting.toLocaleString("en-US")}</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-12 shadow-none xl:col-span-8">
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-base font-semibold">File volume</span>
-                  <p className="text-sm text-muted-foreground">Files opened against tasks marked done</p>
+                  <CardHeading icon={ChartColumnIcon} title="Season overview" />
+                  <p className="flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold tabular-nums">{stats.currentFiles.length.toLocaleString("en-US")}</span>
+                    <span className="text-xs text-muted-foreground">returns opened</span>
+                    <Delta value={openedDelta} />
+                  </p>
                 </div>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <div className="flex items-center gap-6">
-                  <Legend colorClass="bg-chart-1" value={weeks.reduce((sum, week) => sum + week.opened, 0)} label="Opened" />
-                  <Legend colorClass="bg-chart-2" value={weeks.reduce((sum, week) => sum + week.done, 0)} label="Tasks done" />
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <label>
+                    <span className="sr-only">Range</span>
+                    <select
+                      value={range}
+                      onChange={(event) => {
+                        const next = ranges.find((item) => item.id === event.target.value);
+                        if (next) setRange(next.id);
+                      }}
+                      className="h-8 appearance-none rounded-md bg-muted px-2.5 text-xs font-medium text-foreground outline-none"
+                    >
+                      {ranges.map((item) => (
+                        <option key={item.id} value={item.id}>{item.label}</option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
-                <div className="flex h-72 items-end gap-2">
-                  {weeks.map((week) => (
-                    <div key={week.label} className="flex h-full flex-1 flex-col justify-end gap-1">
-                      <div className="flex h-full items-end gap-1">
-                        <span className="w-1/2 rounded-t-sm bg-chart-1" style={{ height: `${(week.opened / maxBar) * 100}%` }} />
-                        <span className="w-1/2 rounded-t-sm bg-chart-2" style={{ height: `${(week.done / maxBar) * 100}%` }} />
-                      </div>
-                      <span className="truncate text-center text-[10px] text-muted-foreground">{week.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="border-b">
-                <div className="flex flex-col gap-1">
-                  <span className="text-base font-semibold">Where the files are</span>
-                  <p className="text-sm text-muted-foreground">{stats.currentFiles.length} files in this period</p>
-                </div>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                {seasonStages.map((stage) => {
-                  const count = stats.currentFiles.filter((file) => file.stage === stage).length;
-                  const width = stats.currentFiles.length === 0 ? 0 : Math.round((count / stats.currentFiles.length) * 100);
+              </div>
+              <EChartsBarChart data={seasonData} config={seriesConfig} stackType="stacked" xDataKey="label" className="h-64 w-full" barRadius={4}>
+                <EChartsBarChart.Grid />
+                <EChartsBarChart.XAxis dataKey="label" />
+                <EChartsBarChart.YAxis />
+                <EChartsBarChart.Legend />
+                <EChartsBarChart.Tooltip />
+                <EChartsBarChart.Bar dataKey="individual" />
+                <EChartsBarChart.Bar dataKey="business" />
+                <EChartsBarChart.Bar dataKey="nonprofit" />
+              </EChartsBarChart>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-12 shadow-none xl:col-span-4">
+            <CardContent className="flex h-full flex-col gap-5">
+              <CardHeading icon={PieChartIcon} title="Where the work sits" />
+              {phaseSlices.length === 0 ? (
+                <LiniqoEmpty {...liniqo.funnel} className="py-4">No returns are on the books yet.</LiniqoEmpty>
+              ) : (
+                <EChartsPieChart data={phaseSlices} dataKey="count" nameKey="phase" config={phaseConfig} className="mx-auto h-52 w-full">
+                  <EChartsPieChart.Tooltip />
+                  <EChartsPieChart.Pie innerRadius={58} cornerRadius={6} paddingAngle={3} />
+                </EChartsPieChart>
+              )}
+              <ul className="flex flex-col gap-3">
+                {phaseCounts.map((phase) => {
+                  const share = live === 0 ? 0 : Math.round((phase.count / live) * 1000) / 10;
                   return (
-                    <div key={stage} className="flex flex-col gap-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>{seasonLabel(stage)}</span>
-                        <span className="tabular-nums">{count}</span>
-                      </div>
-                      <span className="h-2 overflow-hidden rounded-full bg-muted">
-                        <span className="block h-full rounded-full bg-primary" style={{ width: `${width}%` }} />
-                      </span>
-                    </div>
+                    <li key={phase.id} className="flex items-center gap-3 text-sm">
+                      <span className={cn("h-6 w-1 rounded-sm", phaseTone(phase.id))} />
+                      <span className="min-w-0 flex-1 truncate">{phase.label}</span>
+                      <span className="tabular-nums">{phase.count.toLocaleString("en-US")}</span>
+                      <span className="w-12 text-right text-xs text-muted-foreground tabular-nums">{share}%</span>
+                    </li>
                   );
                 })}
-              </CardContent>
-            </Card>
-          </div>
+              </ul>
+              <Button nativeButton={false} className="mt-auto w-fit self-end rounded-lg" render={<Link href="/returns" />}>
+                Open the board
+              </Button>
+            </CardContent>
+          </Card>
 
-          <div className="grid gap-4 lg:gap-6 xl:grid-cols-3">
-            <SeasonDonut files={stats.currentFiles} />
-            <Card className="xl:col-span-2">
-              <CardHeader className="border-b">
-                <div className="flex flex-col gap-1">
-                  <span className="text-base font-semibold">By taxpayer</span>
-                  <p className="text-sm text-muted-foreground">Individuals, businesses, and non-profits opened in this period</p>
-                </div>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                {taxpayerTypes.map((type, index) => {
-                  const count = stats.currentFiles.filter((file) => file.taxpayerType === type).length;
-                  const width = stats.currentFiles.length === 0 ? 0 : Math.round((count / stats.currentFiles.length) * 100);
-                  const color = ["bg-chart-1", "bg-chart-2", "bg-primary"][index] ?? "bg-primary";
-                  return (
-                    <div key={type} className="flex flex-col gap-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>{taxpayerTypeLabel(type)}</span>
-                        <span className="tabular-nums">{count}</span>
-                      </div>
-                      <span className="h-2 overflow-hidden rounded-full bg-muted">
-                        <span className={cn("block h-full rounded-full", color)} style={{ width: `${width}%` }} />
-                      </span>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="col-span-12 shadow-none xl:col-span-4">
+            <CardContent className="flex h-full flex-col gap-5">
+              <CardHeading icon={ActivityIcon} title="Still missing" />
+              <ul className="flex flex-col gap-4">
+                <li className="flex items-center gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                    <UserRoundIcon className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">Identity</span>
+                    <span className="text-xs text-muted-foreground">{missingIdentity.toLocaleString("en-US")} {missingIdentity === 1 ? "return" : "returns"} not attested</span>
+                  </span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                    <FileTextIcon className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">Power of attorney</span>
+                    <span className="text-xs text-muted-foreground">{missingPoa.toLocaleString("en-US")} {missingPoa === 1 ? "return" : "returns"} without one</span>
+                  </span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                    <ListTodoIcon className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">Tasks</span>
+                    <span className="text-xs text-muted-foreground">{openTaskCount.toLocaleString("en-US")} still open</span>
+                  </span>
+                </li>
+              </ul>
+              <Button nativeButton={false} variant="outline" className="mt-auto w-fit" render={<Link href="/returns" />}>
+                See the board
+                <ArrowRightIcon />
+              </Button>
+            </CardContent>
+          </Card>
 
-          <div className="grid gap-4 lg:gap-6 xl:grid-cols-3">
-            <Card className="xl:col-span-1">
-              <CardHeader className="border-b">
-                <span className="text-base font-semibold">Tasks</span>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {(["invite", "kickoff", "review"] as const).map((kind) => {
-                  const open = tasks.filter((task) => task.kind === kind && task.status === "open").length;
-                  const done = tasks.filter((task) => task.kind === kind && task.status === "done").length;
-                  return (
-                    <div key={kind} className="flex items-center justify-between gap-3 text-sm">
-                      <span>{taskTitle(kind)}</span>
-                      <span className="flex gap-2">
-                        <Badge variant="info">{open} open</Badge>
-                        <Badge variant="success">{done} done</Badge>
-                      </span>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-            <Card className="xl:col-span-2">
-              <CardHeader className="border-b">
-                <span className="text-base font-semibold">Files this period</span>
-              </CardHeader>
-              <CardContent>
+          <Card className="col-span-12 shadow-none xl:col-span-8">
+            <CardContent className="flex h-full flex-col gap-4">
+              <div className="flex items-center justify-between gap-3">
+                <CardHeading icon={FileTextIcon} title="Open files" />
+                <Button nativeButton={false} variant="outline" size="sm" render={<Link href="/returns" />}>
+                  See the board
+                </Button>
+              </div>
+              {deskFiles.length === 0 ? (
+                <LiniqoEmpty {...liniqo.ledger} className="py-4">No returns are on the books yet.</LiniqoEmpty>
+              ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Client</TableHead>
-                      <TableHead>Taxpayer</TableHead>
-                      <TableHead>Season</TableHead>
-                      <TableHead>Form 2848</TableHead>
+                      <TableHead>Year</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Stage</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stats.currentFiles.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
-                          No files opened in this period.
+                    {deskFiles.map((file) => (
+                      <TableRow key={file.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-9">
+                              <AvatarFallback className="text-xs">{initials(file.name, file.email)}</AvatarFallback>
+                            </Avatar>
+                            <span className="min-w-0">
+                              <span className="block max-w-48 truncate font-medium">{file.name}</span>
+                              <span className="block max-w-48 truncate text-xs text-muted-foreground">{file.taxpayerType === "individual" ? file.email : file.entity || file.email}</span>
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="tabular-nums">{file.taxYear}</TableCell>
+                        <TableCell>{taxpayerTypeLabel(file.taxpayerType)}</TableCell>
+                        <TableCell>
+                          <Badge variant={stageTone(file.stage)}>{stages[file.stage]}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button nativeButton={false} size="sm" render={<Link href={`/returns/${file.profileId}/${file.id}`} />}>
+                            Open
+                          </Button>
                         </TableCell>
                       </TableRow>
-                    ) : (
-                      stats.currentFiles.map((file) => (
-                        <TableRow key={`${file.email}-${file.createdAt}`}>
-                          <TableCell className="font-medium">{file.name || file.email}</TableCell>
-                          <TableCell>{taxpayerTypeLabel(file.taxpayerType)}</TableCell>
-                          <TableCell>{seasonLabel(file.stage)}</TableCell>
-                          <TableCell>{file.poa ? "Signed" : "Open"}</TableCell>
-                        </TableRow>
-                      ))
-                    )}
+                    ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
-          </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <StatCard
+            icon={UsersIcon}
+            label="New clients"
+            value={newClients}
+            delta={clientDelta}
+            href="/contacts"
+          />
+          <StatCard
+            icon={ListTodoIcon}
+            label="Tasks opened"
+            value={currentTasks.length}
+            delta={taskDelta}
+            href="/tasks"
+          />
+          <StatCard
+            icon={SendIcon}
+            label="Delivered"
+            value={delivered}
+            href="/returns"
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function SeasonDonut({ files }: { files: DashboardFile[] }) {
-  const slices = seasonStages.map((stage) => ({
-    stage,
-    count: files.filter((file) => file.stage === stage).length,
-  }));
-  const total = slices.reduce((sum, slice) => sum + slice.count, 0);
-  const colors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--primary)"];
-  let cursor = 0;
-  const gradient =
-    total === 0
-      ? "var(--muted)"
-      : `conic-gradient(${slices
-          .map((slice, index) => {
-            const start = cursor;
-            const share = (slice.count / total) * 360;
-            cursor += share;
-            return `${colors[index] ?? "var(--primary)"} ${start}deg ${cursor}deg`;
-          })
-          .join(", ")})`;
-
+function Delta({ value }: { value: number }) {
+  const up = value >= 0;
   return (
-    <Card>
-      <CardHeader className="border-b">
-        <div className="flex flex-col gap-1">
-          <span className="text-base font-semibold">Season outcomes</span>
-          <p className="text-sm text-muted-foreground">Where the files in this period sit</p>
+    <span className={cn("inline-flex items-center font-medium", up ? "text-emerald-600" : "text-red-500")}>
+      {up ? <ArrowUpIcon className="size-3.5" /> : <ArrowDownIcon className="size-3.5" />}
+      {formatDelta(value)}
+    </span>
+  );
+}
+
+function StatCard({ icon: Icon, label, value, delta, href }: { icon: typeof FileTextIcon; label: string; value: number; delta?: number; href: string }) {
+  return (
+    <Card className="col-span-12 shadow-none lg:col-span-4">
+      <CardContent className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="flex items-baseline gap-2">
+            <span className="text-2xl font-semibold tabular-nums">{value.toLocaleString("en-US")}</span>
+            {delta !== undefined ? <Delta value={delta} /> : null}
+          </p>
+          <Button nativeButton={false} variant="ghost" className="mt-1 w-fit px-0 text-foreground hover:bg-transparent" render={<Link href={href} />}>
+            See the list
+            <ArrowRightIcon />
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="flex items-center gap-6">
-        <div className="relative size-36 shrink-0 rounded-full" style={{ background: gradient }}>
-          <div className="absolute inset-6 rounded-full bg-card" />
-        </div>
-        <ul className="flex min-w-0 flex-1 flex-col gap-2 text-sm">
-          {slices.map((slice, index) => (
-            <li key={slice.stage} className="flex items-center gap-2">
-              <span className="size-2 shrink-0 rounded-full" style={{ background: colors[index] }} />
-              <span className="min-w-0 flex-1 truncate">{seasonLabel(slice.stage)}</span>
-              <span className="tabular-nums">{slice.count}</span>
-            </li>
-          ))}
-        </ul>
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+          <Icon className="size-4" />
+        </span>
       </CardContent>
     </Card>
   );
 }
 
-function Legend({ colorClass, value, label }: { colorClass: string; value: number; label: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className={cn("h-10 w-1 rounded-sm", colorClass)} />
-      <div className="flex flex-col">
-        <span className="text-xl font-medium tabular-nums">{value}</span>
-        <span className="text-sm text-muted-foreground">{label}</span>
-      </div>
-    </div>
-  );
-}
+

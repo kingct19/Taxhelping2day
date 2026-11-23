@@ -1,5 +1,6 @@
 import { PortalSeason } from "@/components/portal-season";
 import Link from "next/link";
+import { SubpageNav } from "@/components/subpage-nav";
 import { requireProfile } from "@/lib/auth";
 import { staffNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
@@ -25,12 +26,16 @@ export default async function SampleClientsPage() {
 
   return (
     <main className="flex-1 overflow-auto p-6">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-6 grid gap-3">
+        <SubpageNav
+          backHref="/returns"
+          backLabel="Back to returns"
+          crumbs={[{ href: "/returns", label: "Returns" }, { label: "Sample clients" }]}
+        />
         <div>
           <h1 className="text-2xl font-semibold">Sample clients</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Each pair is the same return: what the client sees, and the work sitting on the firm.</p>
         </div>
-        <Link className="text-sm underline" href="/returns">All returns</Link>
       </div>
       {samples.length === 0 && <p>No sample clients yet.</p>}
       <div className="grid gap-8">

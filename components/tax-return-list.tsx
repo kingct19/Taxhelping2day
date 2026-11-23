@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { taxpayerTypeLabel, type TaxReturn } from "@/lib/types";
 
 export function TaxReturnList({ returns }: { returns: TaxReturn[] }) {
@@ -8,7 +9,7 @@ export function TaxReturnList({ returns }: { returns: TaxReturn[] }) {
         <h2 className="font-medium">Tax returns</h2>
         <p className="text-sm text-muted-foreground">Open a year to review documents, ask for what is missing, and record the filing.</p>
       </div>
-      {returns.length === 0 && <p className="text-sm text-muted-foreground">No returns opened yet.</p>}
+      {returns.length === 0 ? <LiniqoEmpty {...liniqo.taxForm} className="px-0 py-4">No returns opened yet.</LiniqoEmpty> : null}
       <ul className="grid gap-2">
         {returns.map((item) => (
           <li key={item.id} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">

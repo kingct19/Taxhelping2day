@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { importClients, submitClientInvite } from "@/lib/actions";
+import { importClients, submitClientInvite, createLead } from "@/lib/actions";
 import { requireProfile } from "@/lib/auth";
 import { NewContactDialog } from "@/components/contacts/new-contact-dialog";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { ContactRowActions } from "@/components/contacts/contact-row-actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { getStore } from "@/lib/store";
-import { taxpayerTypeLabel, taxpayerTypes, type TaxpayerType } from "@/lib/types";
+import { leadSources, taxpayerTypeLabel, taxpayerTypes, type TaxpayerType } from "@/lib/types";
+import { sourceLabel } from "@/lib/return-workflow";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -168,6 +170,41 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
                   Import
                 </Button>
               </form>
+              <form action={createLead} className="mt-6 flex flex-col gap-4 border-t pt-6">
+                <Field>
+                  <FieldLabel htmlFor="lead-name">Add a lead</FieldLabel>
+                  <Input id="lead-name" name="name" required />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="lead-email">Email</FieldLabel>
+                  <Input id="lead-email" name="email" type="email" required />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="lead-source">Source</FieldLabel>
+                  <select id="lead-source" name="source" className="h-8 rounded-lg border bg-background px-2 text-sm" defaultValue="inquiry">
+                    {leadSources.map((source) => (
+                      <option key={source} value={source}>{sourceLabel(source)}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="lead-entity">Taxpayer name on the return</FieldLabel>
+                  <Input id="lead-entity" name="entity" required maxLength={150} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="lead-year">Tax year</FieldLabel>
+                  <Input id="lead-year" name="year" inputMode="numeric" required defaultValue={new Date().getFullYear() - 1} />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="lead-type">Return type</FieldLabel>
+                  <select id="lead-type" name="type" className="h-8 rounded-lg border bg-background px-2 text-sm" defaultValue="individual">
+                    {taxpayerTypes.map((type) => (
+                      <option key={type} value={type}>{taxpayerTypeLabel(type)}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Button type="submit" variant="outline">Save lead</Button>
+              </form>
             </NewContactDialog>
           </div>
         </div>
@@ -187,8 +224,8 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
             <TableBody>
               {visible.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                    No contacts in this segment.
+                  <TableCell colSpan={7}>
+                    <LiniqoEmpty {...liniqo.segment}>No contacts in this segment.</LiniqoEmpty>
                   </TableCell>
                 </TableRow>
               ) : (

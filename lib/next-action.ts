@@ -137,38 +137,25 @@ function owedThreads(threads: RequestThread[], owes: (state: NonNullable<Request
     .sort((a, b) => blockRank(a.root.requestBlock) - blockRank(b.root.requestBlock));
 }
 
-export function deriveStage(current: Workflow, threads: RequestThread[]): Pick<Workflow, "stage" | "resumeStage" | "nextAction"> {
+export function deriveStage(current: Workflow, threads: RequestThread[]): Pick<Workflow, "waitingOn" | "nextAction"> {
   const active = threads.filter((thread) => {
     const state = thread.latest.requestState;
     return state !== "accepted" && state !== "waived" && state != null;
   });
-  const start = active.filter((thread) => (thread.root.requestBlock ?? "filing") === "start");
-  const startClient = start.find((thread) => clientOwes(thread.latest.requestState!));
-  const startStaff = start.find((thread) => staffOwes(thread.latest.requestState!));
-  if (startClient) {
-    const previous = current.stage === "waiting" ? current.resumeStage : current.stage;
-    const resumeStage = previous === "waiting" || previous === "closed" ? current.resumeStage : previous;
-    return { stage: "waiting", resumeStage, nextAction: clip(startClient.root.body) };
+  const staffItem = owedThreads(active, staffOwes)[0];
+  if (staffItem?.latest.requestState) {
+    return { waitingOn: "staff", nextAction: clip(`Review: ${staffItem.root.body}`) };
   }
-  if (startStaff) {
-    return { stage: "intake", resumeStage: current.resumeStage, nextAction: clip(`Review: ${startStaff.root.body}`) };
-  }
-  const anyStaff = active.find((thread) => staffOwes(thread.latest.requestState!));
-  if (anyStaff && (current.stage === "intake" || current.stage === "waiting")) {
-    return { stage: "intake", resumeStage: current.resumeStage, nextAction: clip(`Review: ${anyStaff.root.body}`) };
-  }
-  if (current.stage === "waiting" || current.stage === "intake") {
-    const resume = current.resumeStage;
-    const resumed = resume && resume !== "waiting" && resume !== "closed" ? resume : "preparation";
-    const stage: Stage = resumed === "intake" ? "preparation" : resumed;
-    const anyClient = active.find((thread) => clientOwes(thread.latest.requestState!));
-    return { stage, resumeStage: null, nextAction: anyClient ? clip(`Still waiting: ${anyClient.root.body}`) : "" };
+  const startClient = active.find((thread) => (thread.root.requestBlock ?? "filing") === "start" && clientOwes(thread.latest.requestState!));
+  if (startClient?.latest.requestState) {
+    return { waitingOn: "client", nextAction: clip(startClient.root.body) };
   }
   const anyClient = active.find((thread) => clientOwes(thread.latest.requestState!));
-  if (anyClient && current.stage !== "closed") {
-    return { stage: current.stage, resumeStage: current.resumeStage, nextAction: clip(`Still waiting: ${anyClient.root.body}`) };
+  if (anyClient && current.stage !== "delivery" && current.stage !== "renewal") {
+    return { waitingOn: null, nextAction: clip(`Still waiting: ${anyClient.root.body}`) };
   }
-  return { stage: current.stage, resumeStage: current.resumeStage, nextAction: current.nextAction };
+  const derived = current.waitingOn != null || current.nextAction.startsWith("Review:") || current.nextAction.startsWith("Still waiting:");
+  return { waitingOn: null, nextAction: derived ? "" : current.nextAction };
 }
 
 export function filingPrompt(record: FilingRecord): string {
@@ -249,18 +236,24 @@ export function staffNext(input: {
 
 function stageFallback(stage: Stage, name: string): string {
   switch (stage) {
-    case "intake":
-      return `Review ${name}'s intake`;
-    case "waiting":
-      return `Waiting on ${name}`;
+    case "lead":
+      return `Open the engagement for ${name}`;
+    case "onboarding":
+      return `Finish onboarding for ${name}`;
+    case "documents":
+      return `Collect ${name}'s documents`;
     case "preparation":
       return `Prepare ${name}'s return`;
     case "review":
       return `Review ${name}'s return`;
-    case "followup":
+    case "approval":
+      return `Collect ${name}'s approval`;
+    case "filing":
       return `Finish filing for ${name}`;
-    case "closed":
-      return `${name} is closed`;
+    case "delivery":
+      return `Deliver ${name}'s return`;
+    case "renewal":
+      return `Carry ${name} into next year`;
     default: {
       const exhaustive: never = stage;
       return exhaustive;
@@ -276,6 +269,7 @@ export function clientNext(input: {
   filings: FilingRecord[];
   authorizations: EfileAuthorization[];
   returnVersion: number;
+  stage: Stage | null;
 }): NextStep {
   const stage = seasonFor(input.profile, input.signatures, input.documents);
   if (stage === "profile") {
@@ -339,6 +333,33 @@ export function clientNext(input: {
     return {
       headline: `Your ${filingPhrase(filing)} return was accepted`,
       detail: filing.note || "The filed copy stays in your documents.",
+      action: null,
+      href: null,
+      urgency: 6,
+    };
+  }
+  if (input.stage === "preparation" || input.stage === "review") {
+    return {
+      headline: "We are preparing your return",
+      detail: "You do not need to do anything unless we ask for a document.",
+      action: null,
+      href: null,
+      urgency: 7,
+    };
+  }
+  if (input.stage === "approval") {
+    return {
+      headline: "Your return is ready for review",
+      detail: "Read the draft when we send it, then sign Form 8879.",
+      action: null,
+      href: null,
+      urgency: 7,
+    };
+  }
+  if (input.stage === "delivery" || input.stage === "renewal") {
+    return {
+      headline: "Your return has been delivered",
+      detail: "The filed copy stays in your documents. Payment instructions are with the invoice.",
       action: null,
       href: null,
       urgency: 6,

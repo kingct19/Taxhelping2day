@@ -1,4 +1,5 @@
 import { IdentityForm } from "@/components/identity-form";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { TaxReturnList } from "@/components/tax-return-list";
 import { createTaxReturn } from "@/lib/actions";
 import { Input } from "@/components/ui/input";
@@ -88,7 +89,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           </details>
           <h2 className="text-sm font-medium">Activity</h2>
           {visibleMessages.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No messages on this file yet.</p>
+            <LiniqoEmpty {...liniqo.greeting} className="px-0 py-4" artClassName="size-24">No messages on this file yet.</LiniqoEmpty>
           ) : (
             <ul className="flex flex-col gap-3">
               {visibleMessages.map((message) => (

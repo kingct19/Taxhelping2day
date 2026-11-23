@@ -154,3 +154,29 @@
 .site-copy li a {
   color: var(--accent);
 }
+
+.liniqo-art {
+  --hl-ink: #5a5a64;
+  --hl-graphite: #8a8a94;
+  --hl-mute: #b6b6be;
+  --hl-grid: #d4d4da;
+  --hl-surface-0: #ffffff;
+  --hl-surface-1: #f2f2f4;
+  --hl-surface-2: #e6e6ea;
+  --hl-surface-3: #dcdce1;
+  --hl-accent: #c6a15a;
+  --hl-accent-tint: #f8f3e8;
+}
+
+.dark .liniqo-art {
+  --hl-ink: #aab0ba;
+  --hl-graphite: #8b909a;
+  --hl-mute: #5c616b;
+  --hl-grid: #3d424a;
+  --hl-surface-0: #101215;
+  --hl-surface-1: #181b21;
+  --hl-surface-2: #20242b;
+  --hl-surface-3: #2a2e36;
+  --hl-accent: #c6a15a;
+  --hl-accent-tint: #2d2920;
+}

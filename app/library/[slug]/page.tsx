@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SubpageNav } from "@/components/subpage-nav";
 import { requireProfile } from "@/lib/auth";
 import { getLibraryArticle, libraryGroupLabel } from "@/lib/library";
 
@@ -15,11 +15,12 @@ export default async function LibraryArticlePage({ params }: { params: Promise<{
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex h-14 shrink-0 items-center gap-3 border-b px-6">
-        <Link href="/library" className="text-sm text-muted-foreground hover:text-foreground">
-          Library
-        </Link>
-        <h1 className="truncate text-base font-semibold">{article.title}</h1>
+      <div className="flex h-14 shrink-0 items-center border-b px-4">
+        <SubpageNav
+          backHref="/library"
+          backLabel="Back to library"
+          crumbs={[{ href: "/library", label: "Library" }, { label: article.title }]}
+        />
       </div>
       <article className="min-h-0 flex-1 overflow-auto px-6 py-6">
         <div className="mx-auto flex max-w-2xl flex-col gap-4">

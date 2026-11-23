@@ -1,9 +1,12 @@
 import { DocumentRequests } from "@/components/document-requests";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import Link from "next/link";
 import { postMessage } from "@/lib/actions";
 import { clientNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
-import { seasonFor, seasonLabel, seasonStages } from "@/lib/season";
+import { clientStepFor } from "@/lib/engagement";
+import { clientSteps } from "@/lib/return-workflow";
+import { seasonFor } from "@/lib/season";
 import { getStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -17,12 +20,13 @@ export async function PortalSeason({ profileId, readOnly = false }: { profileId:
     store.listDocuments(profile.id),
     store.listSignatures(profile.id),
     store.listMessages(profile.id),
-    store.listReturns(profile.id),
+    store.listTeamReturns(),
     store.listFilings(),
     store.listAuthorizations(),
   ]);
-  const stage = seasonFor(profile, signatures, documents);
-  const ranked = (returns.length ? returns : [null]).map((item) => ({
+  const season = seasonFor(profile, signatures, documents);
+  const mine = returns.filter((item) => item.profileId === profile.id);
+  const ranked = (mine.length ? mine : [null]).map((item) => ({
     item,
     next: clientNext({
       profile,
@@ -32,17 +36,19 @@ export async function PortalSeason({ profileId, readOnly = false }: { profileId:
       filings: filings.filter((filing) => filing.returnId === item?.id),
       authorizations: authorizations.filter((authorization) => authorization.returnId === item?.id),
       returnVersion: item?.returnVersion ?? 1,
+      stage: item?.stage ?? null,
     }),
   })).sort((a, b) => a.next.urgency - b.next.urgency);
   const next = ranked[0].next;
   const current = ranked[0].item;
-  const stepIndex = seasonStages.indexOf(stage);
+  const stepIndex = current ? clientStepFor(current.stage, season) : 0;
+  const step = clientSteps[stepIndex];
 
   return (
     <>
       <section className="flex flex-col gap-4 rounded-md border border-border bg-white p-6">
         <p className="text-xs font-medium tracking-[0.16em] text-muted-foreground uppercase">This season{current ? ` · ${current.entity} ${current.taxYear}` : ""}</p>
-        {next.href && ["/portal/profile", "/portal/engagement", "/portal/documents"].includes(next.href) && stepIndex >= 0 && <p className="text-sm text-muted-foreground">Step {stepIndex + 1} of {seasonStages.length} · {seasonLabel(stage)}</p>}
+        <p className="text-sm text-muted-foreground">Step {stepIndex + 1} of {clientSteps.length} · {step.label}</p>
         <h1 className="font-serif text-3xl">{next.headline}</h1>
         <p className="max-w-xl text-muted-foreground">{next.detail}</p>
         {next.action && next.href && (
@@ -55,7 +61,7 @@ export async function PortalSeason({ profileId, readOnly = false }: { profileId:
         <div className="mt-4 flex flex-col gap-4">
           <ul className="flex flex-col gap-2 text-sm">
             {messages.filter((message) => message.kind !== "note").length === 0 ? (
-              <li className="text-muted-foreground">No messages yet.</li>
+              <li><LiniqoEmpty {...liniqo.notice} className="px-0 py-4" artClassName="size-24">No messages yet.</LiniqoEmpty></li>
             ) : (
               messages.filter((message) => message.kind !== "note").map((message) => (
                 <li key={message.id}>

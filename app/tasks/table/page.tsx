@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CircleCheckIcon, InboxIcon, ListTodoIcon } from "lucide-react";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { TasksViewSwitcher } from "@/components/tasks/view-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -67,8 +68,8 @@ export default async function TasksTablePage() {
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
-                  No tasks yet.
+                <TableCell colSpan={4}>
+                  <LiniqoEmpty {...liniqo.taskPerson}>No tasks yet.</LiniqoEmpty>
                 </TableCell>
               </TableRow>
             ) : (

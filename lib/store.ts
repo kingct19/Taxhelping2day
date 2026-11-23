@@ -1,6 +1,6 @@
 import { blankConversation, conversationFromSupabase, normalizeConversation, normalizeMessage, parseAttachments, parseDelivery, seedConversations } from "@/lib/conversation";
 import { defaultSuggestions } from "@/lib/inbox-view";
-import { initialWorkflow, type TeamReturn, type Workflow } from "@/lib/return-workflow";
+import { asWorkflow, initialWorkflow, type TeamReturn, type Workflow } from "@/lib/return-workflow";
 import { randomBytes, randomUUID } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
@@ -18,6 +18,9 @@ import type {
   EfileAuthorization,
   FilingRecord,
   IdentityNote,
+  Invoice,
+  LeadSource,
+  ServiceLine,
   Message,
   MessageAttachment,
   MessageDelivery,
@@ -57,6 +60,7 @@ type Database = {
   staffAllowlist: string[];
   filings: FilingRecord[];
   authorizations: EfileAuthorization[];
+  invoices: Invoice[];
 };
 
 export type Store = {
@@ -65,11 +69,13 @@ export type Store = {
   saveFiling(input: Omit<FilingRecord, "id" | "updatedAt">): Promise<FilingRecord>;
   listAuthorizations(returnId?: string): Promise<EfileAuthorization[]>;
   saveAuthorization(input: Omit<EfileAuthorization, "id">): Promise<EfileAuthorization>;
+  listInvoices(returnId?: string): Promise<Invoice[]>;
+  saveInvoice(input: Omit<Invoice, "id" | "updatedAt">): Promise<Invoice>;
   bumpReturnVersion(id: string): Promise<number | null>;
   listTeamReturns(): Promise<TeamReturn[]>;
   updateWorkflow(id: string, workflow: Workflow): Promise<boolean>;
   listReturns(profileId: string): Promise<TaxReturn[]>;
-  createReturn(input: Omit<TaxReturn, "id" | "returnVersion">): Promise<void>;
+  createReturn(input: Omit<TaxReturn, "id" | "returnVersion"> & { source?: LeadSource; services?: ServiceLine[] }): Promise<void>;
   ensureStaff(): Promise<void>;
   getProfileByEmail(email: string): Promise<Profile | null>;
   getProfile(id: string): Promise<Profile | null>;
@@ -139,7 +145,7 @@ const dataDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dataDir, "db.json");
 
 function emptyDb(): Database {
-  return { returns: [], profiles: [], documents: [], signatures: [], messages: [], conversations: [], tokens: [], identityNotes: [], tasks: [], staffAllowlist: [], filings: [], authorizations: [] };
+  return { returns: [], profiles: [], documents: [], signatures: [], messages: [], conversations: [], tokens: [], identityNotes: [], tasks: [], staffAllowlist: [], filings: [], authorizations: [], invoices: [] };
 }
 
 function readDb(raw: string): Database {
@@ -157,6 +163,7 @@ function readDb(raw: string): Database {
     staffAllowlist: parsed.staffAllowlist ?? [],
     filings: parsed.filings ?? [],
     authorizations: parsed.authorizations ?? [],
+    invoices: parsed.invoices ?? [],
   };
 }
 
@@ -522,6 +529,18 @@ const localStore: Store = {
       return record;
     });
   },
+  async listInvoices(returnId) {
+    return withDb(false, (db) => db.invoices.filter((item) => !returnId || item.returnId === returnId));
+  },
+  async saveInvoice(input) {
+    return withDb(true, (db) => {
+      const existing = db.invoices.find((item) => item.returnId === input.returnId);
+      const record = { ...input, id: existing?.id ?? randomUUID(), updatedAt: new Date().toISOString() };
+      if (existing) Object.assign(existing, record);
+      else db.invoices.push(record);
+      return record;
+    });
+  },
   async bumpReturnVersion(id) {
     return withDb(true, (db) => {
       const item = db.returns.find((row) => row.id === id);
@@ -548,7 +567,7 @@ const localStore: Store = {
     }));
   },
   async listTeamReturns() {
-    return withDb(false, (db) => db.returns.map((item) => ({ ...initialWorkflow, ...item, returnVersion: item.returnVersion ?? 1 })));
+    return withDb(false, (db) => db.returns.map((item) => ({ ...item, ...asWorkflow(item), returnVersion: item.returnVersion ?? 1 })));
   },
   async updateWorkflow(id, workflow) {
     return withDb(true, db => {
@@ -568,7 +587,19 @@ const localStore: Store = {
       const exists = db.returns.some(item => item.profileId === input.profileId &&
         item.taxYear === input.taxYear && item.taxpayerType === input.taxpayerType &&
         item.entity.toLowerCase() === input.entity.toLowerCase());
-      if (!exists) db.returns.push({ ...input, id: randomUUID(), returnVersion: 1 });
+      if (!exists) {
+        db.returns.push({
+          ...initialWorkflow,
+          profileId: input.profileId,
+          taxYear: input.taxYear,
+          entity: input.entity,
+          taxpayerType: input.taxpayerType,
+          source: input.source ?? "inquiry",
+          services: input.services ?? [],
+          id: randomUUID(),
+          returnVersion: 1,
+        });
+      }
     });
   },
   async listTasks() {
@@ -1136,6 +1167,30 @@ function supabaseStore(client: SupabaseClient): Store {
       if (error) throw new Error(error.message);
       return data as EfileAuthorization;
     },
+    async listInvoices(returnId) {
+      const rows: Invoice[] = [];
+      for (let offset = 0; ; offset += 500) {
+        let query = client.from("invoices")
+          .select("id, returnId:return_id, amountCents:amount_cents, status, instructions, updatedAt:updated_at")
+          .order("id").range(offset, offset + 499);
+        if (returnId) query = query.eq("return_id", returnId);
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        rows.push(...(data as Invoice[]));
+        if (data.length < 500) return rows;
+      }
+    },
+    async saveInvoice(input) {
+      const { data, error } = await client.from("invoices").upsert({
+        return_id: input.returnId,
+        amount_cents: input.amountCents,
+        status: input.status,
+        instructions: input.instructions,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "return_id" }).select("id, returnId:return_id, amountCents:amount_cents, status, instructions, updatedAt:updated_at").single();
+      if (error) throw new Error(error.message);
+      return data as Invoice;
+    },
     async bumpReturnVersion(id) {
       const { data, error } = await client.from("tax_returns").select("return_version").eq("id", id).maybeSingle();
       if (error) throw new Error(error.message);
@@ -1149,17 +1204,19 @@ function supabaseStore(client: SupabaseClient): Store {
       const rows: TeamReturn[] = [];
       for (let start = 0; ; start += 500) {
         const { data, error } = await client.from("tax_returns")
-          .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, stage, owner:owner_id, due:due_date, nextAction:next_action, resumeStage:resume_stage, returnVersion:return_version, revision")
+          .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, stage, owner:owner_id, due:due_date, nextAction:next_action, waitingOn:waiting_on, source, services, reviewerId:reviewer_id, reviewedAt:reviewed_at, deliveredAt:delivered_at, archivedAt:archived_at, returnVersion:return_version, revision")
           .order("id").range(start, start + 499);
         if (error) throw new Error(error.message);
-        rows.push(...(data as TeamReturn[]).map((item) => ({ ...initialWorkflow, ...item, returnVersion: item.returnVersion ?? 1, resumeStage: item.resumeStage ?? null })));
+        rows.push(...(data as TeamReturn[]).map((item) => ({ ...item, ...asWorkflow(item), returnVersion: item.returnVersion ?? 1 })));
         if (data.length < 500) return rows;
       }
     },
     async updateWorkflow(id, workflow) {
       const { data, error } = await client.from("tax_returns").update({
         stage: workflow.stage, owner_id: workflow.owner, due_date: workflow.due,
-        next_action: workflow.nextAction, resume_stage: workflow.resumeStage, revision: workflow.revision + 1,
+        next_action: workflow.nextAction, waiting_on: workflow.waitingOn, source: workflow.source,
+        services: workflow.services, reviewer_id: workflow.reviewerId, reviewed_at: workflow.reviewedAt,
+        delivered_at: workflow.deliveredAt, archived_at: workflow.archivedAt, revision: workflow.revision + 1,
       }).eq("id", id).eq("revision", workflow.revision).select("id");
       if (error) throw new Error(error.message);
       return data.length === 1;
@@ -1175,6 +1232,7 @@ function supabaseStore(client: SupabaseClient): Store {
       const { error } = await client.from("tax_returns").insert({
         profile_id: input.profileId, tax_year: input.taxYear,
         entity: input.entity, taxpayer_type: input.taxpayerType,
+        stage: "lead", source: input.source ?? "inquiry", services: input.services ?? [],
       });
       if (error && error.code !== "23505") throw new Error(error.message);
     },

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDownIcon, FileIcon, LinkIcon, SendHorizontalIcon, SparklesIcon, XIcon } from "lucide-react";
 import { PresenceAvatar } from "@/components/inbox/presence-avatar";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import type { InboxConversation, InboxFile, InboxPerson } from "@/components/inbox/inbox-state";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -245,7 +246,7 @@ export function DetailsPanel({
             <Separator />
             <DetailsSection title={files.length > 0 ? `Shared files (${files.length})` : "Shared files"} defaultOpen>
               {files.length === 0 ? (
-                <span className="px-1 text-xs text-muted-foreground">No files shared yet</span>
+                <LiniqoEmpty {...liniqo.sharedFolder} className="px-1 py-3" artClassName="size-20">No files shared yet</LiniqoEmpty>
               ) : (
                 files.map((file) => (
                   <a key={file.id} href={file.url} className="flex items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted">

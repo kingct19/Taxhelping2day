@@ -31,6 +31,7 @@ async function wipeSamples() {
     tasks?: { profileId: string }[];
     filings?: { returnId: string }[];
     authorizations?: { returnId: string }[];
+    invoices?: { returnId: string }[];
   };
   const profileIds = new Set((db.profiles ?? []).filter((profile) => profile.email.endsWith(`@${domain}`)).map((profile) => profile.id));
   const returnIds = new Set((db.returns ?? []).filter((item) => profileIds.has(item.profileId)).map((item) => item.id));
@@ -47,6 +48,7 @@ async function wipeSamples() {
     tasks: keep(db.tasks, "profileId", profileIds),
     filings: keep(db.filings, "returnId", returnIds),
     authorizations: keep(db.authorizations, "returnId", returnIds),
+    invoices: keep(db.invoices, "returnId", returnIds),
   }, null, 2));
 }
 
@@ -76,10 +78,16 @@ async function main() {
     return item;
   }
 
-  async function stage(returnId: string, next: { stage: Stage; due: string | null; nextAction: string }) {
+  async function stage(returnId: string, next: { stage: Stage; due: string | null; nextAction: string; waitingOn?: "client" | "staff" | null; services?: ("tax_return")[] }) {
     const item = (await store.listTeamReturns()).find((row) => row.id === returnId);
     if (!item) throw new Error("Return missing.");
-    const saved = await store.updateWorkflow(returnId, { ...item, ...next, owner: ownerId, resumeStage: next.stage === "waiting" ? "preparation" : null });
+    const saved = await store.updateWorkflow(returnId, {
+      ...item,
+      ...next,
+      owner: ownerId,
+      waitingOn: next.waitingOn ?? null,
+      services: next.services ?? item.services,
+    });
     if (!saved) throw new Error("Could not save the sample handoff.");
   }
 
@@ -100,12 +108,12 @@ async function main() {
 
   const ava = await person("ava.morales", "Ava Morales");
   const avaReturn = await taxReturn(ava.id, "Morales, Ava");
-  await stage(avaReturn.id, { stage: "intake", due: "2026-11-30", nextAction: "Collect Ava's details" });
+  await stage(avaReturn.id, { stage: "lead", due: "2026-11-30", nextAction: "Collect Ava's details" });
 
   const ben = await person("ben.carter", "Ben Carter");
   await details(ben.id, "Ben Carter");
   const benReturn = await taxReturn(ben.id, "Carter, Ben");
-  await stage(benReturn.id, { stage: "intake", due: "2026-11-22", nextAction: "Send Ben the engagement letter" });
+  await stage(benReturn.id, { stage: "onboarding", due: "2026-11-22", nextAction: "Send Ben the engagement letter" });
 
   const chris = await person("chris.okonkwo", "Chris Okonkwo");
   await details(chris.id, "Chris Okonkwo", "Dana Okonkwo");
@@ -117,7 +125,7 @@ async function main() {
     profileId: chris.id, returnId: chrisReturn.id, previousId: w2.id, authorId: ownerId, authorRole: "staff", kind: "event",
     requestState: "replacement", requestBlock: "start", body: "Replacement requested: The photo is cut off. Send all of the W-2, including the wage box.",
   });
-  await stage(chrisReturn.id, { stage: "waiting", due: "2026-11-25", nextAction: "Send every 2025 W-2." });
+  await stage(chrisReturn.id, { stage: "documents", due: "2026-11-25", nextAction: "Send every 2025 W-2.", waitingOn: "client", services: ["tax_return"] });
 
   const elena = await person("elena.vasquez", "Elena Vasquez");
   await details(elena.id, "Elena Vasquez");
@@ -130,7 +138,7 @@ async function main() {
     profileId: elena.id, returnId: elenaReturn.id, previousId: brokerage.id, documentId: uploaded.id, authorId: elena.id, authorRole: "client",
     kind: "event", requestState: "responded", requestBlock: "filing", body: "Uploaded brokerage-1099.pdf for review.",
   });
-  await stage(elenaReturn.id, { stage: "intake", due: "2026-11-20", nextAction: "Review Elena's 1099" });
+  await stage(elenaReturn.id, { stage: "documents", due: "2026-11-20", nextAction: "Review Elena's 1099", waitingOn: "staff", services: ["tax_return"] });
 
   const frank = await person("frank.nguyen", "Frank Nguyen");
   await details(frank.id, "Frank Nguyen");
@@ -138,7 +146,7 @@ async function main() {
   await intakeDocs(frank.id);
   const frankReturn = await taxReturn(frank.id, "Nguyen, Frank");
   await store.saveFiling({ returnId: frankReturn.id, jurisdiction: "federal" satisfies FilingJurisdiction, region: "", status: "draft" satisfies FilingStatus, note: "Draft shows a $1,240 refund. Read it before we ask you to sign." });
-  await stage(frankReturn.id, { stage: "followup", due: "2026-11-28", nextAction: "Send the federal draft" });
+  await stage(frankReturn.id, { stage: "approval", due: "2026-11-28", nextAction: "Send the federal draft", services: ["tax_return"] });
 
   const gina = await person("gina.patel", "Gina Patel");
   await details(gina.id, "Gina Patel", "Hugo Patel");
@@ -150,7 +158,7 @@ async function main() {
   for (const signer of ["taxpayer", "spouse"] as const) {
     await store.saveAuthorization({ returnId: ginaReturn.id, signer, returnVersion: version, method: null, status: "needed", signedAt: null, evidence: "" });
   }
-  await stage(ginaReturn.id, { stage: "followup", due: "2026-12-02", nextAction: "Collect Form 8879 before e-file" });
+  await stage(ginaReturn.id, { stage: "approval", due: "2026-12-02", nextAction: "Collect Form 8879 before e-file", services: ["tax_return"] });
 
   const ivy = await person("ivy.brooks", "Ivy Brooks");
   await details(ivy.id, "Ivy Brooks");
@@ -159,14 +167,14 @@ async function main() {
   const ivyReturn = await taxReturn(ivy.id, "Brooks, Ivy");
   await store.saveFiling({ returnId: ivyReturn.id, jurisdiction: "federal", region: "", status: "transmitted", note: "Transmitted November 12. Acknowledgement has not come back." });
   await store.saveFiling({ returnId: ivyReturn.id, jurisdiction: "state", region: "TX", status: "rejected", note: "Texas rejected the withholding figure." });
-  await stage(ivyReturn.id, { stage: "followup", due: "2026-11-21", nextAction: "Correct the rejected Texas return" });
+  await stage(ivyReturn.id, { stage: "filing", due: "2026-11-21", nextAction: "Correct the rejected Texas return", services: ["tax_return"] });
 
   const jordan = await person("jordan.hale", "Jordan Hale");
   await details(jordan.id, "Jordan Hale");
   await signedEngagement(jordan.id);
   await intakeDocs(jordan.id);
   const jordanReturn = await taxReturn(jordan.id, "Hale, Jordan");
-  await stage(jordanReturn.id, { stage: "preparation", due: "2026-12-05", nextAction: "Prepare Jordan's return" });
+  await stage(jordanReturn.id, { stage: "preparation", due: "2026-12-05", nextAction: "Prepare Jordan's return", services: ["tax_return"] });
 
   console.log("Sample clients are ready. Open /returns/samples while signed in as staff.");
 }

@@ -19,6 +19,24 @@ export type FilingStatus = (typeof filingStatuses)[number];
 export const filingJurisdictions = ["federal", "state"] as const;
 export type FilingJurisdiction = (typeof filingJurisdictions)[number];
 
+export const leadSources = ["inquiry", "referral", "returning"] as const;
+export type LeadSource = (typeof leadSources)[number];
+
+export const serviceLines = ["tax_return", "bookkeeping", "payroll", "estimates", "planning"] as const;
+export type ServiceLine = (typeof serviceLines)[number];
+
+export const invoiceStatuses = ["draft", "sent", "paid", "waived"] as const;
+export type InvoiceStatus = (typeof invoiceStatuses)[number];
+
+export type Invoice = {
+  id: string;
+  returnId: string;
+  amountCents: number;
+  status: InvoiceStatus;
+  instructions: string;
+  updatedAt: string;
+};
+
 export type FilingRecord = {
   id: string;
   returnId: string;
@@ -308,6 +326,18 @@ export function isFilingStatus(value: string): value is FilingStatus {
 
 export function isFilingJurisdiction(value: string): value is FilingJurisdiction {
   return filingJurisdictions.some((item) => item === value);
+}
+
+export function isLeadSource(value: string): value is LeadSource {
+  return leadSources.some((item) => item === value);
+}
+
+export function isServiceLine(value: string): value is ServiceLine {
+  return serviceLines.some((item) => item === value);
+}
+
+export function isInvoiceStatus(value: string): value is InvoiceStatus {
+  return invoiceStatuses.some((item) => item === value);
 }
 
 export function isEfileSigner(value: string): value is EfileSigner {

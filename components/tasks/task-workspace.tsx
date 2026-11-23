@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, ExternalLinkIcon, ListFilterIcon, PanelRightIcon, SearchIcon } from "lucide-react";
 import { saveTaskNote, setTaskStatus } from "@/lib/actions";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { TasksViewSwitcher } from "@/components/tasks/view-switcher";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -183,7 +184,7 @@ export function TaskWorkspace({ tasks, selectedId }: { tasks: TaskView[]; select
           </div>
           <ScrollArea className="min-h-0 flex-1">
             {filtered.length === 0 ? (
-              <p className="p-6 text-center text-sm text-muted-foreground">No tasks match your filters.</p>
+              <LiniqoEmpty {...liniqo.noMatch} className="px-4 py-6" artClassName="size-24">No tasks match your filters.</LiniqoEmpty>
             ) : (
               <ul className="flex flex-col gap-1 p-3">
                 {filtered.map((item) => {
@@ -320,9 +321,7 @@ export function TaskWorkspace({ tasks, selectedId }: { tasks: TaskView[]; select
               </form>
             </>
           ) : (
-            <div className="flex flex-1 items-center justify-center">
-              <p className="text-sm text-muted-foreground">No tasks yet.</p>
-            </div>
+            <LiniqoEmpty {...liniqo.checklist} className="flex-1">No tasks yet.</LiniqoEmpty>
           )}
         </div>
 

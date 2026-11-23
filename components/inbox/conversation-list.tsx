@@ -2,6 +2,7 @@
 
 import { ArrowDownWideNarrowIcon, PanelLeftIcon, SearchIcon } from "lucide-react";
 import { ConversationListItem } from "@/components/inbox/conversation-list-item";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import type { InboxConversation } from "@/components/inbox/inbox-state";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -77,7 +78,7 @@ export function ConversationList({
       </div>
       <ScrollArea className="min-h-0 flex-1">
         {conversations.length === 0 ? (
-          <p className="p-6 text-center text-sm text-muted-foreground">No conversations here.</p>
+          <LiniqoEmpty {...liniqo.mailSorter} className="px-4 py-6" artClassName="size-24">No conversations here.</LiniqoEmpty>
         ) : (
           <ul className="flex flex-col gap-1 p-3 pb-28 md:pb-3">
             {conversations.map((conversation) => (
