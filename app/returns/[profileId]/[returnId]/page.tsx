@@ -20,7 +20,7 @@ import { stageTone } from "@/lib/status-tone";
 import { getStore } from "@/lib/store";
 import { taxpayerTypeLabel } from "@/lib/types";
 
-const selectStyle = "h-8 w-full rounded-lg border bg-background px-2 text-sm";
+const selectStyle = "h-8 w-full rounded-lg border border-input bg-white px-2 text-sm";
 
 export default async function ReviewPage({ params, searchParams }: { params: Promise<{ profileId: string; returnId: string }>; searchParams: Promise<{ conflict?: string }> }) {
   await requireProfile("staff");

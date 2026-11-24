@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const selectStyle = "h-8 w-full rounded-lg border bg-background px-2 text-sm";
+const selectStyle = "h-8 w-full rounded-lg border border-input bg-white px-2 text-sm";
 
 function invoiceLabel(status: InvoiceStatus): string {
   switch (status) {

@@ -3,6 +3,7 @@
 import type { KeyboardEvent, ReactNode, RefObject } from "react";
 import { SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -75,8 +76,8 @@ export function ComposerShell({
           <div className="flex items-center gap-0.5">{toolbar}</div>
           <div className="flex items-center gap-2">
             <span className="hidden text-[11px] text-muted-foreground sm:inline">⌘+↵ to send</span>
-            <Button type="button" size="lg" onClick={onSend} disabled={!canSend || pending}>
-              <SendIcon />
+            <Button type="button" size="lg" onClick={onSend} disabled={!canSend || pending} aria-busy={pending || undefined}>
+              {pending ? <Spinner data-icon="inline-start" /> : <SendIcon data-icon="inline-start" />}
               {note ? noteLabel : replyLabel}
             </Button>
           </div>

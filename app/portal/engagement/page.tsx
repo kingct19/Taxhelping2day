@@ -1,8 +1,10 @@
 import { packetDb } from "@/lib/docuseal";
 import { requireProfile } from "@/lib/auth";
+import { engagementLetter } from "@/lib/engagement-letter";
 import { packetFiles } from "@/lib/smartdoc-prefill";
 import { getStore } from "@/lib/store";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,7 @@ export default async function EngagementPage() {
   }
   const signed = signatures.find((item) => item.kind === "engagement");
   const rows = (packets?.data ?? []) as ClientPacket[];
+  const letter = await engagementLetter(returns.map((item) => item.id));
 
   return (
     <>
@@ -55,12 +58,17 @@ export default async function EngagementPage() {
           </section>
         );
       })}
+      {letter.status === "ready" ? (
+        <Button nativeButton={false} className="w-fit" render={<a href={letter.href} target="_blank" rel="noreferrer" />}>
+          Review and sign
+        </Button>
+      ) : null}
       {signed ? (
         <a className="underline" href={`/files/signatures/${signed.id}`}>
           Download signed letter
         </a>
       ) : null}
-      {rows.length === 0 && !signed ? <p>Your preparer will send your engagement letter by email for signature.</p> : null}
+      {letter.status === "unsigned" && rows.length === 0 && !signed ? <p>The firm prepares your engagement letter in Smartdocs. It will be ready here when they send it.</p> : null}
     </>
   );
 }

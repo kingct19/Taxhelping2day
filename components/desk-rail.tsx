@@ -7,7 +7,7 @@ import { UserButton } from "@clerk/nextjs";
 import type { LucideIcon } from "lucide-react";
 import { DeskSearch, type DeskSearchItem } from "@/components/desk/desk-search";
 import { ThemeToggle } from "@/components/desk/theme-toggle";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 

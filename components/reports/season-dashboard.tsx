@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { initials } from "@/lib/inbox-view";
 import type { SeasonStage } from "@/lib/season";
 import { stageOrder, stages, type Stage, type WaitingOn } from "@/lib/return-workflow";
@@ -210,23 +209,23 @@ export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardF
                   <ArrowRightIcon />
                 </Button>
               </div>
+              <Image
+                src="/images/backgrounds/analytic-user.svg"
+                alt=""
+                width={222}
+                height={182}
+                unoptimized
+                className="ms-auto h-auto w-[222px] max-w-full dark:hidden lg:absolute lg:bottom-0 lg:end-8"
+              />
+              <Image
+                src="/images/backgrounds/analytic-user-dark.svg"
+                alt=""
+                width={222}
+                height={188}
+                unoptimized
+                className="ms-auto hidden h-auto w-[222px] max-w-full dark:block lg:absolute lg:bottom-0 lg:end-8"
+              />
             </CardContent>
-            <Image
-              src="/images/backgrounds/analytic-user.svg"
-              alt=""
-              width={222}
-              height={182}
-              unoptimized
-              className="absolute bottom-0 end-8 hidden lg:block dark:hidden"
-            />
-            <Image
-              src="/images/backgrounds/analytic-user-dark.svg"
-              alt=""
-              width={222}
-              height={188}
-              unoptimized
-              className="absolute bottom-0 end-8 hidden dark:lg:block"
-            />
           </Card>
 
           <Card className="col-span-12 shadow-none xl:col-span-4">
@@ -371,44 +370,40 @@ export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardF
               {deskFiles.length === 0 ? (
                 <LiniqoEmpty {...liniqo.ledger} className="py-4">No returns are on the books yet.</LiniqoEmpty>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Year</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Stage</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {deskFiles.map((file) => (
-                      <TableRow key={file.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="size-9">
-                              <AvatarFallback className="text-xs">{initials(file.name, file.email)}</AvatarFallback>
-                            </Avatar>
-                            <span className="min-w-0">
-                              <span className="block max-w-48 truncate font-medium">{file.name}</span>
-                              <span className="block max-w-48 truncate text-xs text-muted-foreground">{file.taxpayerType === "individual" ? file.email : file.entity || file.email}</span>
-                            </span>
+                <ul>
+                  <li className="hidden grid-cols-[minmax(0,1.2fr)_8.5rem_auto] items-center gap-3 border-b px-1 pb-2 text-xs text-muted-foreground lg:grid">
+                    <span>Client</span>
+                    <span>Stage</span>
+                    <span className="sr-only">Open</span>
+                  </li>
+                  {deskFiles.map((file) => (
+                    <li key={file.id} className="border-b py-3 last:border-b-0">
+                      <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.2fr)_8.5rem_auto]">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <Avatar className="size-9">
+                            <AvatarFallback className="text-xs">{initials(file.name, file.email)}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <Link href={`/returns/${file.profileId}/${file.id}`} className="block truncate text-sm font-medium hover:underline">
+                              {file.name}
+                            </Link>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {file.taxYear} {taxpayerTypeLabel(file.taxpayerType).toLowerCase()}
+                              {file.taxpayerType === "individual" ? "" : file.entity ? ` · ${file.entity}` : ""}
+                              {file.email ? ` · ${file.email}` : ""}
+                            </p>
                           </div>
-                        </TableCell>
-                        <TableCell className="tabular-nums">{file.taxYear}</TableCell>
-                        <TableCell>{taxpayerTypeLabel(file.taxpayerType)}</TableCell>
-                        <TableCell>
+                        </div>
+                        <div>
                           <Badge variant={stageTone(file.stage)}>{stages[file.stage]}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button nativeButton={false} size="sm" render={<Link href={`/returns/${file.profileId}/${file.id}`} />}>
-                            Open
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                        <Button nativeButton={false} size="sm" className="w-fit" render={<Link href={`/returns/${file.profileId}/${file.id}`} />}>
+                          Open return
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </CardContent>
           </Card>

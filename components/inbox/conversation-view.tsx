@@ -36,7 +36,7 @@ export function ConversationView({
   if (!conversation) return <InboxEmpty />;
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <ConversationHeader
         conversation={conversation}
         currentUserId={currentUserId}

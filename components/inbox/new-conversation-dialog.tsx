@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createInboxConversation } from "@/lib/actions";
 import type { InboxContact } from "@/components/inbox/inbox-state";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,7 +116,8 @@ export function NewConversationDialog({
         </div>
         <DialogFooter>
           <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
-          <Button type="button" onClick={() => void create()} disabled={!canCreate}>
+          <Button type="button" onClick={() => void create()} disabled={!canCreate} aria-busy={pending || undefined}>
+            {pending ? <Spinner data-icon="inline-start" /> : null}
             Create conversation
           </Button>
         </DialogFooter>

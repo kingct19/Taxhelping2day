@@ -22,7 +22,7 @@ export default async function DocumentsPage() {
         {documentRequests(profile.taxpayerType).map((request) => {
           const received = receivedRequest(request, documents);
           return (
-            <li key={request.kind} className="rounded-md border border-border bg-white px-4 py-3">
+            <li key={request.kind} className="rounded-lg border border-border bg-background px-4 py-3 text-foreground">
               <p className="font-medium">{request.title}</p>
               <p className="text-sm text-muted-foreground">{request.detail}</p>
               <p className="mt-1 text-sm">{received ? "In review" : request.required ? "Still needed" : "Send if you have one"}</p>

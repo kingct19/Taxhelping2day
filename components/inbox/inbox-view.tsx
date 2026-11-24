@@ -69,8 +69,7 @@ export function InboxView({ data }: { data: InboxDeskData }) {
       ),
     )
     .sort((left, right) => compareConversations(state.sort, left, right));
-  const task = selected ? data.tasks.find((item) => item.profileId === selected.profileId) : undefined;
-  const taskHref = task ? `/tasks?id=${task.id}` : "/tasks";
+  const taskHref = selected ? `/tasks?client=${selected.profileId}` : "/tasks";
 
   function toggleSidebar() {
     if (sidebarIsColumn) dispatch({ type: "sidebar", open: !state.sidebarOpen });

@@ -59,7 +59,7 @@ export function MessageBubble({ message, authorName }: { message: Message; autho
             <p className="mt-1 text-sm whitespace-pre-wrap">{message.body}</p>
           </div>
         ) : (
-          <div className={cn("w-fit rounded-2xl px-3.5 py-2.5 text-sm", own ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm bg-muted")}>
+          <div className={cn("w-fit rounded-2xl px-3.5 py-2.5 text-sm", own ? "rounded-br-sm bg-blue-600 text-white dark:bg-blue-500" : "rounded-bl-sm bg-zinc-100 text-foreground dark:bg-muted")}>
             <p className="whitespace-pre-wrap">{message.body}</p>
           </div>
         )}

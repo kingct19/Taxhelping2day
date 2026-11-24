@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { NewSmartdocDialog } from "@/components/smartdocs/new-smartdoc-dialog";
-import { SendSmartdocDialog, type SmartdocRecipient } from "@/components/smartdocs/send-smartdoc-dialog";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SmartdocRowActions } from "@/components/smartdocs/smartdoc-row-actions";
+import type { SmartdocRecipient } from "@/components/smartdocs/send-smartdoc-dialog";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireProfile } from "@/lib/auth";
 import { builderConfigured } from "@/lib/docuseal-builder";
 import { packetDb } from "@/lib/docuseal";
-import { setSmartdocArchived } from "@/lib/signing-actions";
 import { getStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +16,7 @@ type TemplateRow = {
   id: string;
   name: string;
   docuseal_template_id: number | null;
+  kind: string | null;
   archived_at: string | null;
   created_at: string;
   updated_at: string;
@@ -27,6 +28,16 @@ function writtenDate(value: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function initials(name: string) {
+  const letters = name
+    .split(/[\s@]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+  return letters || "?";
+}
+
 export default async function SmartdocsPage({ searchParams }: { searchParams: Promise<{ archived?: string }> }) {
   await requireProfile("staff");
   const archivedView = (await searchParams).archived === "1";
@@ -36,7 +47,7 @@ export default async function SmartdocsPage({ searchParams }: { searchParams: Pr
   const counts = new Map<string, { sent: number; completed: number }>();
   if (db) {
     const [templateResult, packetResult] = await Promise.all([
-      db.from("signing_templates").select("id,name,docuseal_template_id,archived_at,created_at,updated_at").order("updated_at", { ascending: false }),
+      db.from("signing_templates").select("id,name,docuseal_template_id,kind,archived_at,created_at,updated_at").order("updated_at", { ascending: false }),
       db.from("signing_packets").select("template_ref,status"),
     ]);
     if (templateResult.error) throw templateResult.error;
@@ -90,44 +101,50 @@ export default async function SmartdocsPage({ searchParams }: { searchParams: Pr
         {visible.length === 0 ? (
           <LiniqoEmpty {...(archivedView ? liniqo.archive : liniqo.contract)}>{archivedView ? "No archived documents." : "No documents yet."}</LiniqoEmpty>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Sent</TableHead>
-                <TableHead>Completed</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Updated</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visible.map((template) => {
-                const count = counts.get(template.id) ?? { sent: 0, completed: 0 };
-                return (
-                  <TableRow key={template.id}>
-                    <TableCell className="font-medium">{template.name}</TableCell>
-                    <TableCell>{count.sent}</TableCell>
-                    <TableCell>{count.completed}</TableCell>
-                    <TableCell>{writtenDate(template.created_at)}</TableCell>
-                    <TableCell>{writtenDate(template.updated_at)}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap justify-end gap-2">
-                        <Button nativeButton={false} size="sm" variant="outline" render={<Link href={`/smartdocs/${template.id}`} />}>Edit</Button>
-                        {!template.archived_at ? (
-                          <SendSmartdocDialog templateId={template.id} templateName={template.name} saved={Boolean(template.docuseal_template_id)} clients={clients} />
-                        ) : null}
-                        <Button nativeButton={false} size="sm" variant="outline" render={<Link href={`/smartdocs/${template.id}/completions`} />}>Show completions</Button>
-                        <form action={setSmartdocArchived.bind(null, template.id, !template.archived_at)}>
-                          <Button type="submit" size="sm" variant="ghost">{template.archived_at ? "Restore" : "Archive"}</Button>
-                        </form>
+          <Card>
+            <CardContent>
+              <ul>
+                <li className="hidden grid-cols-[minmax(0,1.4fr)_4.5rem_6.5rem_8rem_8rem_auto] items-center gap-3 border-b px-1 pb-2 text-xs text-muted-foreground lg:grid">
+                  <span>Name</span>
+                  <span>Sent</span>
+                  <span>Completed</span>
+                  <span>Created</span>
+                  <span>Updated</span>
+                  <span className="text-end">Actions</span>
+                </li>
+                {visible.map((template) => {
+                  const count = counts.get(template.id) ?? { sent: 0, completed: 0 };
+                  return (
+                    <li key={template.id} className="border-b py-3 last:border-b-0">
+                      <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.4fr)_4.5rem_6.5rem_8rem_8rem_auto]">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <Avatar className="size-9">
+                            <AvatarFallback className="text-xs">{initials(template.name)}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{template.name}</p>
+                            {template.kind === "engagement" ? <p className="text-xs text-muted-foreground">Engagement letter</p> : null}
+                          </div>
+                        </div>
+                        <p className="text-sm tabular-nums">{count.sent}</p>
+                        <p className="text-sm tabular-nums">{count.completed}</p>
+                        <p className="text-sm text-muted-foreground">{writtenDate(template.created_at)}</p>
+                        <p className="text-sm text-muted-foreground">{writtenDate(template.updated_at)}</p>
+                        <SmartdocRowActions
+                          id={template.id}
+                          name={template.name}
+                          archived={Boolean(template.archived_at)}
+                          saved={Boolean(template.docuseal_template_id)}
+                          engagement={template.kind === "engagement"}
+                          clients={clients}
+                        />
                       </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                    </li>
+                  );
+                })}
+              </ul>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

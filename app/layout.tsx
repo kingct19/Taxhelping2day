@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 import { firm, siteUrl } from "@/lib/firm";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,7 @@ export default function RootLayout({
           <ClerkProvider appearance={{ theme: shadcn }}>
             {children}
           </ClerkProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -122,7 +122,7 @@ export function ConversationHeader({
           </TooltipTrigger>
           <TooltipContent>Toggle details</TooltipContent>
         </Tooltip>
-        <Button type="button" variant={closed ? "secondary" : "destructive"} size="lg" onClick={close}>
+        <Button type="button" variant={closed ? "secondary" : "outline"} size="lg" onClick={close}>
           {closed ? "Reopen" : "Close"}
         </Button>
       </div>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/stealth.css";
 @import "@clerk/ui/themes/shadcn.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -51,38 +52,38 @@
 
 :root,
 .site {
-  --background: #f6f1e8;
-  --foreground: #1a1a1a;
-  --card: #fffdf8;
-  --card-foreground: #1a1a1a;
-  --popover: #fffdf8;
-  --popover-foreground: #1a1a1a;
+  --background: #f4f1eb;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
   --primary: #c6a15a;
-  --primary-foreground: #111111;
-  --secondary: #efe8dc;
-  --secondary-foreground: #1a1a1a;
-  --muted: #efe8dc;
-  --muted-foreground: #5c564c;
+  --primary-foreground: #1c1917;
+  --secondary: #f4f1eb;
+  --secondary-foreground: #1c1917;
+  --muted: #f6f3ee;
+  --muted-foreground: #57534e;
   --accent: #3dcfd0;
   --accent-foreground: #111111;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #e4d9c8;
-  --input: #e4d9c8;
-  --ring: #3dcfd0;
+  --border: #e3dcd2;
+  --input: #d5cdc2;
+  --ring: #c6a15a;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: #fffdf8;
-  --sidebar-foreground: #1a1a1a;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1c1917;
   --sidebar-primary: #c6a15a;
-  --sidebar-primary-foreground: #111111;
-  --sidebar-accent: #efe8dc;
-  --sidebar-accent-foreground: #1a1a1a;
-  --sidebar-border: #e4d9c8;
-  --sidebar-ring: #3dcfd0;
+  --sidebar-primary-foreground: #1c1917;
+  --sidebar-accent: #f6f1e4;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #e3dcd2;
+  --sidebar-ring: #c6a15a;
 }
 
 .site {
@@ -90,8 +91,28 @@
 }
 
 :root:not(.dark) .portal {
-  --background: #fffdf8;
-  --sidebar: #f6f1e8;
+  --background: #ffffff;
+  --sidebar: #f4f1eb;
+}
+
+:root:not(.dark) .desk:not(.portal) {
+  --background: #ffffff;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --border: #e4e4e7;
+  --input: #d4d4d8;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #18181b;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
 }
 
 .dark {
@@ -140,6 +161,81 @@
   }
 }
 
+@keyframes desk-drawer-in {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 24rem;
+    opacity: 1;
+  }
+}
+
+@keyframes desk-drawer-out {
+  from {
+    width: 24rem;
+    opacity: 1;
+  }
+  to {
+    width: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes desk-drawer-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes desk-drawer-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.desk-drawer {
+  animation: desk-drawer-slide-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.desk-drawer[data-closing="true"] {
+  animation: desk-drawer-slide-out 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (min-width: 768px) {
+  .desk-drawer {
+    animation: desk-drawer-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .desk-drawer[data-closing="true"] {
+    animation: desk-drawer-out 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-drawer,
+  .desk-drawer[data-closing="true"] {
+    animation: none;
+    width: 100%;
+    transform: none;
+    opacity: 1;
+  }
+
+  @media (min-width: 768px) {
+    .desk-drawer,
+    .desk-drawer[data-closing="true"] {
+      width: 24rem;
+    }
+  }
+}
+
 .site-copy h2 {
   font-family: var(--font-serif), serif;
   font-size: 1.75rem;
@@ -156,14 +252,14 @@
 }
 
 .liniqo-art {
-  --hl-ink: #5a5a64;
-  --hl-graphite: #8a8a94;
-  --hl-mute: #b6b6be;
-  --hl-grid: #d4d4da;
-  --hl-surface-0: #ffffff;
-  --hl-surface-1: #f2f2f4;
-  --hl-surface-2: #e6e6ea;
-  --hl-surface-3: #dcdce1;
+  --hl-ink: #3f3f46;
+  --hl-graphite: #71717a;
+  --hl-mute: #a1a1aa;
+  --hl-grid: #d4d4d8;
+  --hl-surface-0: #fafafa;
+  --hl-surface-1: #f4f4f5;
+  --hl-surface-2: #e4e4e7;
+  --hl-surface-3: #d4d4d8;
   --hl-accent: #c6a15a;
   --hl-accent-tint: #f8f3e8;
 }

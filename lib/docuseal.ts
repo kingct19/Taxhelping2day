@@ -63,7 +63,12 @@ export async function syncSubmission(submissionId: number) {
       files.push({path,name:source.name});
     }
     const templateId = Number(process.env.DOCUSEAL_ENGAGEMENT_TEMPLATE_ID);
-    if (engagementPdf && templateId > 0 && Number(packet.template_id) === templateId) {
+    const marked = packet.template_ref
+      ? await db.from("signing_templates").select("kind").eq("id", packet.template_ref).maybeSingle()
+      : null;
+    if (marked?.error) throw marked.error;
+    const engagementLetter = marked?.data?.kind === "engagement" || (templateId > 0 && Number(packet.template_id) === templateId);
+    if (engagementPdf && engagementLetter) {
       const store = getStore();
       const taxReturn = (await store.listTeamReturns()).find((item) => item.id === packet.return_id);
       if (taxReturn) {

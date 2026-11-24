@@ -39,7 +39,7 @@ export function ConversationList({
   const openCount = conversations.filter((conversation) => conversation.status === "open").length;
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col border-r">
+    <div className="flex h-full min-h-0 w-full flex-col border-r bg-sidebar">
       <div className="flex h-14 shrink-0 items-center gap-1.5 border-b px-3">
         <Tooltip>
           <TooltipTrigger render={<Button type="button" variant="ghost" size="icon" aria-label="Toggle folders" onClick={onToggleSidebar} />}>

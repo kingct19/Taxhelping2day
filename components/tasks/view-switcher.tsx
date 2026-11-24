@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const views = [
-  { href: "/tasks", label: "Workspace", icon: Columns3Icon },
+  { href: "/tasks", label: "Board", icon: Columns3Icon },
   { href: "/tasks/table", label: "Table", icon: Table2Icon },
 ] as const;
 

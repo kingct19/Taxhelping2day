@@ -74,7 +74,7 @@ export function DeskShell({ side, children }: { side: "staff" | "client"; childr
   const search = side === "staff" ? staffSearch : clientSearch;
 
   return (
-    <div className={cn("flex h-dvh overflow-hidden bg-background", portal && "portal md:flex-row")}>
+    <div className={cn("desk flex h-dvh overflow-hidden bg-background", portal && "portal md:flex-row")}>
       <DeskRail items={items} homeHref={homeHref} search={search} inset={portal} className="max-md:hidden" />
       <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden", portal && "md:ml-2")}>{children}</div>
       <DeskNotch label={portal ? "Portal" : "Desk"} destinations={notchDestinations(items)} actions={portal ? portalActions : staffActions} search={search} />

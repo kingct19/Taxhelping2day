@@ -2,8 +2,7 @@ import { InviteButtons } from "@/components/settings/invite-buttons";
 import { SettingsFrame } from "@/components/settings/settings-frame";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireProfile } from "@/lib/auth";
 import { staffEmails } from "@/lib/firm";
 import { getStore } from "@/lib/store";
@@ -38,42 +37,40 @@ export default async function TeammatesPage() {
       description={`${people.length} ${people.length === 1 ? "person" : "people"} on this desk`}
       action={<InviteButtons />}
     >
-      <Card className="overflow-hidden py-0 shadow-none">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-4">Teammate</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <Card>
+        <CardContent>
+          <ul>
+            <li className="hidden grid-cols-[minmax(0,1fr)_8rem_8rem] items-center gap-3 border-b px-1 pb-2 text-xs text-muted-foreground lg:grid">
+              <span>Teammate</span>
+              <span>Role</span>
+              <span>Status</span>
+            </li>
             {people.map((person) => (
-              <TableRow key={person.id}>
-                <TableCell className="h-14 pl-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
+              <li key={person.id} className="border-b py-3 last:border-b-0">
+                <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1fr)_8rem_8rem]">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Avatar className="size-9">
                       <AvatarFallback className="text-xs">{initials(person.name, person.email)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-medium">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
                         {person.name}
                         {person.email === current.email ? <span className="ml-2 text-xs font-normal text-muted-foreground">(You)</span> : null}
-                      </span>
-                      <span className="truncate text-xs text-muted-foreground">{person.email}</span>
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{person.email}</p>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell className="h-14">
-                  <Badge variant="neutral">Staff</Badge>
-                </TableCell>
-                <TableCell className="h-14">
-                  <Badge variant="success">Active</Badge>
-                </TableCell>
-              </TableRow>
+                  <div>
+                    <Badge variant="neutral">Staff</Badge>
+                  </div>
+                  <div>
+                    <Badge variant="success">Active</Badge>
+                  </div>
+                </div>
+              </li>
             ))}
-          </TableBody>
-        </Table>
+          </ul>
+        </CardContent>
       </Card>
     </SettingsFrame>
   );

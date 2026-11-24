@@ -1,16 +1,67 @@
 import { DocumentRequests } from "@/components/document-requests";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
+import { OnboardingWizard } from "@/components/season-wizard";
 import Link from "next/link";
 import { postMessage } from "@/lib/actions";
 import { clientNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
-import { clientStepFor } from "@/lib/engagement";
-import { clientSteps } from "@/lib/return-workflow";
-import { seasonFor } from "@/lib/season";
+import { engagementLetter, type LetterState } from "@/lib/engagement-letter";
+import { seasonFor, type SeasonStage } from "@/lib/season";
 import { getStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+
+function onboardingStep(season: SeasonStage): "details" | "letter" | "documents" | null {
+  switch (season) {
+    case "profile":
+      return "details";
+    case "letter":
+      return "letter";
+    case "documents":
+      return "documents";
+    case "ready":
+      return null;
+    default: {
+      const exhaustive: never = season;
+      return exhaustive;
+    }
+  }
+}
+
+function letterCopy(
+  letter: LetterState | null,
+  next: { headline: string; detail: string; action: string | null; href: string | null },
+) {
+  if (!letter) return next;
+  switch (letter.status) {
+    case "unsigned":
+      return {
+        headline: "The firm is preparing your engagement letter",
+        detail: "The team sends it from Smartdocs. It will be ready to sign here.",
+        action: null,
+        href: null,
+      };
+    case "ready":
+      return {
+        headline: next.headline,
+        detail: `${letter.title} is ready. Preparation starts after you sign.`,
+        action: "Review and sign",
+        href: letter.href,
+      };
+    case "waiting":
+      return {
+        headline: next.headline,
+        detail: "The letter was sent. Open the email from DocuSeal, and the signed copy will show here.",
+        action: next.action,
+        href: next.href,
+      };
+    default: {
+      const exhaustive: never = letter;
+      return exhaustive;
+    }
+  }
+}
 
 export async function PortalSeason({ profileId, readOnly = false }: { profileId: string; readOnly?: boolean }) {
   const store = getStore();
@@ -41,22 +92,31 @@ export async function PortalSeason({ profileId, readOnly = false }: { profileId:
   })).sort((a, b) => a.next.urgency - b.next.urgency);
   const next = ranked[0].next;
   const current = ranked[0].item;
-  const stepIndex = current ? clientStepFor(current.stage, season) : 0;
-  const step = clientSteps[stepIndex];
+  const onboarding = onboardingStep(season);
+  const letter = next.href === "/portal/engagement" ? await engagementLetter(mine.map((item) => item.id)) : null;
+  const shown = letterCopy(letter, next);
+  const action = shown.action && shown.href ? (
+    readOnly ? <Button className="w-fit" disabled>{shown.action}</Button> : shown.href.startsWith("https://") ? (
+      <Button nativeButton={false} className="w-fit" render={<a href={shown.href} target="_blank" rel="noreferrer" />}>{shown.action}</Button>
+    ) : (
+      <Button nativeButton={false} className="w-fit" render={<Link href={shown.href} />}>{shown.action}</Button>
+    )
+  ) : null;
 
   return (
     <>
-      <section className="flex flex-col gap-4 rounded-md border border-border bg-white p-6">
-        <p className="text-xs font-medium tracking-[0.16em] text-muted-foreground uppercase">This season{current ? ` · ${current.entity} ${current.taxYear}` : ""}</p>
-        <p className="text-sm text-muted-foreground">Step {stepIndex + 1} of {clientSteps.length} · {step.label}</p>
-        <h1 className="font-serif text-3xl">{next.headline}</h1>
-        <p className="max-w-xl text-muted-foreground">{next.detail}</p>
-        {next.action && next.href && (
-          readOnly ? <Button className="w-fit" disabled>{next.action}</Button> : <Button nativeButton={false} className="w-fit" render={<Link href={next.href} />}>{next.action}</Button>
-        )}
-      </section>
+      {onboarding ? (
+        <OnboardingWizard stepId={onboarding} title={shown.headline} detail={shown.detail} action={action} />
+      ) : (
+        <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6 text-card-foreground">
+          <p className="text-xs font-medium tracking-[0.16em] text-muted-foreground uppercase">This season{current ? ` · ${current.entity} ${current.taxYear}` : ""}</p>
+          <h1 className="font-serif text-3xl">{shown.headline}</h1>
+          <p className="max-w-xl text-muted-foreground">{shown.detail}</p>
+          {action}
+        </section>
+      )}
       <DocumentRequests messages={messages} readOnly={readOnly} />
-      <details id={readOnly ? undefined : "message"} className="rounded-md border border-border bg-white px-4 py-3">
+      <details id={readOnly ? undefined : "message"} className="rounded-xl border border-border bg-card px-4 py-3 text-card-foreground">
         <summary className="cursor-pointer font-medium">Message the firm</summary>
         <div className="mt-4 flex flex-col gap-4">
           <ul className="flex flex-col gap-2 text-sm">

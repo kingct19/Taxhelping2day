@@ -18,14 +18,23 @@ export function SendSmartdocDialog({
   templateName,
   saved,
   clients,
+  open: openProp,
+  onOpenChange,
 }: {
   templateId: string;
   templateName: string;
   saved: boolean;
   clients: SmartdocRecipient[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const ready = clients.filter((client) => client.returns.length > 0);
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = openProp ?? uncontrolledOpen;
+  function setOpen(next: boolean) {
+    onOpenChange?.(next);
+    if (openProp === undefined) setUncontrolledOpen(next);
+  }
   const [profileId, setProfileId] = useState(ready[0]?.id ?? "");
   const [returnId, setReturnId] = useState(ready[0]?.returns[0]?.id ?? "");
   const [pending, setPending] = useState(false);
@@ -42,7 +51,7 @@ export function SendSmartdocDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button type="button" size="sm" variant="outline">Send</Button>} />
+      {openProp === undefined ? <DialogTrigger render={<Button type="button" size="sm" variant="outline">Send</Button>} /> : null}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Send {templateName}</DialogTitle>

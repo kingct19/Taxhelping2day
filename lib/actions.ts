@@ -1,6 +1,6 @@
 "use server";
 
-import { nextStage, sendBackTarget, stages } from "@/lib/return-workflow";
+import { isStage, nextStage, sendBackTarget, stages } from "@/lib/return-workflow";
 import { deriveStage, filingPrompt } from "@/lib/next-action";
 import { advanceBlocker, organizerBody, sendBackBlocker } from "@/lib/engagement";
 import { documentRequests } from "@/lib/season";
@@ -53,6 +53,8 @@ function revalidateReturn(profileId: string, returnId: string) {
   revalidatePath("/portal/efile");
   revalidatePath("/dashboard");
   revalidatePath("/inbox");
+  revalidatePath("/tasks");
+  revalidatePath("/tasks/table");
 }
 
 async function sendClerkInvite(email: string, role: "client" | "staff") {
@@ -62,7 +64,7 @@ async function sendClerkInvite(email: string, role: "client" | "staff") {
   const clerk = await clerkClient();
   await clerk.invitations.createInvitation({
     emailAddress: email,
-    redirectUrl: `${protocol}://${host}/auth/continue`,
+    redirectUrl: `${protocol}://${host}/sign-up`,
     publicMetadata: { role },
     ignoreExisting: true,
   });
@@ -435,6 +437,66 @@ export async function createTaxReturn(profileId: string, data: FormData) {
   revalidatePath("/portal");
 }
 
+export async function moveReturnStage(id: string, revision: number, stage: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireProfile("staff");
+  if (!isStage(stage)) return { ok: false, error: "That stage is not on the desk." };
+  const current = (await getStore().listTeamReturns()).find((row) => row.id === id);
+  if (!current || current.revision !== revision) return { ok: false, error: "This return changed. Refresh and try the move again." };
+  const forward = nextStage(current.stage);
+  const back = sendBackTarget(current.stage);
+  if (stage !== forward && stage !== back) return { ok: false, error: "Move a return one stage at a time." };
+  const context = await gateContext(current.profileId, id);
+  const profile = context.profile;
+  const workflow = context.workflow;
+  if (!profile || !workflow) return { ok: false, error: "Return not found." };
+  if (stage === forward) {
+    const blocker = advanceBlocker({ ...context, workflow, profile });
+    if (blocker) return { ok: false, error: blocker };
+    if (stage === "documents") await seedOrganizer(current.profileId, id, staff.id, profile.taxpayerType);
+  } else {
+    const blocker = sendBackBlocker(current.stage, context.filings);
+    if (blocker) return { ok: false, error: blocker };
+  }
+  const derived = deriveStage({ ...current, stage }, context.threads);
+  const now = new Date().toISOString();
+  const leavingReview = current.stage === "review" && stage === forward;
+  const leavingDelivery = current.stage === "delivery" && stage === forward;
+  const saved = await context.store.updateWorkflow(id, {
+    ...current,
+    revision,
+    stage,
+    waitingOn: derived.waitingOn,
+    nextAction: derived.nextAction || current.nextAction,
+    reviewerId: leavingReview ? staff.id : stage === back ? null : current.reviewerId,
+    reviewedAt: leavingReview ? now : stage === back ? null : current.reviewedAt,
+    deliveredAt: leavingDelivery ? now : current.deliveredAt,
+    archivedAt: leavingDelivery ? now : current.archivedAt,
+  });
+  if (!saved) return { ok: false, error: "This return changed. Refresh and try the move again." };
+  if (stage === back) {
+    await context.store.addMessage({
+      profileId: current.profileId,
+      returnId: id,
+      authorId: staff.id,
+      authorRole: "staff",
+      kind: "note",
+      body: `Sent back to ${stages[stage]} from the desk.`,
+    });
+  }
+  if (leavingDelivery) {
+    await context.store.addMessage({
+      profileId: current.profileId,
+      returnId: id,
+      authorId: staff.id,
+      authorRole: "staff",
+      kind: "event",
+      body: "Delivered the return and archived the file.",
+    });
+  }
+  revalidateReturn(current.profileId, id);
+  return { ok: true };
+}
+
 export async function saveReturnWorkflow(id: string, revision: number, data: FormData) {
   await requireProfile("staff");
   const store = getStore();
@@ -447,10 +509,13 @@ export async function saveReturnWorkflow(id: string, revision: number, data: For
   }
   if (owner && (await store.getProfile(owner))?.role !== "staff") throw new Error("Choose a staff member.");
   const current = (await store.listTeamReturns()).find((row) => row.id === id);
-  if (!current || current.revision !== revision) redirect("/returns?conflict=1");
+  const returnTo = data.get("returnTo") === "/tasks/table" ? "/tasks/table" : "/returns";
+  if (!current || current.revision !== revision) redirect(`${returnTo}?conflict=1`);
   const saved = await store.updateWorkflow(id, { ...current, revision, owner, due, nextAction });
   revalidatePath("/returns");
-  if (!saved) redirect("/returns?conflict=1");
+  revalidatePath("/tasks");
+  revalidatePath("/tasks/table");
+  if (!saved) redirect(`${returnTo}?conflict=1`);
 }
 
 function selectedServices(data: FormData) {

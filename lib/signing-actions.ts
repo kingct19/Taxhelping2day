@@ -9,9 +9,30 @@ import { getStore } from "@/lib/store";
 
 const uuidPattern = /^[0-9a-f-]{36}$/i;
 
+type CreatedSigner = { submission_id?: number; slug?: string; embed_src?: string };
+
+function signLink(signer: CreatedSigner | undefined) {
+  const embed = signer?.embed_src;
+  if (typeof embed === "string") {
+    try {
+      const url = new URL(embed);
+      if (url.protocol === "https:" && (url.hostname === "docuseal.com" || url.hostname.endsWith(".docuseal.com"))) {
+        return url.toString();
+      }
+    } catch {
+      return null;
+    }
+  }
+  const slug = signer?.slug;
+  if (typeof slug === "string" && /^[A-Za-z0-9_-]{6,}$/.test(slug)) return `https://docuseal.com/s/${slug}`;
+  return null;
+}
+
 function revalidateSigning(profileId: string, returnId: string, templateRef?: string) {
   revalidatePath("/smartdocs");
+  revalidatePath("/portal");
   revalidatePath("/portal/engagement");
+  revalidatePath(`/contacts/${profileId}`);
   revalidatePath(`/returns/${profileId}/${returnId}`);
   if (templateRef) {
     revalidatePath(`/smartdocs/${templateRef}`);
@@ -48,9 +69,15 @@ export async function sendEngagement(profileId: string, returnId: string) {
         values: { "Taxpayer name": item.entity, "Tax year": String(item.taxYear) },
       }],
     });
-    const id = signers[0]?.submission_id;
+    const signer = (signers as CreatedSigner[])[0];
+    const id = signer?.submission_id;
     if (!Number.isSafeInteger(id)) throw new Error("Unconfirmed submission.");
-    const update = await db.from("signing_packets").update({ submission_id: id, status: "pending" }).eq("id", packet.id).eq("status", "creating");
+    const link = signLink(signer);
+    const update = await db.from("signing_packets").update({
+      submission_id: id,
+      status: "pending",
+      ...(link ? { sign_url: link } : {}),
+    }).eq("id", packet.id).eq("status", "creating");
     if (update.error) throw update.error;
   } catch {
     const result = await db.from("signing_packets").update({ status: "Verify in DocuSeal" }).eq("id", packet.id).eq("status", "creating");
@@ -157,9 +184,15 @@ async function deliverSmartdoc(templateRef: string, profileId: string, returnId:
         ...(Object.keys(values).length ? { values } : {}),
       }],
     });
-    const id = signers[0]?.submission_id;
+    const signer = (signers as CreatedSigner[])[0];
+    const id = signer?.submission_id;
     if (!Number.isSafeInteger(id)) throw new Error("Unconfirmed submission.");
-    const update = await db.from("signing_packets").update({ submission_id: id, status: "pending" }).eq("id", packet.id).eq("status", "creating");
+    const link = signLink(signer);
+    const update = await db.from("signing_packets").update({
+      submission_id: id,
+      status: "pending",
+      ...(link ? { sign_url: link } : {}),
+    }).eq("id", packet.id).eq("status", "creating");
     if (update.error) throw update.error;
   } catch {
     const result = await db.from("signing_packets").update({ status: "Verify in DocuSeal" }).eq("id", packet.id).eq("status", "creating");
@@ -177,4 +210,41 @@ export async function sendSmartdoc(templateRef: string, form: FormData) {
 export async function sendSmartdocToReturn(profileId: string, returnId: string, form: FormData) {
   const templateRef = String(form.get("template") ?? "");
   await deliverSmartdoc(templateRef, profileId, returnId);
+}
+
+export async function setEngagementTemplate(templateRef: string) {
+  await requireProfile("staff");
+  const db = packetDb();
+  if (!db || !uuidPattern.test(templateRef)) throw new Error("Document not found.");
+  const templateResult = await db.from("signing_templates").select("id,docuseal_template_id,archived_at").eq("id", templateRef).maybeSingle();
+  if (templateResult.error) throw templateResult.error;
+  const template = templateResult.data;
+  if (!template?.docuseal_template_id) throw new Error("Save the document in the builder before using it as the engagement letter.");
+  if (template.archived_at) throw new Error("Restore the document before using it as the engagement letter.");
+  const now = new Date().toISOString();
+  const clear = await db.from("signing_templates").update({ kind: null, updated_at: now }).eq("kind", "engagement");
+  if (clear.error) throw clear.error;
+  const marked = await db.from("signing_templates").update({ kind: "engagement", updated_at: now }).eq("id", templateRef);
+  if (marked.error) throw marked.error;
+  revalidatePath("/smartdocs");
+  revalidatePath("/contacts");
+}
+
+export async function prepareEngagementLetter(profileId: string, formData: FormData) {
+  await requireProfile("staff");
+  const returnId = String(formData.get("returnId") ?? "");
+  const templateRef = String(formData.get("template") ?? "");
+  if (!uuidPattern.test(templateRef)) throw new Error("Choose the engagement letter in Smartdocs.");
+  const db = packetDb();
+  if (!db) throw new Error("Configure DocuSeal before sending.");
+  const existing = await db.from("signing_packets").select("status").eq("return_id", returnId).eq("template_ref", templateRef);
+  if (existing.error) throw existing.error;
+  const open = ((existing.data ?? []) as { status: string }[]).some((packet) => packet.status !== "completed");
+  if (!open) {
+    await setEngagementTemplate(templateRef);
+    await deliverSmartdoc(templateRef, profileId, returnId);
+  }
+  revalidatePath(`/contacts/${profileId}`);
+  revalidatePath("/portal");
+  revalidatePath("/portal/engagement");
 }

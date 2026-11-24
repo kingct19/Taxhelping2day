@@ -231,7 +231,7 @@ export function AuthorityBrowser({ firm }: { firm: AuthorityRef[] }) {
 
   return (
     <div className="flex h-full min-h-0 flex-col lg:flex-row">
-      <aside className="max-h-72 shrink-0 overflow-auto border-b lg:max-h-none lg:w-64 lg:border-r lg:border-b-0">
+      <aside className="max-h-72 shrink-0 overflow-auto border-b bg-sidebar lg:max-h-none lg:w-64 lg:border-r lg:border-b-0">
         <div className="px-4 py-4">
           <h1 className="text-sm font-semibold">Authoritative sources</h1>
           <p className="mt-1 text-xs text-muted-foreground">The Code, the regulations, and the offices that publish the rest.</p>
@@ -248,7 +248,7 @@ export function AuthorityBrowser({ firm }: { firm: AuthorityRef[] }) {
                     key={item.id}
                     type="button"
                     onClick={() => openShelf(item.id)}
-                    className={`rounded-md px-2 py-1.5 text-left text-sm ${item.id === shelf.id ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"}`}
+                    className={`rounded-md px-2 py-1.5 text-left text-sm ${item.id === shelf.id ? "bg-zinc-100 font-medium text-foreground dark:bg-muted" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
                     aria-current={item.id === shelf.id ? "page" : undefined}
                   >
                     {item.label}
@@ -259,7 +259,7 @@ export function AuthorityBrowser({ firm }: { firm: AuthorityRef[] }) {
           );
         })}
       </aside>
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
         {readingHref ? (
           <SourceReader href={readingHref} onBack={() => setReadingHref("")} />
         ) : (

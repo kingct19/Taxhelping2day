@@ -1,3 +1,4 @@
+import { EngagementLetterForm } from "@/components/contacts/engagement-letter-form";
 import { IdentityForm } from "@/components/identity-form";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { TaxReturnList } from "@/components/tax-return-list";
@@ -7,12 +8,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeftIcon } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Badge } from "@/components/ui/badge";
 import { requireProfile } from "@/lib/auth";
 import { seasonFor, seasonLabel } from "@/lib/season";
 import { getStore } from "@/lib/store";
-import { documentKindLabel, taskTitle, taxpayerTypeLabel } from "@/lib/types";
+import { documentKindLabel, taxpayerTypeLabel } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -34,16 +35,14 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   if (!client || client.role !== "client") {
     notFound();
   }
-  const [documents, signatures, messages, identity, tasks, returns] = await Promise.all([
+  const [documents, signatures, messages, identity, returns] = await Promise.all([
     store.listDocuments(client.id),
     store.listSignatures(client.id),
     store.listMessages(client.id),
     store.getIdentity(client.id),
-    store.listTasks(),
     store.listReturns(id),
   ]);
   const stage = seasonFor(client, signatures, documents);
-  const fileTasks = tasks.filter((task) => task.profileId === client.id);
   const visibleMessages = messages.filter((message) => message.kind !== "note");
 
   return (
@@ -61,7 +60,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
         </Link>
       </div>
       <div className="grid min-h-0 flex-1 lg:grid-cols-[18rem_minmax(0,1fr)_20rem]">
-        <aside className="flex flex-col gap-3 overflow-auto border-b p-4 lg:border-r lg:border-b-0">
+        <aside className="flex flex-col gap-3 overflow-auto border-b bg-sidebar p-4 lg:border-r lg:border-b-0">
           <h2 className="text-sm font-medium">Profile</h2>
           <Fact label="Phone" value={client.phone} />
           <Fact label="Taxpayer" value={taxpayerTypeLabel(client.taxpayerType)} />
@@ -104,9 +103,10 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             </ul>
           )}
         </section>
-        <aside className="flex flex-col gap-4 overflow-auto border-t p-4 xl:border-t-0 xl:border-l">
+        <aside className="flex flex-col gap-4 overflow-auto border-t bg-sidebar p-4 xl:border-t-0 xl:border-l">
           <h2 className="text-sm font-medium">This season</h2>
           <Fact label="Stage" value={seasonLabel(stage)} />
+          <EngagementLetterForm profileId={client.id} returns={returns.map((item) => ({ id: item.id, taxYear: item.taxYear, entity: item.entity }))} />
           <div className="flex flex-wrap gap-2">
             <Badge variant={signatures.some((item) => item.kind === "poa") ? "success" : "warning"}>
               {signatures.some((item) => item.kind === "poa") ? "Form 2848 signed" : "Form 2848 open"}
@@ -129,17 +129,10 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           )}
           <h2 className="text-sm font-medium">Identity</h2>
           <IdentityForm key={`${client.id}-${identity?.attested ?? false}-${identity?.note ?? ""}`} clientId={client.id} identity={identity} />
-          <h2 className="text-sm font-medium">Tasks</h2>
-          <ul className="flex flex-col gap-2 text-sm">
-            {fileTasks.map((task) => (
-              <li key={task.id} className="flex items-center justify-between gap-2">
-                <Link href={`/tasks?id=${task.id}`} className="underline">
-                  {taskTitle(task.kind)}
-                </Link>
-                <span className="text-xs text-muted-foreground">{task.status === "done" ? "Done" : "Open"}</span>
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-sm font-medium">Desk</h2>
+          <Link href={`/tasks?client=${client.id}`} className="text-sm underline">
+            Open this client on the desk
+          </Link>
         </aside>
       </div>
     </div>

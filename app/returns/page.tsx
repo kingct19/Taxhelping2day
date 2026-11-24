@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
-import { LiniqoArt, LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
+import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { saveReturnWorkflow } from "@/lib/actions";
@@ -175,7 +177,7 @@ export default async function ReturnsPage({ searchParams }: {
             value={onStaff}
             hint="The firm owes the next step"
             active={waiting === "staff"}
-            art="person-at-laptop-desk"
+            art="/images/illustrations/on-you.png"
           />
           <QueueCard
             href={boardHref(filters, { waiting: waiting === "client" ? null : "client" })}
@@ -183,7 +185,7 @@ export default async function ReturnsPage({ searchParams }: {
             value={onClient}
             hint="Waiting for something from them"
             active={waiting === "client"}
-            art="person-sending-message"
+            art="/images/illustrations/on-the-client.png"
           />
           <QueueCard
             href={boardHref(filters, { owner: query.owner === "unassigned" ? null : "unassigned" })}
@@ -191,7 +193,7 @@ export default async function ReturnsPage({ searchParams }: {
             value={unassigned}
             hint="No preparer yet"
             active={query.owner === "unassigned"}
-            art="cubicle"
+            art="/images/illustrations/unassigned.png"
           />
         </div>
         <Card>
@@ -331,14 +333,20 @@ function QueueCard({ href, label, value, hint, active, art }: {
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative col-span-12 flex min-h-36 flex-col gap-1 overflow-hidden rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10 lg:col-span-4 lg:pe-36",
+        "relative col-span-12 flex min-h-36 flex-col gap-1 overflow-hidden rounded-xl bg-card px-4 py-3 pe-28 ring-1 ring-foreground/10 sm:min-h-40 sm:pe-32 lg:col-span-4 lg:min-h-44 lg:pe-44",
         active && "ring-2 ring-foreground/40",
       )}
     >
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-2xl font-semibold tabular-nums">{value.toLocaleString("en-US")}</span>
       <span className="text-xs text-muted-foreground">{active ? "Showing these returns" : hint}</span>
-      <LiniqoArt id={art} className="absolute bottom-0 end-1 hidden size-32 lg:block" />
+      <Image
+        src={art}
+        alt=""
+        width={1024}
+        height={768}
+        className="pointer-events-none absolute bottom-0 end-0 h-20 w-auto sm:h-24 lg:h-40"
+      />
     </Link>
   );
 }

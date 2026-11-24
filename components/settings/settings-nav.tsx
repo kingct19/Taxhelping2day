@@ -16,7 +16,7 @@ import {
   UsersIcon,
   type LucideIcon,
 } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
 const groups: { title: string; items: { href: string; label: string; icon: LucideIcon }[] }[] = [

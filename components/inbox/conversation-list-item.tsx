@@ -28,7 +28,7 @@ export function ConversationListItem({
         aria-current={active ? true : undefined}
         className={cn(
           "h-auto w-full items-start justify-start gap-3 rounded-lg border-0 px-2.5 py-2.5 text-left whitespace-normal ring-0 hover:bg-muted/60 active:not-aria-[haspopup]:translate-y-0",
-          active && "bg-primary/5 ring-1 ring-primary/30 hover:bg-primary/5",
+          active && "bg-zinc-100 hover:bg-zinc-100 dark:bg-muted dark:hover:bg-muted",
         )}
       >
         <PresenceAvatar size="lg" name={conversation.contactName} initials={initials(conversation.contactName, conversation.contactEmail)} />

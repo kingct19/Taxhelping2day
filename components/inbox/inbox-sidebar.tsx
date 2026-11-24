@@ -68,7 +68,7 @@ function FolderButton({
       aria-current={active ? "true" : undefined}
       className={cn(
         "h-9 w-full justify-start gap-2 font-normal",
-        active && "bg-accent font-medium text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+        active && "bg-zinc-100 font-medium text-foreground hover:bg-zinc-100 hover:text-foreground dark:bg-muted dark:hover:bg-muted",
       )}
       onClick={onClick}
     >

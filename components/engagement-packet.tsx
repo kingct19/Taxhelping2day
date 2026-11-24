@@ -4,7 +4,7 @@ import { packetFiles, packetSigners } from "@/lib/smartdoc-prefill";
 import { sendEngagement, sendSmartdocToReturn } from "@/lib/signing-actions";
 import { Button } from "@/components/ui/button";
 
-const selectStyle = "h-8 w-full rounded-lg border bg-background px-2 text-sm";
+const selectStyle = "h-8 w-full rounded-lg border border-input bg-white px-2 text-sm";
 
 type LibraryTemplate = { id: string; name: string; docuseal_template_id: number | null; archived_at: string | null };
 
