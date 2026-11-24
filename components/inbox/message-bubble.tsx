@@ -36,19 +36,31 @@ function Attachments({ attachments, own }: { attachments: MessageAttachment[]; o
   );
 }
 
-export function MessageBubble({ message, authorName }: { message: Message; authorName: string }) {
+export function MessageBubble({
+  message,
+  authorName,
+  authorAvatar = null,
+  viewer = "staff",
+}: {
+  message: Message;
+  authorName: string;
+  authorAvatar?: string | null;
+  viewer?: "staff" | "client";
+}) {
+  if (message.kind === "note" && viewer === "client") return null;
   if (message.kind === "event") {
     return <p className="text-center text-xs text-muted-foreground">{message.body}</p>;
   }
-  const own = message.authorRole === "staff" && message.kind === "message";
+  const own = message.authorRole === viewer && message.kind === "message";
   const note = message.kind === "note";
   const when = new Date(message.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-  const suffix = message.delivery ? deliveryLabel[message.delivery] : "";
+  const showReceipt = viewer === "staff" || own;
+  const suffix = showReceipt && message.delivery ? deliveryLabel[message.delivery] : "";
   const attachments = message.attachments ?? [];
 
   return (
     <div className={cn("flex items-end gap-2", own || (note && message.authorRole === "staff") ? "flex-row-reverse" : "flex-row")}>
-      <PresenceAvatar name={authorName} initials={initials(authorName, authorName)} />
+      <PresenceAvatar name={authorName} initials={initials(authorName, authorName)} src={authorAvatar} />
       <div className={cn("flex max-w-[85%] flex-col gap-1", own || (note && message.authorRole === "staff") ? "items-end" : "items-start")}>
         {attachments.length > 0 ? <Attachments attachments={attachments} own={own || message.authorRole === "staff"} /> : null}
         {note ? (

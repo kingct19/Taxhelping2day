@@ -1,5 +1,5 @@
-import { DeskShell } from "@/components/desk-shell";
+import { DeskFrame } from "@/components/desk-frame";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return <DeskShell side="staff">{children}</DeskShell>;
+  return <DeskFrame side="staff">{children}</DeskFrame>;
 }

@@ -1,11 +1,18 @@
 "use client"
 
+import { useLinkStatus } from "next/link"
 import { useFormStatus } from "react-dom"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { buttonVariants } from "@/components/ui/button-variants"
 import { Spinner } from "@/components/ui/spinner"
+
+function LinkPendingMark() {
+  const { pending } = useLinkStatus()
+  if (!pending) return null
+  return <Spinner data-pending="" data-icon="inline-start" />
+}
 
 function Button({
   className,
@@ -28,10 +35,10 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
-      {busy ? <Spinner data-icon="inline-start" /> : null}
+      {busy ? <Spinner data-icon="inline-start" /> : <LinkPendingMark />}
       {children}
     </ButtonPrimitive>
   )
 }
 
-export { Button, buttonVariants }
+export { Button, LinkPendingMark, buttonVariants }

@@ -1,221 +1,279 @@
-import { EfilePanel } from "@/components/efile-panel";
-import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
-import { EngagementPacket } from "@/components/engagement-packet";
-import { EngagementPanel } from "@/components/engagement-panel";
-import { DocumentRequests } from "@/components/document-requests";
-import { FilingLedger } from "@/components/filing-ledger";
-import Link from "next/link";
+import { ActivityTab } from "@/components/return-workspace/activity-tab";
+import { DocumentsTab } from "@/components/return-workspace/documents-tab";
+import { FilingTab } from "@/components/return-workspace/filing-tab";
+import { OverviewTab } from "@/components/return-workspace/overview-tab";
+import { PreparationTab } from "@/components/return-workspace/preparation-tab";
+import { ReturnBanner } from "@/components/return-workspace/return-banner";
+import { ReturnHeader } from "@/components/return-workspace/return-header";
+import { ReturnPanelFade } from "@/components/return-workspace/panel-fade";
+import { ReturnProgress } from "@/components/return-workspace/return-progress";
+import { ReturnTabs } from "@/components/return-workspace/return-tabs";
+import { ReviewTab } from "@/components/return-workspace/review-tab";
 import { SubpageNav } from "@/components/subpage-nav";
-import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { advanceEngagement, openNextYear, saveReturnWorkflow, sendBackEngagement } from "@/lib/actions";
 import { requireProfile } from "@/lib/auth";
-import { recordIntakeReview, saveReturnWorkflow } from "@/lib/actions";
-import { staffNext } from "@/lib/next-action";
+import { avatarUrl } from "@/lib/avatar";
+import { missingOrganizer, type GateInput } from "@/lib/engagement";
 import { requestThreads } from "@/lib/request-thread";
-import { stages } from "@/lib/return-workflow";
-import { stageTone } from "@/lib/status-tone";
-import { getStore } from "@/lib/store";
+import { documentEntries } from "@/lib/return-documents";
+import { advanceOffer, blockerLines, isReturnTab, sendBackOffer, type ReturnTab } from "@/lib/return-progress";
+import { getReturnWorkflowState } from "@/lib/return-readiness";
 import { taxpayerTypeLabel } from "@/lib/types";
+import { getStore } from "@/lib/store";
+import { notFound } from "next/navigation";
 
-const selectStyle = "h-8 w-full rounded-lg border border-input bg-white px-2 text-sm";
+export const dynamic = "force-dynamic";
 
-export default async function ReviewPage({ params, searchParams }: { params: Promise<{ profileId: string; returnId: string }>; searchParams: Promise<{ conflict?: string }> }) {
+export default async function ReviewPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ profileId: string; returnId: string }>;
+  searchParams: Promise<{ conflict?: string; tab?: string; file?: string }>;
+}) {
   await requireProfile("staff");
   const { profileId, returnId } = await params;
   const query = await searchParams;
   const store = getStore();
   const [team, documents, signatures, messages, profiles, filings, authorizations, invoices] = await Promise.all([
-    store.listTeamReturns(), store.listDocuments(profileId), store.listSignatures(profileId), store.listMessages(profileId), store.listProfiles(), store.listFilings(returnId), store.listAuthorizations(returnId), store.listInvoices(returnId),
+    store.listTeamReturns(),
+    store.listDocuments(profileId),
+    store.listSignatures(profileId),
+    store.listMessages(profileId),
+    store.listProfiles(),
+    store.listFilings(returnId),
+    store.listAuthorizations(returnId),
+    store.listInvoices(returnId),
   ]);
   const item = team.find((row) => row.id === returnId && row.profileId === profileId);
-  if (!item) notFound();
-  const authors = new Map(profiles.map(person => [person.id, person.name || person.email]));
   const client = profiles.find((person) => person.id === profileId);
-  const activity = messages.filter(message => message.returnId === returnId).reverse();
-  const reviewed = new Set(activity.flatMap(entry => [entry.documentId, entry.signatureId]));
-  const threads = requestThreads(messages.filter(message => message.returnId === returnId));
-  const next = staffNext({
-    name: client?.name || client?.email || "the client",
-    due: item.due,
-    stage: item.stage,
+  if (!item || !client) notFound();
+
+  const authors = new Map(profiles.map((person) => [person.id, person.name || person.email]));
+  const teammates = profiles.filter((person) => person.role === "staff").map((person) => ({ id: person.id, name: authors.get(person.id) || person.email }));
+  const returnMessages = messages.filter((message) => message.returnId === returnId);
+  const threads = requestThreads(returnMessages);
+  const invoice = invoices[0] ?? null;
+  const gate: GateInput = {
+    workflow: item,
+    profile: client,
+    signatures,
     threads,
-    filings,
     authorizations,
-    returnVersion: item.returnVersion,
+    invoice,
+    filings,
+    note: "",
+  };
+  const tab: ReturnTab = isReturnTab(query.tab) ? query.tab : "overview";
+  const offer = advanceOffer(gate);
+  const back = sendBackOffer(gate);
+  const workflowState = getReturnWorkflowState(gate);
+  const advanceAction = advanceEngagement.bind(null, item.id, item.revision);
+  const sendBackAction = sendBackEngagement.bind(null, item.id, item.revision);
+  const openYearAction = item.stage === "renewal" ? openNextYear.bind(null, profileId, returnId) : null;
+  const entries = documentEntries({
+    returnId,
+    stage: item.stage,
+    taxpayerType: client.taxpayerType,
+    documents,
+    signatures,
+    threads,
+    messages,
+    authors,
+    canRemind: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),
   });
-  const files = [
-    ...documents.filter(doc => !messages.some(row => row.documentId === doc.id && row.requestState && row.returnId !== returnId)).map(doc => ({
-      id: doc.id,
-      label: doc.filename,
-      href: `/files/documents/${doc.id}`,
-      contentType: doc.contentType,
-    })),
-    ...signatures.map(sig => ({
-      id: sig.id,
-      label: `${sig.kind === "poa" ? "Power of attorney" : "Engagement letter"} · signed ${sig.signedAt.slice(0, 10)}`,
-      href: `/files/signatures/${sig.id}`,
-      contentType: "application/pdf",
-    })),
-  ];
-  const save = recordIntakeReview.bind(null, profileId, returnId);
-  const clientName = client?.name || client?.email || "Unnamed customer";
-  const owner = authors.get(item.owner ?? "") || "Unassigned";
-  const due = item.due
-    ? new Date(`${item.due}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    : null;
+  const clientName = client.name || client.email || "Unnamed customer";
+  const yearLabel = `${item.taxYear} ${taxpayerTypeLabel(item.taxpayerType).toLowerCase()} return`;
+
   return (
-    <main className="mx-auto grid w-full max-w-5xl content-start gap-8 overflow-auto px-6 py-6">
-      <header className="grid gap-4">
-        <SubpageNav
-          backHref="/returns"
-          backLabel="Back to returns"
-          crumbs={[{ href: "/returns", label: "Returns" }, { label: `${item.taxYear} ${taxpayerTypeLabel(item.taxpayerType)}` }]}
-        />
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold">{clientName}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {item.taxYear} {taxpayerTypeLabel(item.taxpayerType).toLowerCase()} return
-              {client?.email ? ` · ${client.email}` : ""}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {owner}{due ? ` · Due ${due}` : " · No due date"}
-              {" · "}
-              <Link className="underline" href={`/contacts/${profileId}`}>Customer file</Link>
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
-            {item.waitingOn ? <Badge variant="warning">{item.waitingOn === "client" ? "Waiting on client" : "Waiting on firm"}</Badge> : null}
-          </div>
-        </div>
-        {query.conflict ? (
-          <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            This return changed before you saved. Refresh and apply the change again.
-          </p>
-        ) : null}
-        <div className="rounded-lg border bg-card px-4 py-3">
-          <p className="text-xs font-medium text-muted-foreground">Do this next</p>
-          <p className="mt-1 font-medium">{next.headline}</p>
-          {next.detail ? <p className="mt-1 text-sm text-muted-foreground">{next.detail}</p> : null}
-        </div>
-      </header>
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.4fr)_20rem]">
-        <div className="grid gap-8">
-          <FilingLedger profileId={profileId} returnId={returnId} filings={filings} />
-          <DocumentRequests messages={activity} staff />
-          <section className="grid gap-3">
-            <div>
-              <h2 className="text-sm font-medium">Files on this return</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Mark a file reviewed after you have looked at it for this year.</p>
-            </div>
-            {files.length === 0 ? <LiniqoEmpty {...liniqo.folder} className="px-0 py-4" artClassName="size-24">No files yet.</LiniqoEmpty> : null}
-            {files.map((file) => {
-              const preview = `${file.href}?preview=1`;
-              const image = file.contentType.startsWith("image/");
-              const pdf = file.contentType === "application/pdf";
-              return (
-                <article key={file.id} className="overflow-hidden rounded-lg border">
-                  {pdf ? (
-                    <iframe title={file.label} src={preview} className="h-72 w-full bg-white" />
-                  ) : image ? (
-                    <img alt="" src={preview} className="max-h-72 w-full bg-white object-contain" />
-                  ) : (
-                    <p className="px-3 py-6 text-sm text-muted-foreground">This file type has no preview. Open it to read it.</p>
-                  )}
-                  <form action={save} className="flex flex-wrap items-center justify-between gap-2 border-t px-3 py-3">
-                    <a href={file.href} className="text-sm underline">{file.label}</a>
-                    <input type="hidden" name="file" value={file.id} />
-                    {reviewed.has(file.id) ? (
-                      <span className="text-sm text-muted-foreground">Reviewed</span>
-                    ) : (
-                      <Button name="action" value="accept" type="submit" variant="outline" size="sm">Mark reviewed</Button>
-                    )}
-                  </form>
-                </article>
-              );
-            })}
-          </section>
-        </div>
-        <aside className="grid content-start gap-6">
-          {client ? (
-            <EngagementPanel
-              item={item}
-              profile={client}
-              signatures={signatures}
-              threads={threads}
-              authorizations={authorizations}
-              invoice={invoices[0] ?? null}
-              filings={filings}
-            />
-          ) : null}
-          <form action={save} className="grid gap-2 rounded-lg border p-4">
-            <label htmlFor="request" className="text-sm font-medium">Ask the customer</label>
-            <Textarea id="request" name="detail" required maxLength={1000} placeholder="Which document or correction do you need?" />
-            <label className="grid gap-1 text-sm">
-              How it affects the return
-              <select className={selectStyle} name="block" defaultValue="filing">
-                <option value="start">We cannot start without it</option>
-                <option value="filing">We cannot file without it</option>
-                <option value="info">For our notes only</option>
-              </select>
-            </label>
-            <Button className="w-fit" type="submit" name="action" value="request" size="sm">Send to their portal</Button>
-          </form>
-          <form action={save} className="grid gap-2 rounded-lg border p-4">
-            <label htmlFor="note" className="text-sm font-medium">Note for the team</label>
-            <Textarea id="note" name="detail" required maxLength={1000} placeholder="What should the next preparer know?" />
-            <Button className="w-fit" type="submit" name="action" value="note" variant="outline" size="sm">Save note</Button>
-          </form>
-          <EfilePanel mode="staff" profileId={profileId} returnId={returnId} returnVersion={item.returnVersion} authorizations={authorizations} />
-          <EngagementPacket profileId={profileId} returnId={returnId} email={client?.email ?? ""} />
-          <details className="rounded-lg border px-4 py-3">
-            <summary className="cursor-pointer text-sm font-medium">History</summary>
-            {activity.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">Nothing recorded yet.</p> : null}
-            <ul className="mt-3 grid gap-3">
-              {activity.map((entry) => (
-                <li key={entry.id}>
-                  <p className="text-xs text-muted-foreground">
-                    {authors.get(entry.authorId) || "Team"}
-                    {" · "}
-                    {new Date(entry.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                    {" · "}
-                    {entry.kind === "note" ? "Team only" : "Customer can see this"}
-                  </p>
-                  <p className="mt-1 text-sm whitespace-pre-wrap">{entry.body}</p>
-                </li>
-              ))}
-            </ul>
-          </details>
-          <details className="rounded-lg border px-4 py-3">
-            <summary className="cursor-pointer text-sm font-medium">Assign this return</summary>
-            <p className="mt-2 text-xs text-muted-foreground">Who is preparing it, and when it is due.</p>
-            <form action={saveReturnWorkflow.bind(null, item.id, item.revision)} className="mt-3 grid gap-3 text-sm">
-              <label className="grid gap-1">
-                Preparer
-                <select className={selectStyle} name="owner" defaultValue={item.owner ?? ""}>
-                  <option value="">Unassigned</option>
-                  {profiles.filter((person) => person.role === "staff").map((person) => (
-                    <option key={person.id} value={person.id}>{authors.get(person.id)}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="grid gap-1">
-                Due date
-                <Input type="date" name="due" defaultValue={item.due ?? ""} />
-              </label>
-              <label className="grid gap-1">
-                Note for the team
-                <Input name="nextAction" maxLength={500} defaultValue={item.nextAction} />
-              </label>
-              <Button className="w-fit" type="submit" variant="outline" size="sm">Save assignment</Button>
-            </form>
-          </details>
-        </aside>
-      </div>
+    <main className="mx-auto grid w-full max-w-6xl content-start gap-4 overflow-auto px-4 py-4 md:px-6">
+      <SubpageNav
+        backHref="/returns"
+        backLabel="Back to returns"
+        crumbs={[{ href: "/returns", label: "Returns" }, { label: `${item.taxYear} ${taxpayerTypeLabel(item.taxpayerType)}` }]}
+      />
+      {query.conflict ? (
+        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          This return changed before you saved. Refresh and apply the change again.
+        </p>
+      ) : null}
+      <ReturnHeader
+        clientName={clientName}
+        avatar={avatarUrl(client.id, client.avatarPath)}
+        yearLabel={yearLabel}
+        email={client.email}
+        preparer={authors.get(item.owner ?? "") || "Unassigned"}
+        reviewer={authors.get(item.reviewerId ?? "") || "Unassigned"}
+        due={item.due}
+        stage={item.stage}
+        waitingOn={item.waitingOn}
+        assignAction={saveReturnWorkflow.bind(null, item.id, item.revision)}
+        advanceAction={offer ? advanceAction : null}
+        advanceLabel={offer?.label ?? null}
+        advanceNeedsNote={offer?.needsNote ?? false}
+        sendBackAction={back ? sendBackAction : null}
+        sendBackLabel={back?.label ?? null}
+        openYearAction={openYearAction}
+        contactHref={`/contacts/${profileId}`}
+        teammates={teammates}
+        ownerId={item.owner ?? ""}
+        nextAction={item.nextAction}
+        readiness={workflowState.overall}
+        profileId={profileId}
+        returnId={returnId}
+        revision={item.revision}
+        source={item.source}
+        services={item.services}
+        invoice={invoice}
+      />
+      <ReturnBanner
+        stage={item.stage}
+        blocker={blockerLines(gate)[0] ?? null}
+        advanceAction={offer ? advanceAction : null}
+        advanceLabel={offer?.label ?? null}
+        advanceNeedsNote={offer?.needsNote ?? false}
+        openYearAction={openYearAction}
+      />
+      <ReturnProgress steps={workflowState.stages} operational={item.stage} profileId={profileId} returnId={returnId} />
+      <ReturnTabs tab={tab} profileId={profileId} returnId={returnId} />
+      <ReturnPanelFade panel={tab}>
+      <ReturnPanel
+        tab={tab}
+        profileId={profileId}
+        returnId={returnId}
+        gate={gate}
+        preparer={authors.get(item.owner ?? "") || "Unassigned"}
+        reviewer={authors.get(item.reviewerId ?? "") || "Unassigned"}
+        invoice={invoice}
+        messages={returnMessages}
+        authors={authors}
+        workflowState={workflowState}
+        teammates={teammates}
+        entries={entries}
+        fileId={query.file ?? null}
+        showOrganizer={item.stage === "documents" && missingOrganizer(client.taxpayerType, threads).length > 0}
+        email={client.email}
+        filings={filings}
+        authorizations={authorizations}
+        advanceAction={advanceAction}
+        sendBackAction={sendBackAction}
+        openYearAction={openYearAction}
+      />
+      </ReturnPanelFade>
     </main>
   );
+}
+
+function ReturnPanel({
+  tab,
+  profileId,
+  returnId,
+  gate,
+  preparer,
+  reviewer,
+  invoice,
+  messages,
+  authors,
+  workflowState,
+  teammates,
+  entries,
+  fileId,
+  showOrganizer,
+  email,
+  filings,
+  authorizations,
+  advanceAction,
+  sendBackAction,
+  openYearAction,
+}: {
+  tab: ReturnTab;
+  profileId: string;
+  returnId: string;
+  gate: GateInput;
+  preparer: string;
+  reviewer: string;
+  invoice: GateInput["invoice"];
+  messages: Parameters<typeof ActivityTab>[0]["messages"];
+  authors: Map<string, string>;
+  workflowState: ReturnType<typeof getReturnWorkflowState>;
+  teammates: { id: string; name: string }[];
+  entries: ReturnType<typeof documentEntries>;
+  fileId: string | null;
+  showOrganizer: boolean;
+  email: string;
+  filings: GateInput["filings"];
+  authorizations: GateInput["authorizations"];
+  advanceAction: (data: FormData) => Promise<void>;
+  sendBackAction: (data: FormData) => Promise<void>;
+  openYearAction: (() => Promise<void>) | null;
+}) {
+  switch (tab) {
+    case "overview":
+      return (
+        <OverviewTab
+          profileId={profileId}
+          returnId={returnId}
+          state={workflowState}
+          messages={messages}
+          authors={authors}
+        />
+      );
+    case "documents":
+      return (
+        <DocumentsTab
+          profileId={profileId}
+          returnId={returnId}
+          entries={entries}
+          fileId={fileId}
+          showOrganizer={showOrganizer}
+        />
+      );
+    case "preparation":
+      return (
+        <PreparationTab
+          profileId={profileId}
+          returnId={returnId}
+          gate={gate}
+          preparer={preparer}
+          files={entries}
+          teammates={teammates}
+          advanceAction={advanceAction}
+        />
+      );
+    case "review":
+      return (
+        <ReviewTab
+          profileId={profileId}
+          returnId={returnId}
+          email={email}
+          gate={gate}
+          reviewer={reviewer}
+          teammates={teammates}
+          authorizations={authorizations}
+          messages={messages}
+          advanceAction={advanceAction}
+          sendBackAction={sendBackAction}
+        />
+      );
+    case "filing":
+      return (
+        <FilingTab
+          profileId={profileId}
+          returnId={returnId}
+          gate={gate}
+          filings={filings}
+          invoice={invoice}
+          preparer={preparer}
+          advanceAction={advanceAction}
+          sendBackAction={sendBackAction}
+          openYearAction={openYearAction}
+        />
+      );
+    case "activity":
+      return <ActivityTab messages={messages} authors={authors} />;
+    default: {
+      const exhaustive: never = tab;
+      return exhaustive;
+    }
+  }
 }

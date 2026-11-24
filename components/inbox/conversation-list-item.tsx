@@ -31,7 +31,7 @@ export function ConversationListItem({
           active && "bg-zinc-100 hover:bg-zinc-100 dark:bg-muted dark:hover:bg-muted",
         )}
       >
-        <PresenceAvatar size="lg" name={conversation.contactName} initials={initials(conversation.contactName, conversation.contactEmail)} />
+        <PresenceAvatar size="lg" name={conversation.contactName} initials={initials(conversation.contactName, conversation.contactEmail)} src={conversation.contactAvatar} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex items-center gap-2">
             <span className={cn("flex-1 truncate text-sm", unread ? "font-semibold" : "font-medium")}>{conversation.subject}</span>

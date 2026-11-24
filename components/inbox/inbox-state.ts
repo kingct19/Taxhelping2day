@@ -13,6 +13,7 @@ export type InboxPerson = {
   id: string;
   name: string;
   email: string;
+  avatar: string | null;
 };
 
 export type InboxContact = InboxPerson & {
@@ -28,6 +29,7 @@ export type InboxTaskLink = {
 export type InboxConversation = Conversation & {
   contactName: string;
   contactEmail: string;
+  contactAvatar: string | null;
   contactPhone: string;
   contactLocation: string;
   messages: Message[];

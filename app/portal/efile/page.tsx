@@ -12,7 +12,7 @@ export default async function EfilePage() {
 
   return (
     <>
-      <Link className="text-sm underline" href="/portal">This season</Link>
+      <Link className="text-sm underline" href="/portal/signatures">All signatures</Link>
       <h1 className="font-serif text-3xl">E-file authorization</h1>
       {!returns.length && <p className="text-muted-foreground">Your preparer will ask for Form 8879 when a return is ready to file.</p>}
       {returns.map((item) => (

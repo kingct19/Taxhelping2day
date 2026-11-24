@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { saveReturnWorkflow } from "@/lib/actions";
 import { requireProfile } from "@/lib/auth";
+import { avatarUrl } from "@/lib/avatar";
 import { staffNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
 import { stages, type WaitingOn } from "@/lib/return-workflow";
@@ -253,11 +254,13 @@ export default async function ReturnsPage({ searchParams }: {
                   const filedAs = sameParty(item.entity, clientName) ? null : item.entity;
                   const owner = nameOf(item.owner) || "Unassigned";
                   const overdue = Boolean(item.due && item.due < today);
+                  const photo = avatarUrl(item.profileId, people.get(item.profileId)?.avatarPath);
                   return (
                     <li key={item.id} className="border-b py-3 last:border-b-0">
                       <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.2fr)_8.5rem_minmax(0,1.4fr)_8rem_8rem_auto]">
                         <div className="flex min-w-0 items-center gap-3">
                           <Avatar className="size-9">
+                            {photo ? <AvatarImage src={photo} alt="" /> : null}
                             <AvatarFallback className="text-xs">{initials(clientName)}</AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">

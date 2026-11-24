@@ -1,4 +1,4 @@
-import { PortalSeason } from "@/components/portal-season";
+import { PortalHome } from "@/components/portal/home";
 import Link from "next/link";
 import { SubpageNav } from "@/components/subpage-nav";
 import { requireProfile } from "@/lib/auth";
@@ -56,7 +56,7 @@ export default async function SampleClientsPage() {
               <div>
                 <p className="mb-3 text-xs font-medium tracking-[0.16em] text-muted-foreground uppercase">Client portal</p>
                 <div className="grid gap-4 rounded-lg bg-muted/40 p-4">
-                  <PortalSeason profileId={profile.id} readOnly />
+                  <PortalHome profileId={profile.id} readOnly />
                 </div>
               </div>
               <div>

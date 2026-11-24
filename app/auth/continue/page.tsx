@@ -18,5 +18,5 @@ export default async function ContinuePage({
     redirect(`/sign-up?${next.toString()}`);
   }
   const profile = await requireProfile();
-  redirect(profile.role === "staff" ? "/inbox" : "/portal");
+  redirect(profile.role === "staff" ? "/dashboard" : "/portal");
 }

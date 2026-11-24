@@ -8,7 +8,7 @@ import { EChartsBarChart } from "@/components/evilcharts/charts/echarts-bar-char
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { EChartsPieChart } from "@/components/evilcharts/charts/echarts-pie-chart";
 import type { ChartConfig } from "@/components/evilcharts/ui/echarts-chart";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +24,7 @@ export type DashboardFile = {
   profileId: string;
   name: string;
   email: string;
+  avatar: string | null;
   createdAt: string;
   taxYear: number;
   entity: string;
@@ -215,7 +216,7 @@ export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardF
                 width={222}
                 height={182}
                 unoptimized
-                className="ms-auto h-auto w-[222px] max-w-full dark:hidden lg:absolute lg:bottom-0 lg:end-8"
+                className="greeting-art dark:hidden"
               />
               <Image
                 src="/images/backgrounds/analytic-user-dark.svg"
@@ -223,7 +224,7 @@ export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardF
                 width={222}
                 height={188}
                 unoptimized
-                className="ms-auto hidden h-auto w-[222px] max-w-full dark:block lg:absolute lg:bottom-0 lg:end-8"
+                className="greeting-art hidden dark:block"
               />
             </CardContent>
           </Card>
@@ -381,6 +382,7 @@ export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardF
                       <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.2fr)_8.5rem_auto]">
                         <div className="flex min-w-0 items-center gap-3">
                           <Avatar className="size-9">
+                            {file.avatar ? <AvatarImage src={file.avatar} alt="" /> : null}
                             <AvatarFallback className="text-xs">{initials(file.name, file.email)}</AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">

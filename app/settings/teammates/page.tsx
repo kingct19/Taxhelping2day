@@ -1,9 +1,10 @@
 import { InviteButtons } from "@/components/settings/invite-buttons";
 import { SettingsFrame } from "@/components/settings/settings-frame";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireProfile } from "@/lib/auth";
+import { avatarUrl } from "@/lib/avatar";
 import { staffEmails } from "@/lib/firm";
 import { getStore } from "@/lib/store";
 
@@ -25,10 +26,10 @@ export default async function TeammatesPage() {
   const staff = profiles.filter((profile) => profile.role === "staff");
   const listed = new Set(staff.map((person) => person.email));
   const people = [
-    ...staff.map((person) => ({ id: person.id, name: person.name || "Staff", email: person.email })),
+    ...staff.map((person) => ({ id: person.id, name: person.name || "Staff", email: person.email, avatar: avatarUrl(person.id, person.avatarPath) })),
     ...staffEmails()
       .filter((email) => !listed.has(email))
-      .map((email) => ({ id: email, name: "Staff", email })),
+      .map((email) => ({ id: email, name: "Staff", email, avatar: null })),
   ];
 
   return (
@@ -45,11 +46,14 @@ export default async function TeammatesPage() {
               <span>Role</span>
               <span>Status</span>
             </li>
-            {people.map((person) => (
+            {people.map((person) => {
+              const photo = person.avatar;
+              return (
               <li key={person.id} className="border-b py-3 last:border-b-0">
                 <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1fr)_8rem_8rem]">
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar className="size-9">
+                      {photo ? <AvatarImage src={photo} alt="" /> : null}
                       <AvatarFallback className="text-xs">{initials(person.name, person.email)}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
@@ -68,7 +72,8 @@ export default async function TeammatesPage() {
                   </div>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         </CardContent>
       </Card>

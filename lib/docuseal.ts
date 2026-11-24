@@ -17,6 +17,48 @@ export function signingConfigured() {
     process.env.DOCUSEAL_SIGNER_ROLE && process.env.DOCUSEAL_WEBHOOK_SECRET && packetDb());
 }
 
+type TemplatePage = {
+  data?: { id?: number; documents?: { preview_image_url?: string }[] }[];
+  pagination?: { next?: number };
+};
+
+function docusealPreview(url: string) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && (parsed.hostname === "docuseal.com" || parsed.hostname.endsWith(".docuseal.com"));
+  } catch {
+    return false;
+  }
+}
+
+export async function templatePreviewUrls(): Promise<Map<number, string>> {
+  const previews = new Map<number, string>();
+  if (!process.env.DOCUSEAL_API_KEY) return previews;
+  for (const archived of [false, true]) {
+    let after = 0;
+    for (let page = 0; page < 10; page += 1) {
+      const query = new URLSearchParams({ limit: "100" });
+      if (archived) query.set("archived", "true");
+      if (after) query.set("after", String(after));
+      let body: TemplatePage;
+      try {
+        body = await signingApi(`/templates?${query}`);
+      } catch {
+        break;
+      }
+      const rows = body.data ?? [];
+      for (const row of rows) {
+        const src = row.documents?.find((document) => document.preview_image_url && docusealPreview(document.preview_image_url))?.preview_image_url;
+        if (row.id && src) previews.set(row.id, src);
+      }
+      const next = body.pagination?.next;
+      if (!next || rows.length < 100 || next === after) break;
+      after = next;
+    }
+  }
+  return previews;
+}
+
 export async function signingApi(path: string, body?: unknown) {
   const response = await fetch("https://api.docuseal.com" + path, {
     method: body ? "POST" : "GET", cache:"no-store", redirect:"error",

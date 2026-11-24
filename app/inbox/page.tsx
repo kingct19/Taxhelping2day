@@ -1,6 +1,7 @@
 import { InboxView } from "@/components/inbox/inbox-view";
 import type { InboxConversation, InboxDeskData, InboxFile } from "@/components/inbox/inbox-state";
 import { requireProfile } from "@/lib/auth";
+import { avatarUrl } from "@/lib/avatar";
 import { firm } from "@/lib/firm";
 import { getStore } from "@/lib/store";
 import type { DocumentRecord, Message, Profile } from "@/lib/types";
@@ -56,6 +57,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
         ...conversation,
         contactName: contact.name || contact.email,
         contactEmail: contact.email,
+        contactAvatar: avatarUrl(contact.id, contact.avatarPath),
         contactPhone: contact.phone,
         contactLocation: locationFor(contact),
         messages,
@@ -69,11 +71,12 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
     selectedProfileId: id ?? null,
     teammates: profiles
       .filter((profile) => profile.role === "staff")
-      .map((profile) => ({ id: profile.id, name: profile.name || "Staff", email: profile.email })),
+      .map((profile) => ({ id: profile.id, name: profile.name || "Staff", email: profile.email, avatar: avatarUrl(profile.id, profile.avatarPath) })),
     contacts: clients.map((client) => ({
       id: client.id,
       name: client.name || client.email,
       email: client.email,
+      avatar: avatarUrl(client.id, client.avatarPath),
       phone: client.phone,
       location: locationFor(client),
     })),

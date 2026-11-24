@@ -50,7 +50,8 @@ export function ConversationView({
           {conversation.messages.map((message) => {
             const teammate = teammates.find((person) => person.id === message.authorId);
             const authorName = message.authorRole === "client" ? conversation.contactName || conversation.contactEmail : teammate?.name || teammate?.email || "Staff";
-            return <MessageBubble key={message.id} message={message} authorName={authorName} />;
+            const authorAvatar = message.authorRole === "client" ? conversation.contactAvatar : teammate?.avatar ?? null;
+            return <MessageBubble key={message.id} message={message} authorName={authorName} authorAvatar={authorAvatar} />;
           })}
           <div ref={bottomRef} />
         </div>

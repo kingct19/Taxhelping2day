@@ -21,12 +21,13 @@ import {
   moveItem,
 } from '@/components/dashboardblocks/kanban'
 import { StatusLabel, statusToneClasses, type StatusTone } from '@/components/dashboardblocks/status-label'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
 interface TaskCard extends KanbanItem {
   assignee: string | null
   client: string
+  avatar?: string | null
   due: string | null
   overdue: boolean
   settled: boolean
@@ -141,6 +142,7 @@ function ReturnCard({ clock, ticket }: { clock: Date; ticket: TaskCard }) {
         <KanbanCardTitle className='line-clamp-2' />
         <div className='flex min-w-0 items-center gap-1.5'>
           <Avatar size='sm'>
+            {ticket.avatar ? <AvatarImage src={ticket.avatar} alt='' /> : null}
             <AvatarFallback className={statusToneClasses[signal.tone]}>{initials(ticket.client)}</AvatarFallback>
           </Avatar>
           <p className='text-muted-foreground truncate text-xs'>{ticket.client}</p>

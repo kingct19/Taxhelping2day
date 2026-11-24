@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { TasksViewSwitcher } from "@/components/tasks/view-switcher";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -145,6 +145,7 @@ function ReturnRow({
       <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.2fr)_8.5rem_minmax(0,1.4fr)_8rem_8rem_auto]">
         <div className="flex min-w-0 items-center gap-3">
           <Avatar className="size-9">
+            {item.avatar ? <AvatarImage src={item.avatar} alt="" /> : null}
             <AvatarFallback className="text-xs">{initials(item.clientName)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">

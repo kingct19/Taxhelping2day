@@ -97,6 +97,7 @@ export type Profile = {
   createdAt: string;
   starred: boolean;
   snoozedUntil: string | null;
+  avatarPath: string | null;
 };
 
 export type ProfileUpdate = {

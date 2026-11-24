@@ -37,7 +37,7 @@ export async function requireProfile(role?: Profile["role"]): Promise<Profile> {
     redirect("/not-on-file");
   }
   if (role && profile.role !== role) {
-    redirect(profile.role === "staff" ? "/inbox" : "/portal");
+    redirect(profile.role === "staff" ? "/dashboard" : "/portal");
   }
   return profile;
 }

@@ -3,11 +3,12 @@ import { requireProfile } from "@/lib/auth";
 import { NewContactDialog } from "@/components/contacts/new-contact-dialog";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { ContactRowActions } from "@/components/contacts/contact-row-actions";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
 import { getStore } from "@/lib/store";
+import { avatarUrl } from "@/lib/avatar";
 import { taxpayerTypeLabel, taxpayerTypes, type TaxpayerType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -161,11 +162,14 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
                       <span>Added</span>
                       <span className="sr-only">Actions</span>
                     </li>
-                    {visible.map((client) => (
+                    {visible.map((client) => {
+                      const photo = avatarUrl(client.id, client.avatarPath);
+                      return (
                       <li key={client.id} className="border-b py-3 last:border-b-0">
                         <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.3fr)_7.5rem_7rem_8rem_8rem_7.5rem_auto]">
                           <Link href={`/contacts/${client.id}`} className="flex min-w-0 items-center gap-3">
                             <Avatar className="size-9">
+                              {photo ? <AvatarImage src={photo} alt="" /> : null}
                               <AvatarFallback className="text-xs">{initials(client.name, client.email)}</AvatarFallback>
                             </Avatar>
                             <span className="min-w-0">
@@ -185,7 +189,8 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
                           <ContactRowActions id={client.id} email={client.email} />
                         </div>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 )}
               </CardContent>

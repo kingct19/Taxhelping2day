@@ -1,5 +1,6 @@
 import { SeasonDashboard, type DashboardFile, type DashboardTask } from "@/components/reports/season-dashboard";
 import { requireProfile } from "@/lib/auth";
+import { avatarUrl } from "@/lib/avatar";
 import { seasonFor } from "@/lib/season";
 import { getStore } from "@/lib/store";
 
@@ -25,6 +26,7 @@ export default async function DashboardPage() {
         profileId: client.id,
         name: client.name,
         email: client.email,
+        avatar: avatarUrl(client.id, client.avatarPath),
         createdAt: client.createdAt,
         taxYear: item.taxYear,
         entity: item.entity,

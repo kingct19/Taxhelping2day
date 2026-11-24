@@ -42,8 +42,8 @@ export async function EngagementPacket({ profileId, returnId, email }: { profile
       })}
       {library.length > 0 ? (
         <form action={sendSmartdocToReturn.bind(null, profileId, returnId)} className="grid gap-2">
-          <label className="grid gap-1 text-sm">
-            Document
+          <label className="grid gap-1">
+            <span className="text-xs font-medium text-muted-foreground">Document</span>
             <select className={selectStyle} name="template" defaultValue={library[0]?.id}>
               {library.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
             </select>

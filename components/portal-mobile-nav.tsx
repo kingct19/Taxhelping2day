@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
 import { PlusIcon, type LucideIcon } from "lucide-react";
+import { DeskAccount } from "@/components/desk-account";
 import { DeskSearch, type DeskSearchItem } from "@/components/desk/desk-search";
 import { ThemeToggle } from "@/components/desk/theme-toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-export type NotchDestination = { href: string; label: string; icon: LucideIcon };
+export type NotchDestination = { href: string; label: string; icon: LucideIcon; badge?: number };
 export type NotchAction = { href: string; label: string };
 
 function isActive(pathname: string, href: string) {
@@ -24,18 +24,20 @@ export function DeskNotch({
   destinations,
   actions,
   search,
+  avatarUrl = null,
 }: {
   label: string;
   destinations: NotchDestination[];
   actions: NotchAction[];
   search: DeskSearchItem[];
+  avatarUrl?: string | null;
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const open = openPath === pathname;
+  function setOpen(next: boolean) {
+    setOpenPath(next ? pathname : null);
+  }
 
   return (
     <TooltipProvider>
@@ -81,7 +83,13 @@ export function DeskNotch({
                   >
                     <Icon className="size-6 shrink-0" />
                     <span>{item.label}</span>
-                    {active ? <span aria-hidden="true" className="ml-auto size-1 rounded-full bg-primary" /> : null}
+                    {item.badge ? (
+                      <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-medium text-primary-foreground">
+                        {item.badge > 9 ? "9+" : item.badge}
+                      </span>
+                    ) : active ? (
+                      <span aria-hidden="true" className="ml-auto size-1 rounded-full bg-primary" />
+                    ) : null}
                   </Link>
                 );
               })}
@@ -99,7 +107,7 @@ export function DeskNotch({
                 <DeskSearch items={search} />
                 <ThemeToggle />
                 <span className="ml-auto">
-                  <UserButton />
+                  <DeskAccount avatarUrl={avatarUrl} />
                 </span>
               </div>
             </nav>

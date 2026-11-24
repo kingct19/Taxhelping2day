@@ -1,11 +1,15 @@
-import { DeskShell } from "@/components/desk-shell";
+import { DeskFrame } from "@/components/desk-frame";
+import { PortalCanvas } from "@/components/portal/portal-canvas";
 import { requireProfile } from "@/lib/auth";
+import { unreadFromStaff } from "@/lib/client-home";
+import { getStore } from "@/lib/store";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
-  await requireProfile("client");
+  const profile = await requireProfile("client");
+  const messages = await getStore().listMessages(profile.id);
   return (
-    <DeskShell side="client">
-      <div className="flex h-full w-full flex-col gap-6 overflow-auto px-4 pt-6 pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:mx-auto md:max-w-3xl md:py-8">{children}</div>
-    </DeskShell>
+    <DeskFrame side="client" unread={unreadFromStaff(messages)}>
+      <PortalCanvas>{children}</PortalCanvas>
+    </DeskFrame>
   );
 }

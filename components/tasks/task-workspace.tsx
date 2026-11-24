@@ -1,19 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, XIcon } from "lucide-react";
+import { ArrowLeftIcon, ChevronDownIcon, LinkIcon, XIcon } from "lucide-react";
 import { toast } from "@yusufceng1z/ding-react";
 import { Kanban3 } from "@/components/dashboardblocks/kanban/kanban-03";
 import { TasksViewSwitcher } from "@/components/tasks/view-switcher";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { moveReturnStage } from "@/lib/actions";
 import type { DeskReturn } from "@/lib/desk-returns";
 import { isStage, stages, stageOrder, type WaitingOn } from "@/lib/return-workflow";
 import { stageTone } from "@/lib/status-tone";
+import { taxpayerTypeLabel } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const columns = stageOrder.map((stage, index) => ({
   id: stage,
@@ -35,6 +40,40 @@ function dueLabel(due: string) {
   const date = new Date(`${due}T00:00:00`);
   if (Number.isNaN(date.getTime())) return due;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function Fact({ label, value, danger = false }: { label: string; value: string; danger?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-2 px-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className={cn("max-w-[60%] truncate text-xs font-medium", danger && "text-destructive")} title={value}>{value}</span>
+    </div>
+  );
+}
+
+function DrawerSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <Collapsible defaultOpen className="space-y-2">
+      <CollapsibleTrigger
+        render={
+          <Button type="button" variant="ghost" size="sm" className="group/section h-7 w-full justify-between bg-transparent px-1">
+            <span className="text-sm font-medium">{title}</span>
+            <ChevronDownIcon className="size-4 transition-transform group-aria-expanded/section:rotate-180" />
+          </Button>
+        }
+      />
+      <CollapsibleContent className="space-y-2">{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function DrawerLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="flex items-center gap-2 rounded-md px-1 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">
+      <LinkIcon className="size-3.5" />
+      {children}
+    </Link>
+  );
 }
 
 function waitingLabel(waiting: WaitingOn) {
@@ -108,6 +147,7 @@ export function TaskWorkspace({ now, returns, selectedId }: { now: string; retur
         column: row.stage,
         title: row.headline,
         client: row.clientName,
+        avatar: row.avatar,
         assignee: row.ownerName === "Unassigned" ? null : row.ownerName,
         year: row.taxYear,
         due: row.due,
@@ -184,54 +224,54 @@ export function TaskWorkspace({ now, returns, selectedId }: { now: string; retur
             }}
           >
             <div className="flex h-full w-full min-w-full flex-col md:w-96 md:min-w-96">
-            <div className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Back to the board" onClick={closePanel}>
-                <ArrowLeftIcon />
-              </Button>
-              <Avatar className="size-8">
-                <AvatarFallback className="text-xs">{initials(item.clientName)}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{item.clientName}</p>
-                <p className="truncate text-xs text-muted-foreground">{item.clientEmail}</p>
+              <div className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
+                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Back to the board" onClick={closePanel}>
+                  <ArrowLeftIcon />
+                </Button>
+                <span className="text-sm font-medium">Details</span>
+                <Button variant="ghost" size="icon" className="ml-auto hidden md:inline-flex" aria-label="Close" onClick={closePanel}>
+                  <XIcon />
+                </Button>
               </div>
-              <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
-              <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="Close" onClick={closePanel}>
-                <XIcon />
-              </Button>
-            </div>
-            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-4">
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-semibold">{item.taxYear} return</p>
-                <p className="text-sm text-muted-foreground">{item.headline}</p>
-              </div>
-              <div className="flex flex-col gap-2 text-sm">
-                <p className="flex items-center justify-between gap-2">
-                  <span className="text-muted-foreground">Waiting</span>
-                  <span>{waitingLabel(item.waitingOn) ?? "With the firm"}</span>
-                </p>
-                <p className="flex items-center justify-between gap-2">
-                  <span className="text-muted-foreground">Due</span>
-                  <span className={item.overdue ? "text-destructive" : undefined}>{item.due ? dueLabel(item.due) : "No due date"}</span>
-                </p>
-                <p className="flex items-center justify-between gap-2">
-                  <span className="text-muted-foreground">Preparer</span>
-                  <span className="truncate">{item.ownerName}</span>
-                </p>
-              </div>
-              {item.forwardBlock ? <p className="text-sm text-muted-foreground">{item.forwardBlock}</p> : null}
-              <div className="flex flex-col gap-2">
-                <Link href={`/returns/${item.profileId}/${item.id}`} className="text-sm underline">
-                  Open the return
-                </Link>
-                <Link href={`/contacts/${item.profileId}`} className="text-sm underline">
-                  Open the contact
-                </Link>
-                <Link href={`/inbox?id=${item.profileId}`} className="text-sm underline">
-                  Open conversation
-                </Link>
-              </div>
-            </div>
+              <ScrollArea className="min-h-0 flex-1">
+                <div className="space-y-4 p-4">
+                  <div className="flex flex-col items-center gap-2 py-2 text-center">
+                    <Avatar size="lg">
+                      {item.avatar ? <AvatarImage src={item.avatar} alt="" /> : null}
+                      <AvatarFallback className="text-xs">{initials(item.clientName)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-semibold">{item.clientName}</p>
+                      <p className="text-xs text-muted-foreground">{item.clientEmail || "No email"}</p>
+                    </div>
+                    <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
+                    <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/contacts/${item.profileId}`} />}>
+                      View contact
+                    </Button>
+                  </div>
+                  <Separator />
+                  <div className="space-y-3">
+                    <Fact label="Waiting" value={waitingLabel(item.waitingOn) ?? "With the firm"} />
+                    <Fact label="Due" value={item.due ? dueLabel(item.due) : "No due date"} danger={item.overdue} />
+                    <Fact label="Preparer" value={item.ownerName} />
+                  </div>
+                  <Button nativeButton={false} className="w-full" render={<Link href={`/returns/${item.profileId}/${item.id}`} />}>
+                    Open the return
+                  </Button>
+                  <Separator />
+                  <DrawerSection title={`${item.taxYear} return`}>
+                    <Fact label="Type" value={taxpayerTypeLabel(item.taxpayerType)} />
+                    <Fact label="Entity" value={item.entity || "—"} />
+                    <Fact label="Next step" value={item.headline} />
+                    {item.forwardBlock ? <p className="px-1 text-xs text-muted-foreground">{item.forwardBlock}</p> : null}
+                  </DrawerSection>
+                  <Separator />
+                  <DrawerSection title="Links">
+                    <DrawerLink href={`/contacts/${item.profileId}`}>Contact</DrawerLink>
+                    <DrawerLink href={`/inbox?id=${item.profileId}`}>Conversation</DrawerLink>
+                  </DrawerSection>
+                </div>
+              </ScrollArea>
             </div>
           </aside>
         ) : null}

@@ -1,12 +1,12 @@
 import type { SeasonStage } from "@/lib/season";
 import { documentRequests } from "@/lib/season";
-import type { Workflow } from "@/lib/return-workflow";
+import type { TeamReturn, Workflow } from "@/lib/return-workflow";
 import { nextStage, sendBackTarget } from "@/lib/return-workflow";
 import type { RequestThread } from "@/lib/request-thread";
 import type { EfileAuthorization, FilingRecord, Invoice, Profile, SignatureRecord } from "@/lib/types";
 
 export type GateInput = {
-  workflow: Workflow & { returnVersion: number };
+  workflow: TeamReturn;
   profile: Profile;
   signatures: SignatureRecord[];
   threads: RequestThread[];

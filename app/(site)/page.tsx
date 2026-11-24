@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { buttonLight, buttonPrimary, CoverImage, SectionIntro, TextLink } from "@/components/site-ui";
+import { getStaffProfile } from "@/lib/auth";
 import { firm } from "@/lib/firm";
 import { areas, lauraPhoto, processPhoto, services, steps } from "@/lib/site-content";
 
@@ -32,7 +34,10 @@ const reasons = [
   { title: "One team", body: "Clients in eleven states work with the same practice in Hamilton." },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const staff = await getStaffProfile();
+  if (staff) redirect("/dashboard");
+
   return (
     <>
       <section className="bg-foreground text-background">

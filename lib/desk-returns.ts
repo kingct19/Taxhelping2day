@@ -1,3 +1,4 @@
+import { avatarUrl } from "@/lib/avatar";
 import { advanceBlocker, sendBackBlocker } from "@/lib/engagement";
 import { staffNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
@@ -12,6 +13,7 @@ export type DeskReturn = {
   stage: Stage;
   clientName: string;
   clientEmail: string;
+  avatar: string | null;
   entity: string;
   taxpayerType: TaxpayerType;
   taxYear: number;
@@ -99,6 +101,7 @@ export async function loadDeskReturns(): Promise<DeskReturn[]> {
         stage: item.stage,
         clientName,
         clientEmail: profile?.email ?? "",
+        avatar: avatarUrl(item.profileId, profile?.avatarPath),
         entity: item.entity,
         taxpayerType: item.taxpayerType,
         taxYear: item.taxYear,

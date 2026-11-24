@@ -90,21 +90,6 @@ export function blankConversation(profile: Pick<Profile, "id" | "name" | "email"
   });
 }
 
-export function seedConversations(conversations: Conversation[], profiles: Profile[], messages: Message[]) {
-  for (const profile of profiles) {
-    if (profile.role !== "client") continue;
-    if (conversations.some((item) => item.profileId === profile.id)) continue;
-    conversations.push(blankConversation(profile));
-  }
-  for (const message of messages) {
-    if (message.conversationId) continue;
-    const match = conversations
-      .filter((item) => item.profileId === message.profileId)
-      .sort((left, right) => left.createdAt.localeCompare(right.createdAt))[0];
-    if (match) message.conversationId = match.id;
-  }
-}
-
 export function conversationFromSupabase(row: Record<string, unknown>): Conversation {
   const channel = String(row.channel ?? "");
   const status = String(row.status ?? "");

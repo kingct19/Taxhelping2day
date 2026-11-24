@@ -1,3 +1,4 @@
+import { emptyDesk, parseDesk, type ReturnDesk } from "@/lib/return-desk";
 import type { TaxReturn } from "@/lib/types";
 import { isLeadSource, isServiceLine, type LeadSource, type ServiceLine } from "@/lib/types";
 
@@ -42,6 +43,7 @@ export type Workflow = {
   deliveredAt: string | null;
   archivedAt: string | null;
   revision: number;
+  desk: ReturnDesk;
 };
 
 export type TeamReturn = TaxReturn & Workflow;
@@ -59,6 +61,7 @@ export const initialWorkflow: Workflow = {
   deliveredAt: null,
   archivedAt: null,
   revision: 0,
+  desk: emptyDesk(),
 };
 
 export function isStage(value: string): value is Stage {
@@ -194,5 +197,6 @@ export function asWorkflow(item: LegacyInput): Workflow {
     deliveredAt: item.deliveredAt ?? null,
     archivedAt: item.archivedAt ?? null,
     revision: item.revision ?? 0,
+    desk: parseDesk(item.desk),
   };
 }

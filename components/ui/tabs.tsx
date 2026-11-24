@@ -68,6 +68,20 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   )
 }
 
+function TabsIndicator({ className, ...props }: TabsPrimitive.Indicator.Props) {
+  return (
+    <TabsPrimitive.Indicator
+      data-slot="tabs-indicator"
+      renderBeforeHydration
+      className={cn(
+        "absolute bottom-0 left-0 h-0.5 w-[var(--active-tab-width)] translate-x-[var(--active-tab-left)] rounded-full bg-foreground transition-[translate,width] duration-300 ease-out motion-reduce:transition-none",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
     <TabsPrimitive.Panel
@@ -78,4 +92,4 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   )
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export { Tabs, TabsList, TabsTrigger, TabsIndicator, TabsContent, tabsListVariants }

@@ -18,6 +18,7 @@ export function ComposerShell({
   onSend,
   canSend,
   pending = false,
+  allowNote = true,
   replyLabel = "Send",
   noteLabel = "Add note",
   textareaRef,
@@ -32,6 +33,7 @@ export function ComposerShell({
   onSend: () => void;
   canSend: boolean;
   pending?: boolean;
+  allowNote?: boolean;
   replyLabel?: string;
   noteLabel?: string;
   textareaRef?: RefObject<HTMLTextAreaElement | null>;
@@ -57,12 +59,14 @@ export function ComposerShell({
           note && "border-amber-400/50 bg-amber-50/60 focus-within:border-amber-400/30 focus-within:ring-amber-400/30 dark:bg-amber-500/5",
         )}
       >
-        <Tabs value={mode} onValueChange={(next) => onModeChange(next === "note" ? "note" : "reply")} className="px-2 pt-2">
-          <TabsList>
-            <TabsTrigger value="reply">Reply</TabsTrigger>
-            <TabsTrigger value="note">Note</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {allowNote ? (
+          <Tabs value={mode} onValueChange={(next) => onModeChange(next === "note" ? "note" : "reply")} className="px-2 pt-2">
+            <TabsList>
+              <TabsTrigger value="reply">Reply</TabsTrigger>
+              <TabsTrigger value="note">Note</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        ) : null}
         <Textarea
           ref={textareaRef}
           value={value}

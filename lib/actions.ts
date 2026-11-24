@@ -1,15 +1,21 @@
 "use server";
 
 import { isStage, nextStage, sendBackTarget, stages } from "@/lib/return-workflow";
-import { deriveStage, filingPrompt } from "@/lib/next-action";
+import { deriveStage, filingPlace, filingPrompt, filingStatusLabel } from "@/lib/next-action";
 import { advanceBlocker, organizerBody, sendBackBlocker } from "@/lib/engagement";
+import { pickReturn } from "@/lib/client-home";
 import { documentRequests } from "@/lib/season";
 import { requestRoot, requestThreads } from "@/lib/request-thread";
+import { preparationBlockers, reviewBlockers } from "@/lib/return-readiness";
+import { preparationChecklist, reviewChecklist, type DeskIssue } from "@/lib/return-desk";
+import { randomUUID } from "crypto";
+import { Resend } from "resend";
 import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
+import { siteUrl } from "@/lib/firm";
 import { getStore } from "@/lib/store";
 import { buildSignedPdf } from "@/lib/pdf";
 import { formatBytes } from "@/lib/inbox-view";
@@ -46,11 +52,21 @@ async function syncRequestStage(profileId: string, returnId: string) {
   await store.updateWorkflow(returnId, { ...item, ...next });
 }
 
+function revalidatePortal() {
+  revalidatePath("/portal");
+  revalidatePath("/portal/documents");
+  revalidatePath("/portal/signatures");
+  revalidatePath("/portal/messages");
+  revalidatePath("/portal/profile");
+  revalidatePath("/portal/efile");
+  revalidatePath("/portal/engagement");
+  revalidatePath("/portal/poa");
+}
+
 function revalidateReturn(profileId: string, returnId: string) {
   revalidatePath(`/returns/${profileId}/${returnId}`);
   revalidatePath("/returns");
-  revalidatePath("/portal");
-  revalidatePath("/portal/efile");
+  revalidatePortal();
   revalidatePath("/dashboard");
   revalidatePath("/inbox");
   revalidatePath("/tasks");
@@ -79,64 +95,150 @@ async function deliverInvite(email: string, role: "client" | "staff") {
   return undefined;
 }
 
-export async function saveProfile(formData: FormData) {
+export type ProfileSaveState = { error: string | null };
+
+export async function saveProfile(_state: ProfileSaveState, formData: FormData): Promise<ProfileSaveState> {
   const profile = await requireProfile("client");
   const taxpayerType = String(formData.get("taxpayerType") ?? "individual");
   if (!isTaxpayerType(taxpayerType)) {
-    return;
+    return { error: "Choose who we are preparing this return for." };
+  }
+  const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const state = String(formData.get("state") ?? "").trim().toUpperCase();
+  const zip = String(formData.get("zip") ?? "").trim();
+  const spouseName = String(formData.get("spouseName") ?? "").trim();
+  const taxYears = String(formData.get("taxYears") ?? "").trim();
+  const rawTaxId = String(formData.get("taxId") ?? "").trim();
+  const taxDigits = rawTaxId.replace(/\D/g, "");
+  if (!name) return { error: "Enter your legal name." };
+  if (!address) return { error: "Enter your street address." };
+  if (phone && phone.replace(/\D/g, "").length < 10) return { error: "Enter a 10-digit phone number, or leave it blank." };
+  if (state && !/^[A-Z]{2}$/.test(state)) return { error: "Use the two-letter state abbreviation." };
+  if (zip && !/^\d{5}(-\d{4})?$/.test(zip)) return { error: "Enter a 5-digit ZIP code." };
+  if (rawTaxId && taxDigits.length !== 9) {
+    return { error: "Enter the 9-digit taxpayer ID, or leave it blank to keep the number on file." };
   }
   const store = getStore();
-  await store.updateProfile(profile.id, {
-    name: String(formData.get("name") ?? "").trim(),
-    phone: String(formData.get("phone") ?? "").trim(),
-    address: String(formData.get("address") ?? "").trim(),
-    city: String(formData.get("city") ?? "").trim(),
-    state: String(formData.get("state") ?? "").trim(),
-    zip: String(formData.get("zip") ?? "").trim(),
-    taxpayerType,
-    spouseName: String(formData.get("spouseName") ?? "").trim(),
-    taxYears: String(formData.get("taxYears") ?? "").trim(),
-    taxId: String(formData.get("taxId") ?? "").trim() || undefined,
-  });
-  await store.addMessage({
-    profileId: profile.id,
-    authorId: profile.id,
-    authorRole: "client",
-    body: "Profile saved.",
-    kind: "event",
-  });
-  revalidatePath("/portal");
+  try {
+    await store.updateProfile(profile.id, {
+      name,
+      phone,
+      address,
+      city,
+      state,
+      zip,
+      taxpayerType,
+      spouseName,
+      taxYears,
+      taxId: taxDigits || undefined,
+    });
+    await store.addMessage({
+      profileId: profile.id,
+      authorId: profile.id,
+      authorRole: "client",
+      body: "Profile saved.",
+      kind: "event",
+    });
+  } catch {
+    return { error: "We could not save your profile. Check the fields and try again." };
+  }
+  revalidatePortal();
   revalidatePath("/inbox");
   redirect("/portal");
+}
+
+export async function saveAvatar(formData: FormData): Promise<{ error: string | null }> {
+  const profile = await requireProfile("client");
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose a photo." };
+  const store = getStore();
+  try {
+    await store.saveAvatar({
+      profileId: profile.id,
+      contentType: file.type || "application/octet-stream",
+      bytes: Buffer.from(await file.arrayBuffer()),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not save the photo.";
+    return { error: message };
+  }
+  revalidatePath("/portal", "layout");
+  revalidatePath("/portal/profile");
+  return { error: null };
+}
+
+export async function removeAvatar(): Promise<{ error: string | null }> {
+  const profile = await requireProfile("client");
+  try {
+    await getStore().clearAvatar(profile.id);
+  } catch {
+    return { error: "Could not remove the photo." };
+  }
+  revalidatePath("/portal", "layout");
+  revalidatePath("/portal/profile");
+  return { error: null };
 }
 
 export async function uploadDocument(formData: FormData) {
   const profile = await requireProfile("client");
   const kind = String(formData.get("kind") ?? "");
   const file = formData.get("file");
+  const title = String(formData.get("title") ?? "").trim().slice(0, 240);
   if (!isDocumentKind(kind) || !(file instanceof File) || file.size === 0) {
     return;
   }
   if (file.size > 15 * 1024 * 1024) {
-    return;
+    throw new Error("Choose a file up to 15 MB.");
   }
   const store = getStore();
-  await store.addDocument({
+  const document = await store.addDocument({
     profileId: profile.id,
     kind,
     filename: file.name,
     contentType: file.type || "application/octet-stream",
     bytes: Buffer.from(await file.arrayBuffer()),
   });
-  await store.addMessage({
-    profileId: profile.id,
-    authorId: profile.id,
-    authorRole: "client",
-    body: `Uploaded ${file.name}.`,
-    kind: "event",
-  });
-  revalidatePath("/portal/documents");
-  revalidatePath("/inbox");
+  const returns = (await store.listTeamReturns()).filter((item) => item.profileId === profile.id);
+  const current = pickReturn(returns);
+  if (current) {
+    const root = await store.addMessage({
+      profileId: profile.id,
+      returnId: current.id,
+      requestState: "open",
+      requestBlock: "filing",
+      authorId: profile.id,
+      authorRole: "client",
+      kind: "message",
+      body: title || file.name,
+    });
+    await store.addMessage({
+      profileId: profile.id,
+      previousId: root.id,
+      returnId: current.id,
+      documentId: document.id,
+      requestState: "responded",
+      requestBlock: "filing",
+      authorId: profile.id,
+      authorRole: "client",
+      kind: "event",
+      body: `Uploaded ${file.name} for review.`,
+    });
+    await syncRequestStage(profile.id, current.id);
+    revalidateReturn(profile.id, current.id);
+  } else {
+    await store.addMessage({
+      profileId: profile.id,
+      authorId: profile.id,
+      authorRole: "client",
+      body: `Uploaded ${file.name}.`,
+      kind: "event",
+    });
+    revalidatePortal();
+    revalidatePath("/inbox");
+  }
 }
 
 export async function signDocument(formData: FormData) {
@@ -184,7 +286,7 @@ export async function signDocument(formData: FormData) {
     body: kind === "poa" ? "Signed Form 2848." : "Signed the engagement letter.",
     kind: "event",
   });
-  revalidatePath("/portal");
+  revalidatePortal();
   revalidatePath("/inbox");
   redirect("/portal");
 }
@@ -255,23 +357,51 @@ export async function postMessage(formData: FormData) {
   const profile = await requireProfile();
   const body = String(formData.get("body") ?? "").trim();
   const clientId = String(formData.get("clientId") ?? profile.id);
-  if (!body) {
-    return;
-  }
   const targetId = profile.role === "staff" ? clientId : profile.id;
   const requested = String(formData.get("kind") ?? "message");
   const kind = profile.role === "staff" && requested === "note" ? "note" : "message";
   const store = getStore();
+  const attachments = [];
+  if (profile.role === "client" && kind === "message") {
+    const files = formData.getAll("files").filter((item): item is File => item instanceof File && item.size > 0);
+    for (const file of files) {
+      if (file.size > 15 * 1024 * 1024) throw new Error("Each file must be 15 MB or smaller.");
+      const document = await store.addDocument({
+        profileId: profile.id,
+        kind: "other",
+        filename: file.name || "attachment",
+        contentType: file.type || "application/octet-stream",
+        bytes: Buffer.from(await file.arrayBuffer()),
+      });
+      attachments.push({
+        id: document.id,
+        name: document.filename,
+        size: formatBytes(file.size),
+        type: file.type.startsWith("image/") ? "image" as const : "file" as const,
+        documentId: document.id,
+        url: `/files/documents/${document.id}`,
+      });
+    }
+  }
+  if (!body && attachments.length === 0) return;
   await store.addMessage({
     profileId: targetId,
     authorId: profile.id,
     authorRole: profile.role,
-    body,
+    body: body || "Attachment",
     kind,
     delivery: kind === "message" ? "sent" : null,
+    attachments,
   });
   revalidatePath("/inbox");
-  revalidatePath("/portal");
+  revalidatePortal();
+}
+
+export async function markPortalMessagesSeen(): Promise<{ updated: number }> {
+  const profile = await requireProfile("client");
+  const updated = await getStore().markStaffMessagesSeen(profile.id);
+  if (updated > 0) revalidatePortal();
+  return { updated };
 }
 
 export async function updateConversation(id: string, patch: ConversationPatch) {
@@ -498,7 +628,7 @@ export async function moveReturnStage(id: string, revision: number, stage: strin
 }
 
 export async function saveReturnWorkflow(id: string, revision: number, data: FormData) {
-  await requireProfile("staff");
+  const staff = await requireProfile("staff");
   const store = getStore();
   const owner = String(data.get("owner") ?? "") || null;
   const due = String(data.get("due") ?? "") || null;
@@ -511,10 +641,29 @@ export async function saveReturnWorkflow(id: string, revision: number, data: For
   const current = (await store.listTeamReturns()).find((row) => row.id === id);
   const returnTo = data.get("returnTo") === "/tasks/table" ? "/tasks/table" : "/returns";
   if (!current || current.revision !== revision) redirect(`${returnTo}?conflict=1`);
+  const ownerChanged = (current.owner ?? null) !== owner;
+  const dueChanged = (current.due ?? null) !== due;
   const saved = await store.updateWorkflow(id, { ...current, revision, owner, due, nextAction });
+  if (saved && (ownerChanged || dueChanged)) {
+    const parts: string[] = [];
+    if (ownerChanged) {
+      const person = owner ? await store.getProfile(owner) : null;
+      parts.push(owner ? `Assigned preparer ${person?.name || person?.email || "a teammate"}` : "Cleared the preparer");
+    }
+    if (dueChanged) parts.push(due ? `Set the due date to ${due}` : "Cleared the due date");
+    await store.addMessage({
+      profileId: current.profileId,
+      returnId: id,
+      authorId: staff.id,
+      authorRole: "staff",
+      kind: "note",
+      body: `${parts.join(". ")}.`,
+    });
+  }
   revalidatePath("/returns");
   revalidatePath("/tasks");
   revalidatePath("/tasks/table");
+  revalidatePath(`/returns/${current.profileId}/${id}`);
   if (!saved) redirect(`${returnTo}?conflict=1`);
 }
 
@@ -577,6 +726,106 @@ export async function sendOrganizer(profileId: string, returnId: string) {
   revalidateReturn(profileId, returnId);
 }
 
+export async function saveReturnDesk(profileId: string, returnId: string, revision: number, data: FormData) {
+  const staff = await requireProfile("staff");
+  const store = getStore();
+  const current = (await store.listTeamReturns()).find((row) => row.id === returnId && row.profileId === profileId);
+  if (!current || current.revision !== revision) redirect(`/returns/${profileId}/${returnId}?conflict=1`);
+  const intent = String(data.get("intent") ?? "");
+  const desk = {
+    ...current.desk,
+    preparationChecks: { ...current.desk.preparationChecks },
+    reviewChecks: { ...current.desk.reviewChecks },
+    issues: [...current.desk.issues],
+  };
+  let note = "";
+  let reviewerId = current.reviewerId;
+  let stage = current.stage;
+  if (intent === "check") {
+    const area = String(data.get("area") ?? "");
+    const key = String(data.get("key") ?? "");
+    const done = String(data.get("done") ?? "") === "1";
+    const items = area === "preparation"
+      ? preparationChecklist(current.taxpayerType)
+      : area === "review"
+        ? reviewChecklist(current.taxpayerType)
+        : null;
+    const item = items?.find((row) => row.key === key);
+    if (!item) throw new Error("That checklist item is not on this return.");
+    const record = { done, at: done ? new Date().toISOString() : null };
+    if (area === "preparation") desk.preparationChecks[key] = record;
+    else desk.reviewChecks[key] = record;
+    note = `${area === "preparation" ? "Preparation checklist" : "Review checklist"}: ${item.label} ${done ? "marked done" : "reopened"}.`;
+  } else if (intent === "software") {
+    const softwareName = String(data.get("softwareName") ?? "").trim();
+    const softwareReference = String(data.get("softwareReference") ?? "").trim();
+    const softwareStatus = String(data.get("softwareStatus") ?? "").trim();
+    if (softwareName.length > 80 || softwareReference.length > 80 || softwareStatus.length > 80) throw new Error("Use 80 characters or fewer.");
+    desk.softwareName = softwareName;
+    desk.softwareReference = softwareReference;
+    desk.softwareStatus = softwareStatus;
+    note = "Tax software reference saved.";
+  } else if (intent === "issue") {
+    const area = String(data.get("area") ?? "");
+    const title = String(data.get("title") ?? "").trim();
+    const detail = String(data.get("detail") ?? "").trim();
+    const priority = String(data.get("priority") ?? "");
+    const assigneeId = String(data.get("assignee") ?? "");
+    if (area !== "preparation" && area !== "review") throw new Error("Choose where this issue belongs.");
+    if (!title || title.length > 120 || detail.length > 1000) throw new Error("Enter a title for the issue.");
+    if (priority !== "low" && priority !== "normal" && priority !== "high") throw new Error("Choose a priority.");
+    if (assigneeId && (await store.getProfile(assigneeId))?.role !== "staff") throw new Error("Choose a staff member.");
+    desk.issues.push({
+      id: randomUUID(),
+      area,
+      title,
+      detail,
+      priority,
+      assigneeId: assigneeId || null,
+      blocking: data.get("blocking") === "1",
+      status: "open",
+      checkKey: null,
+      createdAt: new Date().toISOString(),
+      resolvedAt: null,
+    });
+    note = `${area === "review" ? "Review correction" : "Preparation issue"}: ${title}.`;
+  } else if (intent === "resolve" || intent === "reopen") {
+    const id = String(data.get("id") ?? "");
+    const issue = desk.issues.find((row) => row.id === id);
+    if (!issue) throw new Error("That issue is no longer on this return.");
+    issue.status = intent === "resolve" ? "resolved" : "open";
+    issue.resolvedAt = intent === "resolve" ? new Date().toISOString() : null;
+    note = `${issue.area === "review" ? "Review correction" : "Preparation issue"}: ${issue.title} ${intent === "resolve" ? "resolved" : "reopened"}.`;
+  } else if (intent === "reviewer") {
+    const nextReviewer = String(data.get("reviewer") ?? "");
+    if (nextReviewer && (await store.getProfile(nextReviewer))?.role !== "staff") throw new Error("Choose a staff member.");
+    reviewerId = nextReviewer || null;
+    const person = nextReviewer ? await store.getProfile(nextReviewer) : null;
+    note = nextReviewer ? `Assigned reviewer ${person?.name || person?.email || "a teammate"}.` : "Cleared the reviewer.";
+  } else if (intent === "reopen-review") {
+    desk.reviewedVersion = null;
+    if (current.stage !== "lead" && current.stage !== "onboarding" && current.stage !== "documents" && current.stage !== "preparation" && current.stage !== "review") {
+      stage = "review";
+    }
+    note = "Review reopened.";
+  } else {
+    throw new Error("That update is not available.");
+  }
+  const saved = await store.updateWorkflow(returnId, { ...current, revision, reviewerId, stage, desk });
+  if (!saved) redirect(`/returns/${profileId}/${returnId}?conflict=1`);
+  if (note) {
+    await store.addMessage({
+      profileId,
+      returnId,
+      authorId: staff.id,
+      authorRole: "staff",
+      kind: "note",
+      body: note,
+    });
+  }
+  revalidateReturn(profileId, returnId);
+}
+
 export async function saveEngagementFacts(id: string, revision: number, data: FormData) {
   await requireProfile("staff");
   const source = String(data.get("source") ?? "");
@@ -601,6 +850,18 @@ export async function advanceEngagement(id: string, revision: number, data: Form
   if (!profile || !workflow) throw new Error("Return not found.");
   const blocker = advanceBlocker({ ...context, workflow, profile, note });
   if (blocker) throw new Error(blocker);
+  const gate = { ...context, workflow, profile, note };
+  const desk = { ...current.desk, issues: [...current.desk.issues] };
+  if (current.stage === "preparation") {
+    const lines = preparationBlockers(gate);
+    if (lines.length > 0) throw new Error(lines.join(" "));
+    desk.preparedVersion = current.returnVersion;
+  }
+  if (current.stage === "review") {
+    const lines = reviewBlockers(gate);
+    if (lines.length > 0) throw new Error(lines.join(" "));
+    desk.reviewedVersion = current.returnVersion;
+  }
   const stage = nextStage(current.stage);
   if (!stage) throw new Error("This engagement has no further stage.");
   if (stage === "documents") await seedOrganizer(current.profileId, id, staff.id, profile.taxpayerType);
@@ -617,8 +878,17 @@ export async function advanceEngagement(id: string, revision: number, data: Form
     reviewedAt: current.stage === "review" ? now : current.reviewedAt,
     deliveredAt: current.stage === "delivery" ? now : current.deliveredAt,
     archivedAt: current.stage === "delivery" ? now : current.archivedAt,
+    desk,
   });
   if (!saved) redirect(`/returns/${current.profileId}/${id}?conflict=1`);
+  if (current.stage === "preparation") {
+    const reviewer = current.reviewerId ? await context.store.getProfile(current.reviewerId) : null;
+    const who = reviewer ? ` Assigned reviewer ${reviewer.name || reviewer.email}.` : " No reviewer is assigned yet.";
+    await context.store.addMessage({
+      profileId: current.profileId, returnId: id, authorId: staff.id, authorRole: "staff", kind: "note",
+      body: `Preparation submitted for version ${current.returnVersion}.${who}`,
+    });
+  }
   if (current.stage === "review" && note) {
     await context.store.addMessage({
       profileId: current.profileId, returnId: id, authorId: staff.id, authorRole: "staff", kind: "note",
@@ -648,19 +918,36 @@ export async function sendBackEngagement(id: string, revision: number, data: For
   if (!stage) throw new Error("This stage cannot be sent back.");
   const messages = await store.listMessages(current.profileId);
   const derived = deriveStage({ ...current, stage }, requestThreads(messages.filter((row) => row.returnId === id)));
+  const correction: DeskIssue = {
+    id: randomUUID(),
+    area: "review",
+    title: reason.slice(0, 120),
+    detail: reason,
+    priority: "high",
+    assigneeId: current.owner,
+    blocking: true,
+    status: "open",
+    checkKey: null,
+    createdAt: new Date().toISOString(),
+    resolvedAt: null,
+  };
   const saved = await store.updateWorkflow(id, {
     ...current,
     revision,
     stage,
     waitingOn: derived.waitingOn,
     nextAction: reason,
-    reviewerId: null,
-    reviewedAt: null,
+    desk: {
+      ...current.desk,
+      preparedVersion: null,
+      reviewedVersion: null,
+      issues: [...current.desk.issues, correction],
+    },
   });
   if (!saved) redirect(`/returns/${current.profileId}/${id}?conflict=1`);
   await store.addMessage({
     profileId: current.profileId, returnId: id, authorId: staff.id, authorRole: "staff", kind: "note",
-    body: `Sent back to ${stages[stage]}: ${reason}`,
+    body: `Review correction: ${reason} Sent back to ${stages[stage]}.`,
   });
   revalidateReturn(current.profileId, id);
 }
@@ -797,6 +1084,27 @@ export async function advanceRequest(profileId: string, previousId: string, form
   } else throw new Error("This action is unavailable.");
   await store.addMessage({profileId, previousId, returnId:previous.returnId, documentId, requestBlock: root?.requestBlock ?? undefined,
     requestState:state, authorId:actor.id, authorRole:actor.role, kind:"event", body});
+  if (state === "replacement" && actor.role === "staff" && process.env.RESEND_API_KEY && process.env.EMAIL_FROM) {
+    const client = await store.getProfile(profileId);
+    if (client?.role === "client" && client.email) {
+      const result = await new Resend(process.env.RESEND_API_KEY).emails.send({
+        from: process.env.EMAIL_FROM,
+        to: client.email,
+        subject: "A document needs a correction",
+        text: `A document on your tax return needs a correction. Sign in to see what to send. ${siteUrl}/portal`,
+      });
+      if (result.error) {
+        await store.addMessage({
+          profileId,
+          returnId: previous.returnId,
+          authorId: actor.id,
+          authorRole: "staff",
+          kind: "note",
+          body: "Client email for the correction request could not be sent.",
+        });
+      }
+    }
+  }
   await syncRequestStage(profileId, previous.returnId);
   revalidateReturn(profileId, previous.returnId);
 }
@@ -821,7 +1129,7 @@ export async function remindRequest(profileId: string, latestId: string) {
 }
 
 export async function saveFiling(profileId: string, returnId: string, form: FormData) {
-  await requireProfile("staff");
+  const staff = await requireProfile("staff");
   const jurisdiction = String(form.get("jurisdiction"));
   const status = String(form.get("status"));
   const note = String(form.get("note") ?? "").trim();
@@ -831,7 +1139,20 @@ export async function saveFiling(profileId: string, returnId: string, form: Form
   const store = getStore();
   const item = (await store.listTeamReturns()).find((row) => row.id === returnId && row.profileId === profileId);
   if (!item) throw new Error("Return not found.");
+  const regionKey = jurisdiction === "state" ? region.trim().toUpperCase() : "";
+  const prior = (await store.listFilings(returnId)).find((row) => row.jurisdiction === jurisdiction && row.region.toUpperCase() === regionKey);
   const saved = await store.saveFiling({ returnId, jurisdiction, region, status, note });
+  if (!prior || prior.status !== saved.status || prior.note !== saved.note) {
+    const detail = saved.note ? ` ${saved.note}` : "";
+    await store.addMessage({
+      profileId,
+      returnId,
+      authorId: staff.id,
+      authorRole: "staff",
+      kind: "note",
+      body: `Recorded ${filingPlace(saved)} as ${filingStatusLabel(saved.status)}.${detail} The firm entered this status. It is not an IRS e-file receipt.`,
+    });
+  }
   if (status === "signature") await ensureAuthorizations(profileId, returnId, item.returnVersion);
   const messages = await store.listMessages(profileId);
   const derived = deriveStage(item, requestThreads(messages.filter((row) => row.returnId === returnId)));
@@ -840,7 +1161,29 @@ export async function saveFiling(profileId: string, returnId: string, form: Form
     : item.stage === "filing"
       ? filingPrompt(saved)
       : item.nextAction;
-  await store.updateWorkflow(returnId, { ...item, waitingOn: derived.waitingOn, nextAction });
+  let desk = item.desk;
+  if (saved.status === "rejected") {
+    const title = `Correct the rejected ${filingPlace(saved)} return`;
+    if (!desk.issues.some((issue) => issue.status === "open" && issue.title === title)) {
+      desk = {
+        ...desk,
+        issues: [...desk.issues, {
+          id: randomUUID(),
+          area: "preparation",
+          title,
+          detail: saved.note || "The filing was rejected. If the return numbers change, create a new version so Form 8879 is signed again before it is resent.",
+          priority: "high",
+          assigneeId: item.owner,
+          blocking: true,
+          status: "open",
+          checkKey: null,
+          createdAt: new Date().toISOString(),
+          resolvedAt: null,
+        }],
+      };
+    }
+  }
+  await store.updateWorkflow(returnId, { ...item, waitingOn: derived.waitingOn, nextAction, desk });
   revalidateReturn(profileId, returnId);
 }
 

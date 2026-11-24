@@ -68,7 +68,7 @@ export function ConversationHeader({
         <Button type="button" variant="ghost" size="icon" className="md:hidden" aria-label="Back to conversations" onClick={onBack}>
           <ChevronLeftIcon />
         </Button>
-        <PresenceAvatar name={conversation.contactName} initials={initials(conversation.contactName, conversation.contactEmail)} />
+        <PresenceAvatar name={conversation.contactName} initials={initials(conversation.contactName, conversation.contactEmail)} src={conversation.contactAvatar} />
         <div className="min-w-0">
           <h2 className="truncate text-sm leading-tight font-semibold">{conversation.subject}</h2>
           <p className="truncate text-xs leading-tight text-muted-foreground">{subtitle}</p>

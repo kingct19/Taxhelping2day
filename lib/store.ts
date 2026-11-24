@@ -1,8 +1,9 @@
-import { blankConversation, conversationFromSupabase, normalizeConversation, normalizeMessage, parseAttachments, parseDelivery, seedConversations } from "@/lib/conversation";
+import { avatarContentType, avatarExtension, avatarMime, avatarStorageKey, safeAvatarPath } from "@/lib/avatar";
+import { blankConversation, conversationFromSupabase, normalizeConversation, normalizeMessage, parseAttachments, parseDelivery } from "@/lib/conversation";
 import { defaultSuggestions } from "@/lib/inbox-view";
 import { asWorkflow, initialWorkflow, type TeamReturn, type Workflow } from "@/lib/return-workflow";
 import { randomBytes, randomUUID } from "crypto";
-import { mkdir, readFile, writeFile } from "fs/promises";
+import { mkdir, readFile, rm, writeFile } from "fs/promises";
 import path from "path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { decryptText, encryptText, hashToken, last4 } from "@/lib/crypto";
@@ -83,6 +84,9 @@ export type Store = {
   listProfiles(): Promise<Profile[]>;
   createClient(input: { email: string; name: string }): Promise<Profile>;
   updateProfile(id: string, patch: ProfileUpdate): Promise<Profile>;
+  saveAvatar(input: { profileId: string; contentType: string; bytes: Buffer }): Promise<Profile>;
+  clearAvatar(profileId: string): Promise<Profile | null>;
+  readAvatar(profileId: string): Promise<{ contentType: string; bytes: Buffer } | null>;
   issueToken(profileId: string): Promise<string>;
   consumeToken(raw: string): Promise<Profile | null>;
   listDocuments(profileId: string): Promise<DocumentRecord[]>;
@@ -115,6 +119,7 @@ export type Store = {
   }): Promise<Conversation>;
   updateConversation(id: string, patch: ConversationPatch): Promise<Conversation | null>;
   markConversationRead(id: string): Promise<void>;
+  markStaffMessagesSeen(profileId: string): Promise<number>;
   addMessage(input: {
     previousId?: string;
     requestState?: NonNullable<Message["requestState"]>;
@@ -176,6 +181,21 @@ function publicMessage(row: Message): Message {
   };
 }
 
+function seedConversations(conversations: Conversation[], profiles: Profile[], messages: Message[]) {
+  for (const profile of profiles) {
+    if (profile.role !== "client") continue;
+    if (conversations.some((item) => item.profileId === profile.id)) continue;
+    conversations.push(blankConversation(profile));
+  }
+  for (const message of messages) {
+    if (message.conversationId) continue;
+    const match = conversations
+      .filter((item) => item.profileId === message.profileId)
+      .sort((left, right) => left.createdAt.localeCompare(right.createdAt))[0];
+    if (match) message.conversationId = match.id;
+  }
+}
+
 function attachConversation(db: Database, message: Message) {
   seedConversations(db.conversations, db.profiles, db.messages);
   const explicit = message.conversationId ? db.conversations.find((item) => item.id === message.conversationId) : undefined;
@@ -213,7 +233,7 @@ function omit<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K>
 
 function publicProfile(profile: StoredProfile): Profile {
   const next = omit(profile, "taxIdEncrypted");
-  return { ...next, starred: profile.starred ?? false, snoozedUntil: profile.snoozedUntil ?? null };
+  return { ...next, starred: profile.starred ?? false, snoozedUntil: profile.snoozedUntil ?? null, avatarPath: profile.avatarPath ?? null };
 }
 
 let queue: Promise<unknown> = Promise.resolve();
@@ -259,6 +279,7 @@ function blankProfile(email: string, role: Role, name = ""): StoredProfile {
     createdAt: new Date().toISOString(),
     starred: false,
     snoozedUntil: null,
+    avatarPath: null,
   };
 }
 
@@ -328,6 +349,45 @@ const localStore: Store = {
         profile.taxIdLast4 = last4(digits);
       }
       return publicProfile(profile);
+    });
+  },
+  async saveAvatar(input) {
+    const contentType = avatarContentType(input.bytes, input.contentType);
+    if (!contentType) throw new Error("Use a JPG, PNG, or WebP image under 2.5 MB.");
+    const relative = avatarStorageKey(input.profileId, avatarExtension(contentType));
+    const filePath = path.join(dataDir, relative);
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await writeFile(filePath, input.bytes);
+    return withDb(true, async (db) => {
+      const profile = db.profiles.find((item) => item.id === input.profileId);
+      if (!profile) throw new Error("Profile not found.");
+      const previous = safeAvatarPath(profile.avatarPath);
+      if (previous && previous !== relative) await rm(path.join(dataDir, previous), { force: true });
+      profile.avatarPath = relative;
+      return publicProfile(profile);
+    });
+  },
+  async clearAvatar(profileId) {
+    return withDb(true, async (db) => {
+      const profile = db.profiles.find((item) => item.id === profileId);
+      if (!profile) return null;
+      const previous = safeAvatarPath(profile.avatarPath);
+      if (previous) await rm(path.join(dataDir, previous), { force: true });
+      profile.avatarPath = null;
+      return publicProfile(profile);
+    });
+  },
+  async readAvatar(profileId) {
+    return withDb(false, async (db) => {
+      const profile = db.profiles.find((item) => item.id === profileId);
+      const relative = safeAvatarPath(profile?.avatarPath);
+      if (!relative) return null;
+      try {
+        const bytes = await readFile(path.join(dataDir, relative));
+        return { contentType: avatarMime(relative), bytes };
+      } catch {
+        return null;
+      }
     });
   },
   async issueToken(profileId) {
@@ -477,6 +537,18 @@ const localStore: Store = {
         }
       }
     });
+  },
+  async markStaffMessagesSeen(profileId) {
+    let count = 0;
+    await withDb(true, (db) => {
+      for (const message of db.messages) {
+        if (message.profileId === profileId && message.authorRole === "staff" && message.kind === "message" && message.delivery !== "seen") {
+          message.delivery = "seen";
+          count += 1;
+        }
+      }
+    });
+    return count;
   },
   async addMessage(input) {
     const message: Message = {
@@ -678,6 +750,7 @@ type ProfileRow = {
   starred?: boolean | null;
   snoozed_until?: string | null;
   tax_years: string;
+  avatar_path?: string | null;
   created_at: string;
 };
 
@@ -699,6 +772,7 @@ function fromRow(row: ProfileRow): Profile {
     createdAt: row.created_at,
     starred: Boolean(row.starred),
     snoozedUntil: row.snoozed_until ?? null,
+    avatarPath: row.avatar_path ?? null,
   };
 }
 
@@ -778,6 +852,38 @@ function supabaseStore(client: SupabaseClient): Store {
         throw new Error(error.message);
       }
       return fromRow(data as ProfileRow);
+    },
+    async saveAvatar(input) {
+      const contentType = avatarContentType(input.bytes, input.contentType);
+      if (!contentType) throw new Error("Use a JPG, PNG, or WebP image under 2.5 MB.");
+      const relative = avatarStorageKey(input.profileId, avatarExtension(contentType));
+      const existing = await client.from("profiles").select("avatar_path").eq("id", input.profileId).maybeSingle();
+      if (existing.error) throw new Error(existing.error.message);
+      const previous = safeAvatarPath((existing.data as { avatar_path?: string | null } | null)?.avatar_path);
+      const upload = await client.storage.from(bucket).upload(relative, input.bytes, { contentType, upsert: true });
+      if (upload.error) throw new Error(upload.error.message);
+      if (previous && previous !== relative) await client.storage.from(bucket).remove([previous]);
+      const saved = await client.from("profiles").update({ avatar_path: relative }).eq("id", input.profileId).select("*").single();
+      if (saved.error) throw new Error(saved.error.message);
+      return fromRow(saved.data as ProfileRow);
+    },
+    async clearAvatar(profileId) {
+      const existing = await client.from("profiles").select("avatar_path").eq("id", profileId).maybeSingle();
+      if (existing.error) throw new Error(existing.error.message);
+      const previous = safeAvatarPath((existing.data as { avatar_path?: string | null } | null)?.avatar_path);
+      if (previous) await client.storage.from(bucket).remove([previous]);
+      const saved = await client.from("profiles").update({ avatar_path: null }).eq("id", profileId).select("*").maybeSingle();
+      if (saved.error) throw new Error(saved.error.message);
+      return saved.data ? fromRow(saved.data as ProfileRow) : null;
+    },
+    async readAvatar(profileId) {
+      const existing = await client.from("profiles").select("avatar_path").eq("id", profileId).maybeSingle();
+      if (existing.error) throw new Error(existing.error.message);
+      const relative = safeAvatarPath((existing.data as { avatar_path?: string | null } | null)?.avatar_path);
+      if (!relative) return null;
+      const file = await client.storage.from(bucket).download(relative);
+      if (file.error || !file.data) return null;
+      return { contentType: avatarMime(relative), bytes: Buffer.from(await file.data.arrayBuffer()) };
     },
     async issueToken(profileId) {
       const raw = randomBytes(32).toString("hex");
@@ -1040,6 +1146,18 @@ function supabaseStore(client: SupabaseClient): Store {
       const seen = await client.from("messages").update({ delivery: "seen" }).eq("conversation_id", id).eq("author_role", "client").eq("kind", "message");
       if (seen.error) throw new Error(seen.error.message);
     },
+    async markStaffMessagesSeen(profileId) {
+      const seen = await client
+        .from("messages")
+        .update({ delivery: "seen" })
+        .eq("profile_id", profileId)
+        .eq("author_role", "staff")
+        .eq("kind", "message")
+        .or("delivery.is.null,delivery.eq.sent,delivery.eq.not-seen")
+        .select("id");
+      if (seen.error) throw new Error(seen.error.message);
+      return seen.data?.length ?? 0;
+    },
     async addMessage(input) {
       const conversationId = await ensureConversationId(client, input.profileId, input.conversationId);
       const { data, error } = await client
@@ -1204,7 +1322,7 @@ function supabaseStore(client: SupabaseClient): Store {
       const rows: TeamReturn[] = [];
       for (let start = 0; ; start += 500) {
         const { data, error } = await client.from("tax_returns")
-          .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, stage, owner:owner_id, due:due_date, nextAction:next_action, waitingOn:waiting_on, source, services, reviewerId:reviewer_id, reviewedAt:reviewed_at, deliveredAt:delivered_at, archivedAt:archived_at, returnVersion:return_version, revision")
+          .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, stage, owner:owner_id, due:due_date, nextAction:next_action, waitingOn:waiting_on, source, services, reviewerId:reviewer_id, reviewedAt:reviewed_at, deliveredAt:delivered_at, archivedAt:archived_at, returnVersion:return_version, revision, desk")
           .order("id").range(start, start + 499);
         if (error) throw new Error(error.message);
         rows.push(...(data as TeamReturn[]).map((item) => ({ ...item, ...asWorkflow(item), returnVersion: item.returnVersion ?? 1 })));
@@ -1216,7 +1334,7 @@ function supabaseStore(client: SupabaseClient): Store {
         stage: workflow.stage, owner_id: workflow.owner, due_date: workflow.due,
         next_action: workflow.nextAction, waiting_on: workflow.waitingOn, source: workflow.source,
         services: workflow.services, reviewer_id: workflow.reviewerId, reviewed_at: workflow.reviewedAt,
-        delivered_at: workflow.deliveredAt, archived_at: workflow.archivedAt, revision: workflow.revision + 1,
+        delivered_at: workflow.deliveredAt, archived_at: workflow.archivedAt, desk: workflow.desk, revision: workflow.revision + 1,
       }).eq("id", id).eq("revision", workflow.revision).select("id");
       if (error) throw new Error(error.message);
       return data.length === 1;

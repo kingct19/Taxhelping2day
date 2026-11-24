@@ -1,13 +1,14 @@
+import Image from "next/image";
 import Link from "next/link";
+import { FileTextIcon } from "lucide-react";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { NewSmartdocDialog } from "@/components/smartdocs/new-smartdoc-dialog";
 import { SmartdocRowActions } from "@/components/smartdocs/smartdoc-row-actions";
 import type { SmartdocRecipient } from "@/components/smartdocs/send-smartdoc-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireProfile } from "@/lib/auth";
 import { builderConfigured } from "@/lib/docuseal-builder";
-import { packetDb } from "@/lib/docuseal";
+import { packetDb, templatePreviewUrls } from "@/lib/docuseal";
 import { getStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -28,14 +29,19 @@ function writtenDate(value: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function initials(name: string) {
-  const letters = name
-    .split(/[\s@]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-  return letters || "?";
+function SmartdocThumb({ src, name }: { src: string | null; name: string }) {
+  if (!src) {
+    return (
+      <span className="flex h-14 w-10 shrink-0 items-center justify-center rounded-md border bg-muted text-muted-foreground">
+        <FileTextIcon className="size-4" aria-hidden="true" />
+      </span>
+    );
+  }
+  return (
+    <span className="relative block h-14 w-10 shrink-0 overflow-hidden rounded-md border bg-white">
+      <Image alt={`Preview of ${name}`} src={src} fill unoptimized sizes="40px" className="object-cover object-top" />
+    </span>
+  );
 }
 
 export default async function SmartdocsPage({ searchParams }: { searchParams: Promise<{ archived?: string }> }) {
@@ -45,11 +51,14 @@ export default async function SmartdocsPage({ searchParams }: { searchParams: Pr
   const ready = builderConfigured();
   const templates: TemplateRow[] = [];
   const counts = new Map<string, { sent: number; completed: number }>();
+  let previews = new Map<number, string>();
   if (db) {
-    const [templateResult, packetResult] = await Promise.all([
+    const [templateResult, packetResult, previewResult] = await Promise.all([
       db.from("signing_templates").select("id,name,docuseal_template_id,kind,archived_at,created_at,updated_at").order("updated_at", { ascending: false }),
       db.from("signing_packets").select("template_ref,status"),
+      templatePreviewUrls(),
     ]);
+    previews = previewResult;
     if (templateResult.error) throw templateResult.error;
     if (packetResult.error) throw packetResult.error;
     templates.push(...((templateResult.data ?? []) as TemplateRow[]));
@@ -118,9 +127,7 @@ export default async function SmartdocsPage({ searchParams }: { searchParams: Pr
                     <li key={template.id} className="border-b py-3 last:border-b-0">
                       <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.4fr)_4.5rem_6.5rem_8rem_8rem_auto]">
                         <div className="flex min-w-0 items-center gap-3">
-                          <Avatar className="size-9">
-                            <AvatarFallback className="text-xs">{initials(template.name)}</AvatarFallback>
-                          </Avatar>
+                          <SmartdocThumb src={template.docuseal_template_id ? previews.get(template.docuseal_template_id) ?? null : null} name={template.name} />
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium">{template.name}</p>
                             {template.kind === "engagement" ? <p className="text-xs text-muted-foreground">Engagement letter</p> : null}
