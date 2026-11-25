@@ -1,3 +1,5 @@
+import type { StaffRank, StaffStatus } from "@/lib/teammates";
+
 export const taxpayerTypes = ["individual", "business", "nonprofit"] as const;
 export type TaxpayerType = (typeof taxpayerTypes)[number];
 
@@ -84,6 +86,8 @@ export type Profile = {
   id: string;
   email: string;
   role: Role;
+  staffRank: StaffRank;
+  staffStatus: StaffStatus;
   name: string;
   phone: string;
   address: string;
@@ -91,6 +95,7 @@ export type Profile = {
   state: string;
   zip: string;
   taxpayerType: TaxpayerType;
+  filingTypes?: string[];
   taxIdLast4: string | null;
   spouseName: string;
   taxYears: string;
@@ -98,6 +103,7 @@ export type Profile = {
   starred: boolean;
   snoozedUntil: string | null;
   avatarPath: string | null;
+  portalAcceptedAt: string | null;
 };
 
 export type ProfileUpdate = {
@@ -108,6 +114,7 @@ export type ProfileUpdate = {
   state: string;
   zip: string;
   taxpayerType: TaxpayerType;
+  filingTypes?: string[];
   spouseName: string;
   taxYears: string;
   taxId?: string;
@@ -240,6 +247,35 @@ export function documentKindLabel(kind: DocumentKind): string {
   }
 }
 
+export function orderedFilingTypes(types: readonly string[], allowed?: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  const source = allowed ? allowed.filter((id) => types.includes(id)) : types;
+  for (const value of source) {
+    const id = value.trim().toLowerCase();
+    if (!/^[a-z0-9-]{1,40}$/.test(id) || seen.has(id)) continue;
+    seen.add(id);
+    result.push(id);
+  }
+  return result;
+}
+
+export function filingTypesOf(profile: Pick<Profile, "taxpayerType" | "filingTypes">): string[] {
+  if (profile.filingTypes === undefined) return [profile.taxpayerType];
+  return orderedFilingTypes(profile.filingTypes);
+}
+
+export function primaryFilingType(types: readonly string[]): TaxpayerType {
+  if (types.includes("individual")) return "individual";
+  if (types.includes("business")) return "business";
+  if (types.includes("nonprofit")) return "nonprofit";
+  return "individual";
+}
+
+export function isTaxpayerType(value: string): value is TaxpayerType {
+  return taxpayerTypes.some((item) => item === value);
+}
+
 export function taxpayerTypeLabel(type: TaxpayerType): string {
   switch (type) {
     case "individual":
@@ -310,6 +346,7 @@ export type TaxReturn = {
   taxYear: number;
   entity: string;
   taxpayerType: TaxpayerType;
+  filingTypeId?: string;
   returnVersion: number;
 };
 

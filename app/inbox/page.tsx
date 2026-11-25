@@ -41,7 +41,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
   const staff = await requireProfile("staff");
   const { id } = await searchParams;
   const store = getStore();
-  const [inbox, profiles, tasks] = await Promise.all([store.listInbox(), store.listProfiles(), store.listTasks()]);
+  const [inbox, profiles, tasks, tags] = await Promise.all([store.listInbox(), store.listProfiles(), store.listTasks(), store.listTags()]);
   const clients = profiles.filter((profile) => profile.role === "client");
   const documents = await Promise.all(clients.map(async (client) => ({ profileId: client.id, documents: await store.listDocuments(client.id) })));
   const documentsByProfile = new Map(documents.map((item) => [item.profileId, item.documents]));
@@ -71,17 +71,19 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
     selectedProfileId: id ?? null,
     teammates: profiles
       .filter((profile) => profile.role === "staff")
-      .map((profile) => ({ id: profile.id, name: profile.name || "Staff", email: profile.email, avatar: avatarUrl(profile.id, profile.avatarPath) })),
+      .map((profile) => ({ id: profile.id, name: profile.name || "Staff", email: profile.email, avatar: avatarUrl(profile.id, profile.avatarPath), staffStatus: profile.staffStatus })),
     contacts: clients.map((client) => ({
       id: client.id,
       name: client.name || client.email,
       email: client.email,
       avatar: avatarUrl(client.id, client.avatarPath),
+      staffStatus: "active" as const,
       phone: client.phone,
       location: locationFor(client),
     })),
     tasks: tasks.map((task) => ({ id: task.id, profileId: task.profileId })),
     conversations,
+    catalogTags: tags.map((tag) => tag.name),
   };
 
   return <InboxView data={data} />;

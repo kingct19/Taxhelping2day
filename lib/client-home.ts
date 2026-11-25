@@ -1,8 +1,9 @@
 import { isOrganizerItem } from "@/lib/engagement";
 import { clientOwes, type RequestThread } from "@/lib/request-thread";
 import type { Stage } from "@/lib/return-workflow";
-import type { SeasonStage } from "@/lib/season";
-import { documentRequests } from "@/lib/season";
+import { documentRequests, documentsForId, documentsForIds, type CatalogLists, type SeasonStage } from "@/lib/season";
+import type { IntakeAnswers } from "@/lib/filing-needs";
+import { emptyIntake } from "@/lib/filing-needs";
 import type { StatusTone } from "@/lib/status-tone";
 import type {
   DocumentKind,
@@ -14,10 +15,12 @@ import type {
   Profile,
   RequestState,
   SignatureRecord,
+  TaxpayerType,
 } from "@/lib/types";
+import { isTaxpayerType } from "@/lib/types";
 import { signerLabel } from "@/lib/next-action";
 
-export const clientStages = ["getting_started", "preparation", "review_sign", "completed"] as const;
+export const clientStages = ["getting_started", "upload_documents", "sign_agreement", "preparation", "review_sign", "completed"] as const;
 export type ClientStage = (typeof clientStages)[number];
 
 export const requirementStatuses = ["needed", "uploaded", "under_review", "accepted", "correction", "not_applicable"] as const;
@@ -37,6 +40,7 @@ export type RequirementCardModel = {
   title: string;
   detail: string;
   status: RequirementStatus;
+  required: boolean;
   correction: string | null;
   files: DocumentRecord[];
   kind: DocumentKind | null;
@@ -52,12 +56,16 @@ export function clientStageLabel(stage: ClientStage): string {
   switch (stage) {
     case "getting_started":
       return "Getting started";
+    case "upload_documents":
+      return "Upload documents";
+    case "sign_agreement":
+      return "Sign agreement";
     case "preparation":
-      return "Preparation";
+      return "Tax preparation";
     case "review_sign":
       return "Review & sign";
     case "completed":
-      return "Completed";
+      return "Filed & complete";
     default: {
       const exhaustive: never = stage;
       return exhaustive;
@@ -74,30 +82,13 @@ export function deriveClientStage(input: {
   const reviewOpen = input.filings.some((filing) => reviewFiling.has(filing.status));
   const stage = input.returnStage;
   if (allAccepted) return "completed";
-  if (!stage) {
-    if (reviewOpen) return "review_sign";
-    if (input.season === "documents" || input.season === "ready") return "preparation";
-    return "getting_started";
-  }
-  switch (stage) {
-    case "delivery":
-    case "renewal":
-      return reviewOpen ? "review_sign" : "completed";
-    case "review":
-    case "approval":
-    case "filing":
-      return "review_sign";
-    case "documents":
-    case "preparation":
-      return reviewOpen ? "review_sign" : "preparation";
-    case "lead":
-    case "onboarding":
-      return reviewOpen ? "review_sign" : "getting_started";
-    default: {
-      const exhaustive: never = stage;
-      return exhaustive;
-    }
-  }
+  if (stage === "delivery" || stage === "renewal") return reviewOpen ? "review_sign" : "completed";
+  if (stage === "review" || stage === "approval" || stage === "filing") return "review_sign";
+  if (stage === "preparation") return reviewOpen ? "review_sign" : "preparation";
+  if (input.season === "ready") return "preparation";
+  if (input.season === "letter") return "sign_agreement";
+  if (input.season === "documents") return "upload_documents";
+  return "getting_started";
 }
 
 export function clientFirstName(name: string): string {
@@ -153,12 +144,7 @@ function letterOutstanding(letter: LetterSnapshot | null, signatures: SignatureR
       href: "/portal/signatures",
     };
   }
-  return {
-    id: "engagement",
-    title: "Engagement letter",
-    detail: "The firm prepares this before work starts. It will be ready to sign here.",
-    href: "/portal/signatures",
-  };
+  return null;
 }
 
 export function clientActions(input: {
@@ -303,6 +289,7 @@ function filesFor(
   documents: DocumentRecord[],
   claimed: Set<string>,
   attachmentIds: Set<string>,
+  includeKind = true,
 ): DocumentRecord[] {
   const rows: DocumentRecord[] = [];
   const seen = new Set<string>();
@@ -311,7 +298,7 @@ function filesFor(
     seen.add(document.id);
     rows.push(document);
   };
-  if (kind) {
+  if (kind && includeKind) {
     for (const document of documents) {
       if (document.kind !== kind) continue;
       if (attachmentIds.has(document.id) && !owns(threads, document.id)) continue;
@@ -348,10 +335,12 @@ function toCard(input: {
   claimed: Set<string>;
   attachmentIds: Set<string>;
   profileId: string;
+  includeKind?: boolean;
+  required: boolean;
 }): RequirementCardModel {
   const thread = primaryThread(input.threads);
   const state = thread?.latest.requestState ?? null;
-  const files = filesFor(input.kind, input.threads, input.documents, input.claimed, input.attachmentIds);
+  const files = filesFor(input.kind, input.threads, input.documents, input.claimed, input.attachmentIds, input.includeKind ?? true);
   const status = state ? statusFromRequest(state) : files.length > 0 ? "uploaded" : "needed";
   const owes = state ? clientOwes(state) : false;
   const uploadKind = input.kind ?? "other";
@@ -360,6 +349,7 @@ function toCard(input: {
     title: input.title,
     detail: input.detail,
     status,
+    required: input.required,
     correction: status === "correction" ? thread?.latest.body ?? null : null,
     files,
     kind: input.kind,
@@ -375,6 +365,10 @@ export function requirementCards(input: {
   documents: DocumentRecord[];
   threads: RequestThread[];
   attachmentIds?: Iterable<string>;
+  intake?: IntakeAnswers;
+  types?: string[];
+  scope?: "all" | "standard" | "extras";
+  catalog?: CatalogLists;
 }): RequirementCardModel[] {
   const attachmentIds = new Set(input.attachmentIds ?? []);
   const claimed = new Set<string>();
@@ -384,23 +378,44 @@ export function requirementCards(input: {
   }
   const cards: RequirementCardModel[] = [];
   const used = new Set<string>();
-  for (const request of documentRequests(input.profile.taxpayerType)) {
-    const matched = input.threads.filter((item) => matchesRequest(item.root.body, request.title));
-    for (const thread of matched) used.add(thread.root.id);
-    cards.push(
-      toCard({
-        id: matched[0]?.root.id ?? `kind-${request.kind}`,
-        title: request.title,
-        detail: request.detail,
-        kind: request.kind,
-        threads: matched,
-        documents: input.documents,
-        claimed,
-        attachmentIds,
-        profileId: input.profile.id,
-      }),
-    );
+  const intake = input.intake ?? emptyIntake();
+  const scope = input.scope ?? "all";
+  const types = input.types?.length ? input.types : [input.profile.taxpayerType];
+  if (scope === "extras") {
+    for (const type of types) {
+      for (const request of documentsForId(type, input.catalog)) {
+        for (const thread of input.threads) {
+          if (matchesRequest(thread.root.body, request.title)) used.add(thread.root.id);
+        }
+      }
+    }
   }
+  const fallback = types[0] && isTaxpayerType(types[0]) ? types[0] : input.profile.taxpayerType;
+  const requests = scope === "extras" ? [] : intake.answered ? documentsForIds(types, input.catalog) : documentRequests(fallback);
+  const kindUses = new Map<DocumentKind, number>();
+  for (const request of requests) kindUses.set(request.kind, (kindUses.get(request.kind) ?? 0) + 1);
+  if (scope !== "extras") {
+    for (const request of requests) {
+      const matched = input.threads.filter((item) => matchesRequest(item.root.body, request.title));
+      for (const thread of matched) used.add(thread.root.id);
+      cards.push(
+        toCard({
+          id: matched[0]?.root.id ?? `kind-${request.kind}-${request.title}`,
+          title: request.title,
+          detail: request.detail,
+          kind: request.kind,
+          threads: matched,
+          documents: input.documents,
+          claimed,
+          attachmentIds,
+          profileId: input.profile.id,
+          includeKind: (kindUses.get(request.kind) ?? 0) < 2,
+          required: request.required,
+        }),
+      );
+    }
+  }
+  if (scope === "standard") return cards;
   for (const thread of input.threads) {
     if (used.has(thread.root.id) || !thread.latest.requestState) continue;
     const detail = thread.latest.id !== thread.root.id && thread.latest.requestState !== "replacement" ? thread.latest.body : "";
@@ -415,6 +430,7 @@ export function requirementCards(input: {
         claimed,
         attachmentIds,
         profileId: input.profile.id,
+        required: true,
       }),
     );
   }

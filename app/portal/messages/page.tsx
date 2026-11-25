@@ -4,6 +4,7 @@ import { requireProfile } from "@/lib/auth";
 import { avatarUrl } from "@/lib/avatar";
 import { pickReturn, unreadFromStaff } from "@/lib/client-home";
 import { firm } from "@/lib/firm";
+import { replyExpectation, summarizeHours } from "@/lib/office-hours";
 import { getStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,11 @@ export const dynamic = "force-dynamic";
 export default async function MessagesPage() {
   const profile = await requireProfile("client");
   const store = getStore();
-  const [messages, returns] = await Promise.all([store.listMessages(profile.id), store.listTeamReturns()]);
+  const [messages, returns, officeHours] = await Promise.all([
+    store.listMessages(profile.id),
+    store.listTeamReturns(),
+    store.getOfficeHours(),
+  ]);
   const current = pickReturn(returns.filter((item) => item.profileId === profile.id));
   const owner = current?.owner ? await store.getProfile(current.owner) : null;
   const conversation = messages.filter((message) => message.kind !== "note" && !message.requestState);
@@ -28,6 +33,7 @@ export default async function MessagesPage() {
         selfAvatar={avatarUrl(profile.id, profile.avatarPath)}
         messages={conversation}
         unread={unreadFromStaff(messages)}
+        reply={officeHours.saved ? { text: replyExpectation(officeHours.hours), lines: summarizeHours(officeHours.hours) } : null}
       />
     </div>
   );

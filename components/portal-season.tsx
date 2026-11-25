@@ -6,20 +6,23 @@ import { postMessage } from "@/lib/actions";
 import { clientNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
 import { engagementLetter, type LetterState } from "@/lib/engagement-letter";
+import { emptyIntake } from "@/lib/filing-needs";
 import { seasonFor, type SeasonStage } from "@/lib/season";
 import { getStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 
-function onboardingStep(season: SeasonStage): "details" | "letter" | "documents" | null {
+function onboardingStep(season: SeasonStage): "details" | "scope" | "letter" | "documents" | null {
   switch (season) {
     case "profile":
       return "details";
-    case "letter":
-      return "letter";
+    case "scope":
+      return "scope";
     case "documents":
       return "documents";
+    case "letter":
+      return "letter";
     case "ready":
       return null;
     default: {
@@ -37,8 +40,8 @@ function letterCopy(
   switch (letter.status) {
     case "unsigned":
       return {
-        headline: "The firm is preparing your engagement letter",
-        detail: "The team sends it from Smartdocs. It will be ready to sign here.",
+        headline: "The firm is reviewing your documents",
+        detail: "After that review, the team sends the engagement letter. It will be ready to sign here.",
         action: null,
         href: null,
       };
@@ -67,15 +70,15 @@ export async function PortalSeason({ profileId, readOnly = false }: { profileId:
   const store = getStore();
   const profile = await store.getProfile(profileId);
   if (!profile) return null;
-  const [documents, signatures, messages, returns, filings, authorizations] = await Promise.all([
+  const [documents, signatures, messages, returns, filings, authorizations, catalog] = await Promise.all([
     store.listDocuments(profile.id),
     store.listSignatures(profile.id),
     store.listMessages(profile.id),
     store.listTeamReturns(),
     store.listFilings(),
     store.listAuthorizations(),
+    store.getFilingCatalog(),
   ]);
-  const season = seasonFor(profile, signatures, documents);
   const mine = returns.filter((item) => item.profileId === profile.id);
   const ranked = (mine.length ? mine : [null]).map((item) => ({
     item,
@@ -88,8 +91,17 @@ export async function PortalSeason({ profileId, readOnly = false }: { profileId:
       authorizations: authorizations.filter((authorization) => authorization.returnId === item?.id),
       returnVersion: item?.returnVersion ?? 1,
       stage: item?.stage ?? null,
+      intake: item ? { answered: item.desk.intakeAnswered, needs: item.desk.filingNeeds } : emptyIntake(),
+      catalog,
     }),
   })).sort((a, b) => a.next.urgency - b.next.urgency);
+  const season = seasonFor(
+    profile,
+    signatures,
+    documents,
+    ranked[0].item ? { answered: ranked[0].item.desk.intakeAnswered, needs: ranked[0].item.desk.filingNeeds } : emptyIntake(),
+    catalog,
+  );
   const next = ranked[0].next;
   const current = ranked[0].item;
   const onboarding = onboardingStep(season);

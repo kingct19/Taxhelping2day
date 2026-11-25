@@ -44,6 +44,7 @@ export type Workflow = {
   archivedAt: string | null;
   revision: number;
   desk: ReturnDesk;
+  stageEnteredAt: string;
 };
 
 export type TeamReturn = TaxReturn & Workflow;
@@ -62,6 +63,7 @@ export const initialWorkflow: Workflow = {
   archivedAt: null,
   revision: 0,
   desk: emptyDesk(),
+  stageEnteredAt: "",
 };
 
 export function isStage(value: string): value is Stage {
@@ -198,5 +200,6 @@ export function asWorkflow(item: LegacyInput): Workflow {
     archivedAt: item.archivedAt ?? null,
     revision: item.revision ?? 0,
     desk: parseDesk(item.desk),
+    stageEnteredAt: item.stageEnteredAt ?? "",
   };
 }

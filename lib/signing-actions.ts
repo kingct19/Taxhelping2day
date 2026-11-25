@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { builderConfigured, templateFieldNames, templateRole, type RemoteTemplate } from "@/lib/docuseal-builder";
 import { packetDb, signingApi, signingConfigured } from "@/lib/docuseal";
+import { intakeBlocker } from "@/lib/engagement";
+import { letterBeforeIntake } from "@/lib/practice";
+import { requestThreads } from "@/lib/request-thread";
 import { prefillValues } from "@/lib/smartdoc-prefill";
 import { getStore } from "@/lib/store";
 
@@ -147,7 +150,7 @@ async function deliverSmartdoc(templateRef: string, profileId: string, returnId:
   const db = packetDb();
   if (!db || !process.env.DOCUSEAL_API_KEY) throw new Error("Configure DocuSeal before sending.");
   if (!uuidPattern.test(templateRef)) throw new Error("Document not found.");
-  const templateResult = await db.from("signing_templates").select("id,docuseal_template_id,signer_role,archived_at").eq("id", templateRef).maybeSingle();
+  const templateResult = await db.from("signing_templates").select("id,docuseal_template_id,signer_role,archived_at,kind").eq("id", templateRef).maybeSingle();
   if (templateResult.error) throw templateResult.error;
   const template = templateResult.data;
   if (!template?.docuseal_template_id) throw new Error("Save the document in the builder before sending it.");
@@ -156,6 +159,18 @@ async function deliverSmartdoc(templateRef: string, profileId: string, returnId:
   const [client, returns] = await Promise.all([store.getProfile(profileId), store.listReturns(profileId)]);
   const item = returns.find((row) => row.id === returnId);
   if (!item || client?.role !== "client") throw new Error("Choose a client and a return.");
+  if (template.kind === "engagement" && !letterBeforeIntake()) {
+    const workflow = (await store.listTeamReturns()).find((row) => row.id === returnId && row.profileId === profileId);
+    if (!workflow || workflow.stage === "lead" || workflow.stage === "onboarding") {
+      throw new Error("Finish the document review before sending the engagement letter.");
+    }
+    if (workflow.stage === "documents") {
+      const messages = await store.listMessages(profileId);
+      const threads = requestThreads(messages.filter((row) => row.returnId === returnId));
+      const intake = intakeBlocker(workflow.taxpayerType, threads, workflow.desk, "sending the engagement letter");
+      if (intake) throw new Error(intake);
+    }
+  }
   let remote: RemoteTemplate | null = null;
   try {
     remote = await signingApi(`/templates/${template.docuseal_template_id}`);

@@ -5,18 +5,21 @@ import { saveProfile, type ProfileSaveState } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { taxpayerTypeLabel, taxpayerTypes, type Profile, type TaxpayerType } from "@/lib/types";
+import { filingTypesOf, taxFormFor, taxpayerTypeLabel, taxpayerTypes, type Profile } from "@/lib/types";
+
+const builtinOptions = taxpayerTypes.map((id) => ({ id, label: taxpayerTypeLabel(id), form: taxFormFor(id) }));
 
 const initialState: ProfileSaveState = { error: null };
 
-export function ProfileForm({ profile }: { profile: Profile }) {
-  const [taxpayerType, setTaxpayerType] = useState<TaxpayerType>(profile.taxpayerType);
+export function ProfileForm({ profile, options = builtinOptions }: { profile: Profile; options?: { id: string; label: string; form: string }[] }) {
+  const order = options.map((option) => option.id);
+  const starting = profile.filingTypes?.length ? filingTypesOf(profile) : [profile.taxpayerType];
+  const [filingTypes, setFilingTypes] = useState<string[]>(order.filter((id) => starting.includes(id)));
   const [state, formAction, pending] = useActionState(saveProfile, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
-      <input type="hidden" name="taxpayerType" value={taxpayerType} />
+      {filingTypes.map((type) => <input key={type} type="hidden" name="taxpayerType" value={type} />)}
       {state.error ? <p role="alert" className="text-sm text-destructive">{state.error}</p> : null}
       <FieldSet className="rounded-lg border border-border px-3 py-3">
         <FieldLegend>Personal details</FieldLegend>
@@ -28,25 +31,23 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           </Field>
           <Field>
             <FieldLabel>Who we are helping</FieldLabel>
-            <Select
-              value={taxpayerType}
-              onValueChange={(value) => {
-                if (value === "individual" || value === "business" || value === "nonprofit") setTaxpayerType(value);
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {taxpayerTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {taxpayerTypeLabel(type)}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <div className="grid gap-2">
+              {options.map((option) => (
+                <label key={option.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={filingTypes.includes(option.id)}
+                    onChange={(event) => {
+                      setFilingTypes((current) => event.target.checked
+                        ? order.filter((item) => item === option.id || current.includes(item))
+                        : current.filter((item) => item !== option.id));
+                    }}
+                  />
+                  {option.label} · Form {option.form}
+                </label>
+              ))}
+            </div>
+            <FieldDescription>Select every return we are preparing. A job and a business can both be checked.</FieldDescription>
           </Field>
         </FieldGroup>
       </FieldSet>
@@ -100,7 +101,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             <Input id="taxYears" name="taxYears" defaultValue={profile.taxYears} placeholder="2024, 2025" />
           </Field>
           <Field>
-            <FieldLabel htmlFor="taxId">{taxpayerType === "individual" ? "Social Security number" : "EIN"}</FieldLabel>
+            <FieldLabel htmlFor="taxId">{filingTypes.includes("individual") ? "Social Security number" : "EIN"}</FieldLabel>
             <Input
               id="taxId"
               name="taxId"

@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import {
   BellIcon,
   ClockIcon,
-  CreditCardIcon,
-  MessageCircleMoreIcon,
   MessageSquareTextIcon,
   SettingsIcon,
   ShieldIcon,
+  FolderIcon,
   TagIcon,
   UserCheckIcon,
+  WorkflowIcon,
   UserIcon,
   UsersIcon,
   type LucideIcon,
@@ -33,20 +33,16 @@ const groups: { title: string; items: { href: string; label: string; icon: Lucid
     title: "Desk",
     items: [
       { href: "/settings/assignments", label: "Assignments", icon: UserCheckIcon },
+      { href: "/settings/automations", label: "Automations", icon: WorkflowIcon },
       { href: "/settings/saved-replies", label: "Saved replies", icon: MessageSquareTextIcon },
     ],
   },
   {
-    title: "Channels",
-    items: [{ href: "/settings/messenger", label: "Messenger", icon: MessageCircleMoreIcon }],
-  },
-  {
-    title: "Subscription",
-    items: [{ href: "/settings/billing", label: "Billing", icon: CreditCardIcon }],
-  },
-  {
     title: "Data",
-    items: [{ href: "/settings/tags", label: "Tags", icon: TagIcon }],
+    items: [
+      { href: "/settings/filings", label: "Filing types", icon: FolderIcon },
+      { href: "/settings/tags", label: "Tags", icon: TagIcon },
+    ],
   },
   {
     title: "Personal",

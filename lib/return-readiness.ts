@@ -1,10 +1,9 @@
-import { isOrganizerItem, missingOrganizer, type GateInput } from "@/lib/engagement";
+import { isOrganizerItem, missingOrganizer, requestsFor, type GateInput } from "@/lib/engagement";
 import { filingPlace } from "@/lib/next-action";
 import { clientOwes, staffOwes } from "@/lib/request-thread";
 import { missingRequiredChecks, preparationChecklist, recordedCheckCount, reviewChecklist, type DeskIssue } from "@/lib/return-desk";
 import { returnTabHref, type ReturnTab } from "@/lib/return-progress";
 import { stageOrder, type Stage } from "@/lib/return-workflow";
-import { documentRequests } from "@/lib/season";
 import type { FilingStatus } from "@/lib/types";
 
 export type Readiness = "not_started" | "in_progress" | "complete" | "blocked" | "needs_attention" | "unknown";
@@ -108,9 +107,10 @@ function openIssues(issues: DeskIssue[], area: DeskIssue["area"], blockingOnly: 
 }
 
 export function getDocumentReadiness(input: GateInput): { readiness: Readiness; detail: string } {
-  const { workflow, profile, threads } = input;
-  const requiredTitles = new Set(documentRequests(profile.taxpayerType).filter((item) => item.required).map((item) => item.title));
-  const gaps = missingOrganizer(profile.taxpayerType, threads);
+  const { workflow, threads } = input;
+  const filingTypeId = workflow.filingTypeId || workflow.taxpayerType;
+  const requiredTitles = new Set(requestsFor(filingTypeId, workflow.desk, input.catalog).filter((item) => item.required).map((item) => item.title));
+  const gaps = missingOrganizer(filingTypeId, threads, workflow.desk, input.catalog);
   const relevant = threads.filter((thread) => {
     const state = thread.latest.requestState;
     if (!state) return false;
@@ -145,7 +145,7 @@ export function getDocumentReadiness(input: GateInput): { readiness: Readiness; 
 export function getPreparationReadiness(input: GateInput): { readiness: Readiness; detail: string } {
   const { workflow } = input;
   const desk = workflow.desk;
-  const checklist = preparationChecklist(input.profile.taxpayerType);
+  const checklist = preparationChecklist(input.workflow.taxpayerType);
   const missing = missingRequiredChecks(checklist, desk.preparationChecks);
   const blocking = openIssues(desk.issues, "preparation", true);
   if (blocking.length > 0) return { readiness: "blocked", detail: `${blocking.length} blocking preparation ${blocking.length === 1 ? "issue" : "issues"}` };
@@ -169,7 +169,7 @@ export function getPreparationReadiness(input: GateInput): { readiness: Readines
 export function getReviewReadiness(input: GateInput): { readiness: Readiness; detail: string } {
   const { workflow } = input;
   const desk = workflow.desk;
-  const checklist = reviewChecklist(input.profile.taxpayerType);
+  const checklist = reviewChecklist(input.workflow.taxpayerType);
   const missing = missingRequiredChecks(checklist, desk.reviewChecks);
   const blocking = openIssues(desk.issues, "review", true);
   if (blocking.length > 0) return { readiness: "blocked", detail: `${blocking.length} open review ${blocking.length === 1 ? "correction" : "corrections"}` };
@@ -412,7 +412,7 @@ export function preparationBlockers(input: GateInput): string[] {
   const lines: string[] = [];
   if (!input.workflow.returnVersion) lines.push("This return has no version.");
   if (!input.workflow.owner) lines.push("Assign a preparer.");
-  for (const label of missingRequiredChecks(preparationChecklist(input.profile.taxpayerType), input.workflow.desk.preparationChecks)) {
+  for (const label of missingRequiredChecks(preparationChecklist(input.workflow.taxpayerType), input.workflow.desk.preparationChecks)) {
     lines.push(`Check off ${label}.`);
   }
   for (const issue of openIssues(input.workflow.desk.issues, "preparation", true)) lines.push(`Resolve ${issue.title}.`);
@@ -422,7 +422,7 @@ export function preparationBlockers(input: GateInput): string[] {
 export function reviewBlockers(input: GateInput): string[] {
   const lines: string[] = [];
   if (!input.workflow.reviewerId) lines.push("Assign a reviewer.");
-  for (const label of missingRequiredChecks(reviewChecklist(input.profile.taxpayerType), input.workflow.desk.reviewChecks)) {
+  for (const label of missingRequiredChecks(reviewChecklist(input.workflow.taxpayerType), input.workflow.desk.reviewChecks)) {
     lines.push(`Check off ${label}.`);
   }
   for (const issue of openIssues(input.workflow.desk.issues, "review", true)) lines.push(`Resolve ${issue.title}.`);

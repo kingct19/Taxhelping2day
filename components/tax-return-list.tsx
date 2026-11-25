@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { taxpayerTypeLabel, type TaxReturn } from "@/lib/types";
 
-export function TaxReturnList({ returns }: { returns: TaxReturn[] }) {
+export function TaxReturnList({ returns, labels = {} }: { returns: TaxReturn[]; labels?: Record<string, string> }) {
   return (
     <section className="grid gap-2">
       <div>
@@ -14,7 +14,7 @@ export function TaxReturnList({ returns }: { returns: TaxReturn[] }) {
         {returns.map((item) => (
           <li key={item.id} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
             <div>
-              <p className="font-medium">{item.taxYear} {taxpayerTypeLabel(item.taxpayerType).toLowerCase()} return</p>
+              <p className="font-medium">{item.taxYear} {(labels[item.filingTypeId || item.taxpayerType] ?? taxpayerTypeLabel(item.taxpayerType)).toLowerCase()} return</p>
               <p className="text-sm text-muted-foreground">{item.entity}</p>
             </div>
             <Link href={`/returns/${item.profileId}/${item.id}`} className="text-sm underline">

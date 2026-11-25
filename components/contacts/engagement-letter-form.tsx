@@ -36,7 +36,7 @@ export async function EngagementLetterForm({
       {letter.status === "ready" ? <p className="text-sm text-muted-foreground">{letter.title} is ready for the client to sign.</p> : null}
       {letter.status === "waiting" ? <p className="text-sm text-muted-foreground">{letter.title} is with the client.</p> : null}
       {letter.status === "unsigned" && returns.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Open a return, then send the engagement letter from Smartdocs.</p>
+        <p className="text-sm text-muted-foreground">Open a return and finish the document review, then send the engagement letter from Smartdocs.</p>
       ) : null}
       {letter.status === "unsigned" && returns.length > 0 && templates.length === 0 ? (
         <p className="text-sm text-muted-foreground">

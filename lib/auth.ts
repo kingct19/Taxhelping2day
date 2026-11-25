@@ -1,6 +1,8 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { runAccepted } from "@/lib/automation-run";
 import { staffEmails } from "@/lib/firm";
+import { staffMayEnter } from "@/lib/teammates";
 import { getStore } from "@/lib/store";
 import type { Profile } from "@/lib/types";
 
@@ -14,8 +16,8 @@ export async function getStaffProfile(): Promise<Profile | null> {
   await store.ensureStaff();
   const profile = await store.getProfileByEmail(email);
   if (!profile || profile.role !== "staff") return null;
-  const staffAllowed = staffEmails().includes(email) || (await store.isStaffAllowed(email));
-  if (!staffAllowed) return null;
+  const listed = staffEmails().includes(email) || (await store.isStaffAllowed(email));
+  if (!staffMayEnter(profile, listed)) return null;
   return profile;
 }
 
@@ -32,12 +34,16 @@ export async function requireProfile(role?: Profile["role"]): Promise<Profile> {
   const store = getStore();
   await store.ensureStaff();
   const profile = await store.getProfileByEmail(email);
-  const staffAllowed = staffEmails().includes(email) || (await store.isStaffAllowed(email));
-  if (!profile || (profile.role === "staff" && !staffAllowed)) {
+  const listed = staffEmails().includes(email) || (await store.isStaffAllowed(email));
+  if (!profile || (profile.role === "staff" && !staffMayEnter(profile, listed))) {
     redirect("/not-on-file");
   }
   if (role && profile.role !== role) {
     redirect(profile.role === "staff" ? "/dashboard" : "/portal");
+  }
+  if (profile.role === "client" && !profile.portalAcceptedAt) {
+    const first = await store.markPortalAccepted(profile.id);
+    if (first) await runAccepted(profile.id, false);
   }
   return profile;
 }

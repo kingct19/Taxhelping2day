@@ -10,10 +10,10 @@ function deskNow() {
 }
 
 export default async function TasksPage({ searchParams }: { searchParams: Promise<{ id?: string; client?: string }> }) {
-  await requireProfile("staff");
+  const staff = await requireProfile("staff");
   const { id, client } = await searchParams;
   const returns = await loadDeskReturns();
   const selected = returns.find((item) => item.id === id) ?? returns.find((item) => item.profileId === client) ?? null;
 
-  return <TaskWorkspace now={deskNow()} returns={returns} selectedId={selected?.id ?? null} />;
+  return <TaskWorkspace now={deskNow()} returns={returns} selectedId={selected?.id ?? null} viewerId={staff.id} />;
 }

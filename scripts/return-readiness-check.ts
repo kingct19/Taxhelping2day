@@ -17,6 +17,8 @@ const profile: Profile = {
   id: "profile-1",
   email: "client@example.com",
   role: "client",
+  staffRank: "staff",
+  staffStatus: "active",
   name: "Ada Client",
   phone: "",
   address: "",
@@ -31,6 +33,7 @@ const profile: Profile = {
   starred: false,
   snoozedUntil: null,
   avatarPath: null,
+  portalAcceptedAt: null,
 };
 
 function workflow(patch: Partial<TeamReturn> = {}): TeamReturn {

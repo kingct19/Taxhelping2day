@@ -5,8 +5,9 @@ import { cn } from "@/lib/utils";
 
 const onboardingSteps = [
   { id: "details", label: "Your details", art: "person-with-checklist", href: "/portal/profile" },
-  { id: "letter", label: "Engagement letter", art: "contract-redlines", href: "/portal/engagement" },
+  { id: "scope", label: "What you file", art: "tax-form-stamp", href: "/portal/documents#filing" },
   { id: "documents", label: "Documents", art: "shared-folder-with-members", href: "/portal/documents" },
+  { id: "letter", label: "Agreement", art: "contract-redlines", href: "/portal/engagement" },
 ] as const;
 
 type StepId = (typeof onboardingSteps)[number]["id"];
@@ -15,10 +16,12 @@ function stepById(id: StepId) {
   switch (id) {
     case "details":
       return onboardingSteps[0];
-    case "letter":
+    case "scope":
       return onboardingSteps[1];
     case "documents":
       return onboardingSteps[2];
+    case "letter":
+      return onboardingSteps[3];
     default: {
       const exhaustive: never = id;
       return exhaustive;

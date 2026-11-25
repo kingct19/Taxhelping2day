@@ -1,8 +1,9 @@
+import { FilingTypeForm } from "@/components/portal/filing-needs-form";
 import { advanceEngagement, openNextYear, saveEngagementFacts, saveInvoiceRecord, sendBackEngagement, sendOrganizer } from "@/lib/actions";
 import { advanceBlocker, missingOrganizer, sendBackBlocker } from "@/lib/engagement";
 import { nextStage, sendBackTarget, serviceLabel, sourceLabel, stageOrder, stages, type TeamReturn } from "@/lib/return-workflow";
 import type { RequestThread } from "@/lib/request-thread";
-import { invoiceStatuses, leadSources, serviceLines, type EfileAuthorization, type FilingRecord, type Invoice, type InvoiceStatus, type Profile, type SignatureRecord } from "@/lib/types";
+import { filingTypesOf, invoiceStatuses, leadSources, serviceLines, type EfileAuthorization, type FilingRecord, type Invoice, type InvoiceStatus, type Profile, type SignatureRecord } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,7 +55,7 @@ export function EngagementPanel({
   const blocker = advanceBlocker({ workflow: item, profile, signatures, threads, authorizations, invoice, filings, note: reviewNote });
   const back = sendBackTarget(item.stage);
   const backBlock = sendBackBlocker(item.stage, filings);
-  const organizerGaps = item.stage === "documents" ? missingOrganizer(profile.taxpayerType, threads) : [];
+  const organizerGaps = item.stage === "documents" ? missingOrganizer(item.taxpayerType, threads, item.desk) : [];
   const facts = saveEngagementFacts.bind(null, item.id, item.revision);
   const advance = advanceEngagement.bind(null, item.id, item.revision);
   const sendBack = sendBackEngagement.bind(null, item.id, item.revision);
@@ -72,6 +73,9 @@ export function EngagementPanel({
           </li>
         ))}
       </ol>
+      {item.stage === "lead" || item.stage === "onboarding" ? (
+        <FilingTypeForm returnId={item.id} selected={profile.filingTypes !== undefined ? filingTypesOf(profile) : item.desk.intakeAnswered ? [item.taxpayerType] : []} />
+      ) : null}
       {item.waitingOn ? (
         <p className="text-sm text-muted-foreground">
           {item.waitingOn === "client" ? "Waiting on the client." : "Waiting on the firm."} The stage stays here until that clears.

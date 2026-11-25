@@ -52,7 +52,10 @@ export function RequirementCards({ cards, readOnly = false }: { cards: Requireme
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <p className="font-medium">{card.title}</p>
-                  <Badge variant={requirementTone(card.status)}>{requirementStatusLabel(card.status)}</Badge>
+                  <span className="flex flex-wrap justify-end gap-1">
+                    <Badge variant={card.required ? "attention" : "neutral"}>{card.required ? "Required" : "Optional"}</Badge>
+                    <Badge variant={requirementTone(card.status)}>{requirementStatusLabel(card.status)}</Badge>
+                  </span>
                 </div>
                 {card.detail ? <p className="text-sm text-muted-foreground">{card.detail}</p> : null}
               </div>

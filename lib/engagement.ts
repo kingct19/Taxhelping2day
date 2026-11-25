@@ -1,9 +1,10 @@
-import type { SeasonStage } from "@/lib/season";
-import { documentRequests } from "@/lib/season";
+import type { CatalogLists, SeasonStage } from "@/lib/season";
+import { documentRequests, documentsForId } from "@/lib/season";
+import type { ReturnDesk } from "@/lib/return-desk";
 import type { TeamReturn, Workflow } from "@/lib/return-workflow";
 import { nextStage, sendBackTarget } from "@/lib/return-workflow";
 import type { RequestThread } from "@/lib/request-thread";
-import type { EfileAuthorization, FilingRecord, Invoice, Profile, SignatureRecord } from "@/lib/types";
+import { isTaxpayerType, type EfileAuthorization, type FilingRecord, type Invoice, type Profile, type SignatureRecord } from "@/lib/types";
 
 export type GateInput = {
   workflow: TeamReturn;
@@ -14,6 +15,7 @@ export type GateInput = {
   invoice: Invoice | null;
   filings: FilingRecord[];
   note?: string;
+  catalog?: CatalogLists;
 };
 
 export function organizerBody(title: string, detail: string): string {
@@ -24,8 +26,31 @@ export function isOrganizerItem(body: string, title: string): boolean {
   return body.startsWith(`Organizer: ${title}.`);
 }
 
-export function missingOrganizer(type: Profile["taxpayerType"], threads: RequestThread[]): string[] {
-  return documentRequests(type)
+export function requestsFor(type: string, desk?: Pick<ReturnDesk, "intakeAnswered" | "filingNeeds">, catalog?: CatalogLists) {
+  if (desk?.intakeAnswered) return documentsForId(type, catalog);
+  return isTaxpayerType(type) ? documentRequests(type) : [];
+}
+
+export function intakeBlocker(
+  type: string,
+  threads: RequestThread[],
+  desk?: Pick<ReturnDesk, "intakeAnswered" | "filingNeeds">,
+  until = "preparation",
+  catalog?: CatalogLists,
+): string | null {
+  const required = requestsFor(type, desk, catalog).filter((item) => item.required);
+  for (const request of required) {
+    const thread = threads.find((item) => isOrganizerItem(item.root.body, request.title));
+    const state = thread?.latest.requestState;
+    if (state !== "accepted" && state !== "waived") {
+      return `Accept or waive ${request.title} before ${until}.`;
+    }
+  }
+  return null;
+}
+
+export function missingOrganizer(type: string, threads: RequestThread[], desk?: Pick<ReturnDesk, "intakeAnswered" | "filingNeeds">, catalog?: CatalogLists): string[] {
+  return requestsFor(type, desk, catalog)
     .filter((request) => request.required && !threads.some((thread) => isOrganizerItem(thread.root.body, request.title)))
     .map((request) => request.title);
 }
@@ -41,17 +66,12 @@ export function advanceBlocker(input: GateInput): string | null {
         return "The profile needs a name, address, and the last four of the tax ID.";
       }
       if (!workflow.services.includes("tax_return")) return "Select tax return before collecting documents.";
-      if (!signatures.some((item) => item.kind === "engagement")) return "The engagement letter is not signed.";
+      if (!workflow.desk.intakeAnswered) return "Choose the filing type before collecting documents.";
       return null;
     case "documents": {
-      const required = documentRequests(profile.taxpayerType).filter((item) => item.required);
-      for (const request of required) {
-        const thread = threads.find((item) => isOrganizerItem(item.root.body, request.title));
-        const state = thread?.latest.requestState;
-        if (state !== "accepted" && state !== "waived") {
-          return `Accept or waive ${request.title} before preparation.`;
-        }
-      }
+      const intake = intakeBlocker(workflow.filingTypeId || workflow.taxpayerType, threads, workflow.desk, "preparation", input.catalog);
+      if (intake) return intake;
+      if (!signatures.some((item) => item.kind === "engagement")) return "The engagement letter is not signed.";
       return null;
     }
     case "preparation":
@@ -99,10 +119,12 @@ export function clientStepFor(stage: Workflow["stage"], season: SeasonStage): nu
     case "lead":
       return 0;
     case "onboarding":
-      if (season === "letter") return 1;
-      if (season === "documents" || season === "ready") return 2;
+      if (season === "scope") return 1;
+      if (season === "documents") return 2;
+      if (season === "letter" || season === "ready") return 3;
       return 0;
     case "documents":
+      if (season === "letter" || season === "ready") return 3;
       return 2;
     case "preparation":
     case "review":

@@ -1,20 +1,25 @@
+import { RoleAccess } from "@/components/settings/role-access";
+import { SignInMethodsEditor } from "@/components/settings/sign-in-methods-editor";
 import { SettingsField, SettingsSection } from "@/components/settings/settings-section";
 import { SettingsFrame } from "@/components/settings/settings-frame";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getStore } from "@/lib/store";
 
-export default function SecuritySettingsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SecuritySettingsPage() {
+  const methods = await getStore().getSignInMethods();
+
   return (
-    <SettingsFrame title="Security" description="Protect the desk, the files, and the people who sign in.">
+    <SettingsFrame title="Security" description="Who can open the desk, how people sign in, and how files are kept.">
       <Tabs defaultValue="workspace">
         <TabsList variant="line" className="h-12 w-full justify-start gap-6">
           <TabsTrigger value="workspace">Workspace</TabsTrigger>
           <TabsTrigger value="data">Data</TabsTrigger>
         </TabsList>
-        <TabsContent value="workspace" className="pt-6">
-          <SettingsSection title="Sign-in" description="Who can open the desk and the client portal.">
-            <SettingsField id="sec-method" label="Staff and clients" value="Email code" hint="A code is sent to the address on file." />
-            <SettingsField id="sec-signup" label="Public registration" value="Closed" hint="A client is added only when the practice sends an invitation." />
-          </SettingsSection>
+        <TabsContent value="workspace" className="flex flex-col gap-6 pt-6">
+          <RoleAccess />
+          <SignInMethodsEditor methods={methods} />
         </TabsContent>
         <TabsContent value="data" className="pt-6">
           <SettingsSection title="Client files" description="What stays with the practice.">

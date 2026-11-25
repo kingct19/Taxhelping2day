@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { moveReturnStage } from "@/lib/actions";
 import type { DeskReturn } from "@/lib/desk-returns";
+import { toFilterableReturn } from "@/lib/return-filters";
 import { isStage, stages, stageOrder, type WaitingOn } from "@/lib/return-workflow";
 import { stageTone } from "@/lib/status-tone";
 import { taxpayerTypeLabel } from "@/lib/types";
@@ -76,6 +77,62 @@ function DrawerLink({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
+function TaskDetails({ item, onClose }: { item: DeskReturn; onClose: () => void }) {
+  return (
+    <>
+      <div className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
+        <Button variant="ghost" size="icon" className="md:hidden" aria-label="Back to the board" onClick={onClose}>
+          <ArrowLeftIcon />
+        </Button>
+        <span className="text-sm font-medium">Details</span>
+        <Button variant="ghost" size="icon" className="ml-auto hidden md:inline-flex" aria-label="Close" onClick={onClose}>
+          <XIcon />
+        </Button>
+      </div>
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="space-y-4 p-4">
+          <div className="flex flex-col items-center gap-2 py-2 text-center">
+            <Avatar size="lg">
+              {item.avatar ? <AvatarImage src={item.avatar} alt="" /> : null}
+              <AvatarFallback className="text-xs">{initials(item.clientName)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-semibold">{item.clientName}</p>
+              <p className="text-xs text-muted-foreground">{item.clientEmail || "No email"}</p>
+            </div>
+            <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
+            <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/contacts/${item.profileId}`} />}>
+              View contact
+            </Button>
+          </div>
+          <Separator />
+          <div className="space-y-3">
+            <Fact label="Waiting" value={waitingLabel(item.waitingOn) ?? "With the firm"} />
+            <Fact label="Due" value={item.due ? dueLabel(item.due) : "No due date"} danger={item.overdue} />
+            <Fact label="Preparer" value={item.ownerName} />
+            {item.tags.length > 0 ? <Fact label="Tags" value={item.tags.join(", ")} /> : null}
+          </div>
+          <Button nativeButton={false} className="w-full" render={<Link href={`/returns/${item.profileId}/${item.id}`} />}>
+            Open the return
+          </Button>
+          <Separator />
+          <DrawerSection title={`${item.taxYear} return`}>
+            <Fact label="Type" value={taxpayerTypeLabel(item.taxpayerType)} />
+            <Fact label="Entity" value={item.entity || "—"} />
+            <Fact label="Next step" value={item.headline} />
+            {item.forwardBlock ? <p className="px-1 text-xs text-muted-foreground">{item.forwardBlock}</p> : null}
+          </DrawerSection>
+          <Separator />
+          <DrawerSection title="Links">
+            <DrawerLink href={`/contacts/${item.profileId}`}>Contact</DrawerLink>
+            <DrawerLink href={`/inbox?id=${item.profileId}`}>Conversation</DrawerLink>
+          </DrawerSection>
+        </div>
+      </ScrollArea>
+    </>
+  );
+}
+
 function waitingLabel(waiting: WaitingOn) {
   switch (waiting) {
     case "staff":
@@ -91,7 +148,17 @@ function waitingLabel(waiting: WaitingOn) {
   }
 }
 
-export function TaskWorkspace({ now, returns, selectedId }: { now: string; returns: DeskReturn[]; selectedId: string | null }) {
+export function TaskWorkspace({
+  now,
+  returns,
+  selectedId,
+  viewerId,
+}: {
+  now: string;
+  returns: DeskReturn[];
+  selectedId: string | null;
+  viewerId: string;
+}) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [boardEpoch, setBoardEpoch] = useState(0);
@@ -111,6 +178,7 @@ export function TaskWorkspace({ now, returns, selectedId }: { now: string; retur
   }, [selectedId]);
 
   const finishClose = useCallback(() => {
+    if (!closingIdRef.current) return;
     closingIdRef.current = null;
     setClosing(false);
     setShownId(null);
@@ -143,17 +211,12 @@ export function TaskWorkspace({ now, returns, selectedId }: { now: string; retur
   const tickets = useMemo(
     () =>
       returns.map((row) => ({
+        ...toFilterableReturn(row),
         id: row.id,
         column: row.stage,
-        title: row.headline,
-        client: row.clientName,
         avatar: row.avatar,
-        assignee: row.ownerName === "Unassigned" ? null : row.ownerName,
-        year: row.taxYear,
         due: row.due,
-        overdue: row.overdue,
-        settled: row.stage === "delivery" || row.stage === "renewal",
-        waiting: row.waitingOn,
+        tags: row.tags,
       })),
     [returns],
   );
@@ -211,67 +274,38 @@ export function TaskWorkspace({ now, returns, selectedId }: { now: string; retur
             selectedId={item?.id ?? null}
             tickets={tickets}
             title="Returns"
+            viewerId={viewerId}
           />
+        </div>
+        <div
+          className={cn(
+            "hidden min-h-0 shrink-0 overflow-hidden transition-[width] duration-300 ease-out motion-reduce:transition-none md:flex md:justify-end",
+            item && !closing ? "md:w-96" : "md:w-0",
+          )}
+          onTransitionEnd={(event) => {
+            if (event.target !== event.currentTarget || event.propertyName !== "width") return;
+            if (!item || closingIdRef.current !== item.id) return;
+            finishClose();
+          }}
+        >
+          {item ? (
+            <aside className="flex h-full w-96 shrink-0 flex-col overflow-hidden border-l bg-sidebar">
+              <TaskDetails item={item} onClose={closePanel} />
+            </aside>
+          ) : null}
         </div>
         {item ? (
           <aside
             data-closing={closing ? "true" : "false"}
-            className="desk-drawer absolute inset-y-0 right-0 z-20 flex h-full w-full shrink-0 flex-col overflow-hidden border-l bg-sidebar shadow-xl md:static md:z-auto md:h-full md:shadow-none"
+            className="desk-drawer absolute inset-y-0 right-0 z-20 flex h-full w-full shrink-0 flex-col overflow-hidden border-l bg-sidebar shadow-xl md:hidden"
             onAnimationEnd={(event) => {
               if (event.target !== event.currentTarget || closingIdRef.current !== item.id) return;
-              if (event.animationName !== "desk-drawer-out" && event.animationName !== "desk-drawer-slide-out") return;
+              if (event.animationName !== "desk-drawer-slide-out") return;
               finishClose();
             }}
           >
-            <div className="flex h-full w-full min-w-full flex-col md:w-96 md:min-w-96">
-              <div className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
-                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Back to the board" onClick={closePanel}>
-                  <ArrowLeftIcon />
-                </Button>
-                <span className="text-sm font-medium">Details</span>
-                <Button variant="ghost" size="icon" className="ml-auto hidden md:inline-flex" aria-label="Close" onClick={closePanel}>
-                  <XIcon />
-                </Button>
-              </div>
-              <ScrollArea className="min-h-0 flex-1">
-                <div className="space-y-4 p-4">
-                  <div className="flex flex-col items-center gap-2 py-2 text-center">
-                    <Avatar size="lg">
-                      {item.avatar ? <AvatarImage src={item.avatar} alt="" /> : null}
-                      <AvatarFallback className="text-xs">{initials(item.clientName)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-semibold">{item.clientName}</p>
-                      <p className="text-xs text-muted-foreground">{item.clientEmail || "No email"}</p>
-                    </div>
-                    <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
-                    <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/contacts/${item.profileId}`} />}>
-                      View contact
-                    </Button>
-                  </div>
-                  <Separator />
-                  <div className="space-y-3">
-                    <Fact label="Waiting" value={waitingLabel(item.waitingOn) ?? "With the firm"} />
-                    <Fact label="Due" value={item.due ? dueLabel(item.due) : "No due date"} danger={item.overdue} />
-                    <Fact label="Preparer" value={item.ownerName} />
-                  </div>
-                  <Button nativeButton={false} className="w-full" render={<Link href={`/returns/${item.profileId}/${item.id}`} />}>
-                    Open the return
-                  </Button>
-                  <Separator />
-                  <DrawerSection title={`${item.taxYear} return`}>
-                    <Fact label="Type" value={taxpayerTypeLabel(item.taxpayerType)} />
-                    <Fact label="Entity" value={item.entity || "—"} />
-                    <Fact label="Next step" value={item.headline} />
-                    {item.forwardBlock ? <p className="px-1 text-xs text-muted-foreground">{item.forwardBlock}</p> : null}
-                  </DrawerSection>
-                  <Separator />
-                  <DrawerSection title="Links">
-                    <DrawerLink href={`/contacts/${item.profileId}`}>Contact</DrawerLink>
-                    <DrawerLink href={`/inbox?id=${item.profileId}`}>Conversation</DrawerLink>
-                  </DrawerSection>
-                </div>
-              </ScrollArea>
+            <div className="flex h-full w-full min-w-full flex-col">
+              <TaskDetails item={item} onClose={closePanel} />
             </div>
           </aside>
         ) : null}

@@ -50,7 +50,7 @@ export function FilingTab({
           filings={filings}
           taxYear={gate.workflow.taxYear}
           returnVersion={gate.workflow.returnVersion}
-          returnType={taxpayerTypeLabel(gate.profile.taxpayerType)}
+          returnType={taxpayerTypeLabel(gate.workflow.taxpayerType)}
           softwareReference={gate.workflow.desk.softwareReference}
           preparer={preparer}
         />

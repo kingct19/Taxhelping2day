@@ -1,4 +1,5 @@
 import { missingOrganizer } from "@/lib/engagement";
+import type { ReturnDesk } from "@/lib/return-desk";
 import { clientOwes, requestBlockLabel, requestLabel, staffOwes, type RequestThread } from "@/lib/request-thread";
 import { requestTone, type StatusTone } from "@/lib/status-tone";
 import type { Stage } from "@/lib/return-workflow";
@@ -82,6 +83,7 @@ export function documentEntries(input: {
   messages: Message[];
   authors: Map<string, string>;
   canRemind: boolean;
+  desk?: Pick<ReturnDesk, "intakeAnswered" | "filingNeeds">;
 }): DocumentEntry[] {
   const reviewed = new Set(
     input.messages
@@ -187,7 +189,7 @@ export function documentEntries(input: {
     });
   }
 
-  for (const title of missingOrganizer(input.taxpayerType, input.threads)) {
+  for (const title of missingOrganizer(input.taxpayerType, input.threads, input.desk)) {
       rows.push({
         id: `organizer:${title}`,
         label: title,

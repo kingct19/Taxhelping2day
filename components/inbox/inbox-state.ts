@@ -1,3 +1,4 @@
+import type { StaffStatus } from "@/lib/teammates";
 import type { Conversation, ConversationPatch, Message } from "@/lib/types";
 import type { InboxFilter, SortOption } from "@/lib/inbox-view";
 
@@ -14,6 +15,7 @@ export type InboxPerson = {
   name: string;
   email: string;
   avatar: string | null;
+  staffStatus: StaffStatus;
 };
 
 export type InboxContact = InboxPerson & {
@@ -44,6 +46,7 @@ export type InboxDeskData = {
   contacts: InboxContact[];
   tasks: InboxTaskLink[];
   conversations: InboxConversation[];
+  catalogTags: string[];
 };
 
 export type InboxState = {

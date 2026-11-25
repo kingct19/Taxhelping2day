@@ -68,7 +68,7 @@ export function PreparationTab({
   const blockers = workflow.stage === "preparation" ? preparationBlockers(gate) : [];
   const offer = workflow.stage === "preparation" ? advanceOffer(gate) : null;
   const workpapers = files.filter((file) => file.group === "workpaper" && file.downloadHref);
-  const checklist = preparationChecklist(gate.profile.taxpayerType);
+  const checklist = preparationChecklist(gate.workflow.taxpayerType);
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">

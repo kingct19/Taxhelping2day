@@ -1,29 +1,15 @@
-import { DeskGap } from "@/components/settings/desk-gap";
-import { SettingsSection } from "@/components/settings/settings-section";
-import { Badge } from "@/components/ui/badge";
+import { SettingsFrame } from "@/components/settings/settings-frame";
+import { TagManager } from "@/components/settings/tag-manager";
+import { getStore } from "@/lib/store";
 
-const groups = [
-  { label: "Season", detail: "Profile, letter, documents, ready to prepare." },
-  { label: "Taxpayer", detail: "Individual, business, or nonprofit." },
-  { label: "Needs a look", detail: "Form 2848 still open, or identity still open." },
-] as const;
+export const dynamic = "force-dynamic";
 
-export default function TagsPage() {
+export default async function TagsPage() {
+  const tags = await getStore().listTags();
+
   return (
-    <DeskGap title="Tags" description="How a file is grouped." detail="Files are grouped by the season and the kind of taxpayer.">
-      <SettingsSection title="Groups on the inbox" description="These are the folders. The desk does not add free-form tags.">
-        <ul className="flex flex-col gap-3">
-          {groups.map((group) => (
-            <li key={group.label} className="flex items-center justify-between gap-3">
-              <span className="min-w-0">
-                <span className="block text-sm font-medium">{group.label}</span>
-                <span className="block text-xs text-muted-foreground">{group.detail}</span>
-              </span>
-              <Badge variant="success">In use</Badge>
-            </li>
-          ))}
-        </ul>
-      </SettingsSection>
-    </DeskGap>
+    <SettingsFrame title="Tags" description="Names the firm can put on a return. A tag on a return can start an automation.">
+      <TagManager tags={tags} />
+    </SettingsFrame>
   );
 }

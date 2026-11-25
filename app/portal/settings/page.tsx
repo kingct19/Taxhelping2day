@@ -1,11 +1,15 @@
 import { ThemeToggle } from "@/components/desk/theme-toggle";
+import { ReplyHours } from "@/components/portal/reply-hours";
 import { requireProfile } from "@/lib/auth";
 import { firm } from "@/lib/firm";
+import { replyExpectation, summarizeHours } from "@/lib/office-hours";
+import { getStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function PortalSettingsPage() {
   const profile = await requireProfile("client");
+  const officeHours = await getStore().getOfficeHours();
   return (
     <div className="grid max-w-xl gap-5">
       <header className="grid gap-1">
@@ -24,6 +28,12 @@ export default async function PortalSettingsPage() {
         </div>
         <ThemeToggle />
       </section>
+      {officeHours.saved ? (
+        <section className="grid gap-3 rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10">
+          <h2 className="text-sm font-medium">When we reply</h2>
+          <ReplyHours reply={replyExpectation(officeHours.hours)} lines={summarizeHours(officeHours.hours)} />
+        </section>
+      ) : null}
       <section className="rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10">
         <h2 className="text-sm font-medium">Help</h2>
         <p className="mt-1 text-sm text-muted-foreground">Questions about a return belong in Messages. For account access, email the firm.</p>

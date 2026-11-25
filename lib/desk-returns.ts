@@ -1,3 +1,4 @@
+import { runDueAutomations } from "@/lib/automation-run";
 import { avatarUrl } from "@/lib/avatar";
 import { advanceBlocker, sendBackBlocker } from "@/lib/engagement";
 import { staffNext } from "@/lib/next-action";
@@ -25,6 +26,7 @@ export type DeskReturn = {
   waitingOn: WaitingOn;
   ownerId: string | null;
   ownerName: string;
+  tags: string[];
   nextAction: string;
   urgency: number;
   forward: Stage | null;
@@ -41,14 +43,19 @@ function todayStamp() {
 }
 
 export async function loadDeskReturns(): Promise<DeskReturn[]> {
+  await runDueAutomations();
   const store = getStore();
-  const [returns, profiles, filings, authorizations, invoices] = await Promise.all([
+  const [returns, profiles, filings, authorizations, invoices, catalog, returnTags, firmTags] = await Promise.all([
     store.listTeamReturns(),
     store.listProfiles(),
     store.listFilings(),
     store.listAuthorizations(),
     store.listInvoices(),
+    store.getFilingCatalog(),
+    store.listReturnTags(),
+    store.listTags(),
   ]);
+  const tagName = new Map(firmTags.map((tag) => [tag.id, tag.name]));
   const people = new Map(profiles.map((person) => [person.id, person]));
   const clientIds = [...new Set(returns.map((item) => item.profileId))];
   const packs = await Promise.all(
@@ -92,6 +99,7 @@ export async function loadDeskReturns(): Promise<DeskReturn[]> {
             authorizations: authorizations.filter((row) => row.returnId === item.id),
             invoice: invoices.find((row) => row.returnId === item.id) ?? null,
             filings: returnFilings,
+            catalog,
           }
         : null;
       return {
@@ -113,6 +121,7 @@ export async function loadDeskReturns(): Promise<DeskReturn[]> {
         waitingOn: item.waitingOn,
         ownerId: item.owner,
         ownerName: nameOf(item.owner) || "Unassigned",
+        tags: returnTags.flatMap((row) => (row.returnId === item.id ? [tagName.get(row.tagId) ?? ""] : [])).filter(Boolean),
         nextAction: item.nextAction,
         urgency: next.urgency,
         forward,

@@ -1,13 +1,44 @@
+import {
+  localAddReturnTag,
+  localAutomationFired,
+  localDeleteAutomation,
+  localDeleteTag,
+  localEnsureTag,
+  localListAutomations,
+  localListReturnTags,
+  localListTags,
+  localRecordFire,
+  localRemoveReturnTag,
+  localSaveAutomation,
+  localSaveTag,
+  localSetAutomationEnabled,
+  readAutomationTables,
+  remoteAddReturnTag,
+  remoteAutomationFired,
+  remoteDeleteAutomation,
+  remoteDeleteTag,
+  remoteEnsureTag,
+  remoteListAutomations,
+  remoteListReturnTags,
+  remoteListTags,
+  remoteRecordFire,
+  remoteRemoveReturnTag,
+  remoteSaveAutomation,
+  remoteSaveTag,
+  remoteSetAutomationEnabled,
+} from "@/lib/automation-data";
+import type { Automation, AutomationFire, FirmTag, ReturnTag } from "@/lib/automations";
 import { avatarContentType, avatarExtension, avatarMime, avatarStorageKey, safeAvatarPath } from "@/lib/avatar";
 import { blankConversation, conversationFromSupabase, normalizeConversation, normalizeMessage, parseAttachments, parseDelivery } from "@/lib/conversation";
 import { defaultSuggestions } from "@/lib/inbox-view";
 import { asWorkflow, initialWorkflow, type TeamReturn, type Workflow } from "@/lib/return-workflow";
 import { randomBytes, randomUUID } from "crypto";
-import { mkdir, readFile, rm, writeFile } from "fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "fs/promises";
 import path from "path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { decryptText, encryptText, hashToken, last4 } from "@/lib/crypto";
 import { staffEmails } from "@/lib/firm";
+import { applyTeammateUpdate, startingRank, type StaffRank, type StaffStatus } from "@/lib/teammates";
 import { normalizeRequestBlock, normalizeRequestState } from "@/lib/request-thread";
 import type {
   Conversation,
@@ -34,7 +65,10 @@ import type {
   TaxpayerType,
   TaxReturn,
 } from "@/lib/types";
-import { taskKinds } from "@/lib/types";
+import { defaultFilingCatalog, parseFilingCatalog, type FilingCatalog } from "@/lib/filing-catalog";
+import { defaultOfficeHours, parseOfficeHours, type OfficeHours } from "@/lib/office-hours";
+import { defaultSignInMethods, parseSignInMethods, readableSignInMethods, signInMethodsError, type SignInMethods } from "@/lib/sign-in-methods";
+import { orderedFilingTypes, taskKinds } from "@/lib/types";
 
 type StoredProfile = Profile & { taxIdEncrypted: string | null };
 
@@ -62,6 +96,13 @@ type Database = {
   filings: FilingRecord[];
   authorizations: EfileAuthorization[];
   invoices: Invoice[];
+  filingCatalog?: FilingCatalog;
+  officeHours?: OfficeHours;
+  signInMethods?: SignInMethods;
+  tags: FirmTag[];
+  returnTags: ReturnTag[];
+  automations: Automation[];
+  automationFires: AutomationFire[];
 };
 
 export type Store = {
@@ -74,9 +115,15 @@ export type Store = {
   saveInvoice(input: Omit<Invoice, "id" | "updatedAt">): Promise<Invoice>;
   bumpReturnVersion(id: string): Promise<number | null>;
   listTeamReturns(): Promise<TeamReturn[]>;
-  updateWorkflow(id: string, workflow: Workflow): Promise<boolean>;
+  updateWorkflow(id: string, workflow: Workflow & { taxpayerType?: TaxpayerType }): Promise<boolean>;
   listReturns(profileId: string): Promise<TaxReturn[]>;
   createReturn(input: Omit<TaxReturn, "id" | "returnVersion"> & { source?: LeadSource; services?: ServiceLine[] }): Promise<void>;
+  getFilingCatalog(): Promise<FilingCatalog>;
+  saveFilingCatalog(catalog: FilingCatalog): Promise<void>;
+  getOfficeHours(): Promise<{ saved: boolean; hours: OfficeHours }>;
+  saveOfficeHours(hours: OfficeHours): Promise<void>;
+  getSignInMethods(): Promise<SignInMethods>;
+  saveSignInMethods(methods: SignInMethods): Promise<void>;
   ensureStaff(): Promise<void>;
   getProfileByEmail(email: string): Promise<Profile | null>;
   getProfile(id: string): Promise<Profile | null>;
@@ -142,15 +189,32 @@ export type Store = {
   setTaskStatus(id: string, status: ClientTask["status"]): Promise<ClientTask | null>;
   saveTaskNote(id: string, note: string): Promise<ClientTask | null>;
   isStaffAllowed(email: string): Promise<boolean>;
-  createStaff(input: { email: string; name: string }): Promise<Profile | null>;
+  createStaff(input: { email: string; name: string; staffRank?: StaffRank }): Promise<Profile | null>;
+  updateTeammate(id: string, patch: { name: string; staffRank: StaffRank; staffStatus: StaffStatus }): Promise<Profile | null>;
   setFileFlags(id: string, flags: { starred?: boolean; snoozedUntil?: string | null }): Promise<Profile | null>;
+  listTags(): Promise<FirmTag[]>;
+  saveTag(name: string, id?: string): Promise<{ tag: FirmTag } | { error: string }>;
+  ensureTag(name: string): Promise<FirmTag | null>;
+  deleteTag(id: string): Promise<{ ok: true } | { ok: false; error: string }>;
+  listReturnTags(): Promise<ReturnTag[]>;
+  addReturnTag(returnId: string, tagId: string): Promise<{ created: boolean; createdAt: string } | { error: string }>;
+  removeReturnTag(returnId: string, tagId: string): Promise<boolean>;
+  listAutomations(): Promise<Automation[]>;
+  saveAutomation(rule: Automation): Promise<void>;
+  deleteAutomation(id: string): Promise<void>;
+  setAutomationEnabled(id: string, enabled: boolean): Promise<void>;
+  automationFired(automationId: string, returnId: string, triggerKey: string): Promise<boolean>;
+  recordAutomationFire(automationId: string, returnId: string, triggerKey: string): Promise<void>;
+  stampStageEntered(id: string): Promise<string>;
+  markPortalAccepted(profileId: string): Promise<boolean>;
 };
 
 const dataDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dataDir, "db.json");
 
 function emptyDb(): Database {
-  return { returns: [], profiles: [], documents: [], signatures: [], messages: [], conversations: [], tokens: [], identityNotes: [], tasks: [], staffAllowlist: [], filings: [], authorizations: [], invoices: [] };
+  const tables = readAutomationTables(undefined);
+  return { returns: [], profiles: [], documents: [], signatures: [], messages: [], conversations: [], tokens: [], identityNotes: [], tasks: [], staffAllowlist: [], filings: [], authorizations: [], invoices: [], filingCatalog: defaultFilingCatalog(), ...tables };
 }
 
 function readDb(raw: string): Database {
@@ -169,6 +233,10 @@ function readDb(raw: string): Database {
     filings: parsed.filings ?? [],
     authorizations: parsed.authorizations ?? [],
     invoices: parsed.invoices ?? [],
+    filingCatalog: parsed.filingCatalog ? parseFilingCatalog(parsed.filingCatalog) : defaultFilingCatalog(),
+    ...readAutomationTables(parsed),
+    officeHours: parseOfficeHours(parsed.officeHours) ?? undefined,
+    signInMethods: parseSignInMethods(parsed.signInMethods) ?? undefined,
   };
 }
 
@@ -233,23 +301,38 @@ function omit<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K>
 
 function publicProfile(profile: StoredProfile): Profile {
   const next = omit(profile, "taxIdEncrypted");
-  return { ...next, starred: profile.starred ?? false, snoozedUntil: profile.snoozedUntil ?? null, avatarPath: profile.avatarPath ?? null };
+  return {
+    ...next,
+    starred: profile.starred ?? false,
+    snoozedUntil: profile.snoozedUntil ?? null,
+    avatarPath: profile.avatarPath ?? null,
+    portalAcceptedAt: profile.portalAcceptedAt ?? null,
+    staffRank: profile.staffRank ?? startingRank(profile.email),
+    staffStatus: profile.staffStatus ?? "active",
+  };
 }
 
 let queue: Promise<unknown> = Promise.resolve();
 
+async function loadDb(): Promise<Database> {
+  try {
+    return readDb(await readFile(dbPath, "utf8"));
+  } catch (error) {
+    const missing = (error as NodeJS.ErrnoException).code === "ENOENT";
+    if (missing) return emptyDb();
+    throw error;
+  }
+}
+
 function withDb<T>(mutate: boolean, fn: (db: Database) => Promise<T> | T): Promise<T> {
   const run = queue.then(async () => {
     await mkdir(dataDir, { recursive: true });
-    let db = emptyDb();
-    try {
-      db = readDb(await readFile(dbPath, "utf8"));
-    } catch {
-      db = emptyDb();
-    }
+    const db = await loadDb();
     const result = await fn(db);
     if (mutate) {
-      await writeFile(dbPath, JSON.stringify(db, null, 2));
+      const temporary = `${dbPath}.${process.pid}.tmp`;
+      await writeFile(temporary, JSON.stringify(db, null, 2));
+      await rename(temporary, dbPath);
     }
     return result;
   });
@@ -280,6 +363,9 @@ function blankProfile(email: string, role: Role, name = ""): StoredProfile {
     starred: false,
     snoozedUntil: null,
     avatarPath: null,
+    portalAcceptedAt: null,
+    staffRank: "staff",
+    staffStatus: "active",
   };
 }
 
@@ -288,7 +374,10 @@ const localStore: Store = {
     await withDb(true, (db) => {
       for (const email of staffEmails()) {
         if (!db.profiles.some((profile) => profile.email === email)) {
-          db.profiles.push(blankProfile(email, "staff", email === "taxhelping2day@gmail.com" ? "Laura Wallace" : ""));
+          const profile = blankProfile(email, "staff", email === "taxhelping2day@gmail.com" ? "Laura Wallace" : "");
+          profile.staffRank = startingRank(email);
+          profile.staffStatus = "active";
+          db.profiles.push(profile);
         }
       }
     });
@@ -341,6 +430,7 @@ const localStore: Store = {
       profile.state = patch.state;
       profile.zip = patch.zip;
       profile.taxpayerType = patch.taxpayerType;
+      if (patch.filingTypes !== undefined) profile.filingTypes = orderedFilingTypes(patch.filingTypes);
       profile.spouseName = patch.spouseName;
       profile.taxYears = patch.taxYears;
       if (patch.taxId) {
@@ -645,19 +735,21 @@ const localStore: Store = {
     return withDb(true, db => {
       const item = db.returns.find(row => row.id === id);
       if (!item || (item.revision ?? 0) !== workflow.revision) return false;
-      Object.assign(item, workflow, { revision: workflow.revision + 1 });
+      const stageEnteredAt = item.stage !== workflow.stage || !item.stageEnteredAt ? new Date().toISOString() : item.stageEnteredAt;
+      Object.assign(item, workflow, { revision: workflow.revision + 1, stageEnteredAt });
       return true;
     });
   },
   async listReturns(profileId) {
     return withDb(false, db => db.returns.filter(item => item.profileId === profileId)
       .sort((a, b) => b.taxYear - a.taxYear || a.entity.localeCompare(b.entity))
-      .map(({ id, profileId, taxYear, entity, taxpayerType, returnVersion }) => ({ id, profileId, taxYear, entity, taxpayerType, returnVersion: returnVersion ?? 1 })));
+      .map(({ id, profileId, taxYear, entity, taxpayerType, filingTypeId, returnVersion }) => ({ id, profileId, taxYear, entity, taxpayerType, filingTypeId, returnVersion: returnVersion ?? 1 })));
   },
   async createReturn(input) {
     await withDb(true, db => {
+      const filingTypeId = input.filingTypeId || input.taxpayerType;
       const exists = db.returns.some(item => item.profileId === input.profileId &&
-        item.taxYear === input.taxYear && item.taxpayerType === input.taxpayerType &&
+        item.taxYear === input.taxYear && (item.filingTypeId || item.taxpayerType) === filingTypeId &&
         item.entity.toLowerCase() === input.entity.toLowerCase());
       if (!exists) {
         db.returns.push({
@@ -666,12 +758,45 @@ const localStore: Store = {
           taxYear: input.taxYear,
           entity: input.entity,
           taxpayerType: input.taxpayerType,
+          filingTypeId,
           source: input.source ?? "inquiry",
           services: input.services ?? [],
           id: randomUUID(),
           returnVersion: 1,
+          stageEnteredAt: new Date().toISOString(),
         });
       }
+    });
+  },
+  async getFilingCatalog() {
+    return withDb(false, (db) => parseFilingCatalog(db.filingCatalog ?? defaultFilingCatalog()));
+  },
+  async saveFilingCatalog(catalog) {
+    await withDb(true, (db) => {
+      db.filingCatalog = parseFilingCatalog(catalog);
+    });
+  },
+  async getOfficeHours() {
+    return withDb(false, (db) => {
+      const hours = db.officeHours ? parseOfficeHours(db.officeHours) : null;
+      return { saved: hours !== null, hours: hours ?? defaultOfficeHours() };
+    });
+  },
+  async saveOfficeHours(hours) {
+    const parsed = parseOfficeHours(hours);
+    if (!parsed) throw new Error("Could not read those hours.");
+    await withDb(true, (db) => {
+      db.officeHours = parsed;
+    });
+  },
+  async getSignInMethods() {
+    return withDb(false, (db) => readableSignInMethods(db.signInMethods));
+  },
+  async saveSignInMethods(methods) {
+    const parsed = parseSignInMethods(methods);
+    if (!parsed || signInMethodsError(parsed)) throw new Error("Turn on at least one way to sign in.");
+    await withDb(true, (db) => {
+      db.signInMethods = parsed;
     });
   },
   async listTasks() {
@@ -701,7 +826,7 @@ const localStore: Store = {
   async isStaffAllowed(email) {
     return withDb(false, (db) => db.staffAllowlist.includes(email.toLowerCase()));
   },
-  async createStaff({ email, name }) {
+  async createStaff({ email, name, staffRank = "staff" }) {
     return withDb(true, (db) => {
       const value = email.toLowerCase();
       const existing = db.profiles.find((item) => item.email === value);
@@ -715,10 +840,48 @@ const localStore: Store = {
         if (name && !existing.name) {
           existing.name = name;
         }
+        existing.staffRank = staffRank;
         return publicProfile(existing);
       }
       const profile = blankProfile(value, "staff", name);
+      profile.staffRank = staffRank;
       db.profiles.push(profile);
+      return publicProfile(profile);
+    });
+  },
+  async updateTeammate(id, patch) {
+    return withDb(true, (db) => {
+      const profile = db.profiles.find((item) => item.id === id);
+      if (!profile || profile.role !== "staff") return null;
+      const records = db.profiles.map((item) => ({
+        id: item.id,
+        role: item.role,
+        email: item.email,
+        name: item.name,
+        staffRank: item.staffRank ?? startingRank(item.email),
+        staffStatus: item.staffStatus ?? "active",
+      }));
+      const returns = db.returns.map((item) => ({ owner: item.owner ?? null, reviewerId: item.reviewerId ?? null }));
+      const conversations = db.conversations.map((item) => ({ assigneeId: item.assigneeId }));
+      const result = applyTeammateUpdate(
+        { profiles: records, returns, conversations, staffAllowlist: db.staffAllowlist },
+        id,
+        patch,
+        staffEmails(),
+      );
+      if (result !== "ok") return null;
+      const saved = records.find((item) => item.id === id);
+      if (!saved) return null;
+      profile.name = saved.name;
+      profile.staffRank = saved.staffRank;
+      profile.staffStatus = saved.staffStatus;
+      db.returns.forEach((row, index) => {
+        row.owner = returns[index].owner;
+        row.reviewerId = returns[index].reviewerId;
+      });
+      db.conversations.forEach((row, index) => {
+        row.assigneeId = conversations[index].assigneeId;
+      });
       return publicProfile(profile);
     });
   },
@@ -729,6 +892,61 @@ const localStore: Store = {
       if (flags.starred !== undefined) profile.starred = flags.starred;
       if (flags.snoozedUntil !== undefined) profile.snoozedUntil = flags.snoozedUntil;
       return publicProfile(profile);
+    });
+  },
+  async listTags() {
+    return withDb(false, localListTags);
+  },
+  async saveTag(name, id) {
+    return withDb(true, (db) => localSaveTag(db, name, id));
+  },
+  async ensureTag(name) {
+    return withDb(true, (db) => localEnsureTag(db, name));
+  },
+  async deleteTag(id) {
+    return withDb(true, (db) => localDeleteTag(db, id));
+  },
+  async listReturnTags() {
+    return withDb(false, localListReturnTags);
+  },
+  async addReturnTag(returnId, tagId) {
+    return withDb(true, (db) => localAddReturnTag(db, returnId, tagId));
+  },
+  async removeReturnTag(returnId, tagId) {
+    return withDb(true, (db) => localRemoveReturnTag(db, returnId, tagId));
+  },
+  async listAutomations() {
+    return withDb(false, localListAutomations);
+  },
+  async saveAutomation(rule) {
+    await withDb(true, (db) => localSaveAutomation(db, rule));
+  },
+  async deleteAutomation(id) {
+    await withDb(true, (db) => localDeleteAutomation(db, id));
+  },
+  async setAutomationEnabled(id, enabled) {
+    await withDb(true, (db) => localSetAutomationEnabled(db, id, enabled));
+  },
+  async automationFired(automationId, returnId, triggerKey) {
+    return withDb(false, (db) => localAutomationFired(db, automationId, returnId, triggerKey));
+  },
+  async recordAutomationFire(automationId, returnId, triggerKey) {
+    await withDb(true, (db) => localRecordFire(db, automationId, returnId, triggerKey));
+  },
+  async stampStageEntered(id) {
+    return withDb(true, (db) => {
+      const item = db.returns.find((row) => row.id === id);
+      if (!item) return new Date().toISOString();
+      if (!item.stageEnteredAt) item.stageEnteredAt = new Date().toISOString();
+      return item.stageEnteredAt;
+    });
+  },
+  async markPortalAccepted(profileId) {
+    return withDb(true, (db) => {
+      const profile = db.profiles.find((item) => item.id === profileId);
+      if (!profile || profile.portalAcceptedAt) return false;
+      profile.portalAcceptedAt = new Date().toISOString();
+      return true;
     });
   },
 };
@@ -744,6 +962,7 @@ type ProfileRow = {
   state: string;
   zip: string;
   taxpayer_type: TaxpayerType;
+  filing_types?: string[] | null;
   tax_id_encrypted: string | null;
   tax_id_last4: string | null;
   spouse_name: string;
@@ -751,6 +970,9 @@ type ProfileRow = {
   snoozed_until?: string | null;
   tax_years: string;
   avatar_path?: string | null;
+  portal_accepted_at?: string | null;
+  staff_rank?: StaffRank | null;
+  staff_status?: StaffStatus | null;
   created_at: string;
 };
 
@@ -766,6 +988,7 @@ function fromRow(row: ProfileRow): Profile {
     state: row.state,
     zip: row.zip,
     taxpayerType: row.taxpayer_type,
+    filingTypes: Array.isArray(row.filing_types) ? orderedFilingTypes(row.filing_types) : undefined,
     taxIdLast4: row.tax_id_last4,
     spouseName: row.spouse_name,
     taxYears: row.tax_years,
@@ -773,6 +996,9 @@ function fromRow(row: ProfileRow): Profile {
     starred: Boolean(row.starred),
     snoozedUntil: row.snoozed_until ?? null,
     avatarPath: row.avatar_path ?? null,
+    portalAcceptedAt: row.portal_accepted_at ?? null,
+    staffRank: row.staff_rank === "owner" || row.staff_rank === "staff" ? row.staff_rank : startingRank(row.email),
+    staffStatus: row.staff_status === "inactive" ? "inactive" : "active",
   };
 }
 
@@ -787,6 +1013,8 @@ function supabaseStore(client: SupabaseClient): Store {
             email,
             role: "staff",
             name: email === "taxhelping2day@gmail.com" ? "Laura Wallace" : "",
+            staff_rank: startingRank(email),
+            staff_status: "active",
           });
         }
       }
@@ -831,7 +1059,7 @@ function supabaseStore(client: SupabaseClient): Store {
       return fromRow(data as ProfileRow);
     },
     async updateProfile(id, patch) {
-      const update: Record<string, string | null> = {
+      const update: Record<string, string | string[] | null> = {
         name: patch.name,
         phone: patch.phone,
         address: patch.address,
@@ -839,6 +1067,7 @@ function supabaseStore(client: SupabaseClient): Store {
         state: patch.state,
         zip: patch.zip,
         taxpayer_type: patch.taxpayerType,
+        ...(patch.filingTypes !== undefined ? { filing_types: orderedFilingTypes(patch.filingTypes) } : {}),
         spouse_name: patch.spouseName,
         tax_years: patch.taxYears,
       };
@@ -1322,7 +1551,7 @@ function supabaseStore(client: SupabaseClient): Store {
       const rows: TeamReturn[] = [];
       for (let start = 0; ; start += 500) {
         const { data, error } = await client.from("tax_returns")
-          .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, stage, owner:owner_id, due:due_date, nextAction:next_action, waitingOn:waiting_on, source, services, reviewerId:reviewer_id, reviewedAt:reviewed_at, deliveredAt:delivered_at, archivedAt:archived_at, returnVersion:return_version, revision, desk")
+          .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, filingTypeId:filing_type_id, stage, owner:owner_id, due:due_date, nextAction:next_action, waitingOn:waiting_on, source, services, reviewerId:reviewer_id, reviewedAt:reviewed_at, deliveredAt:delivered_at, archivedAt:archived_at, returnVersion:return_version, revision, desk, stageEnteredAt:stage_entered_at")
           .order("id").range(start, start + 499);
         if (error) throw new Error(error.message);
         rows.push(...(data as TeamReturn[]).map((item) => ({ ...item, ...asWorkflow(item), returnVersion: item.returnVersion ?? 1 })));
@@ -1330,18 +1559,24 @@ function supabaseStore(client: SupabaseClient): Store {
       }
     },
     async updateWorkflow(id, workflow) {
+      const current = await client.from("tax_returns").select("stage, stage_entered_at").eq("id", id).eq("revision", workflow.revision).maybeSingle();
+      if (current.error) throw new Error(current.error.message);
+      const row = current.data as { stage: string; stage_entered_at: string | null } | null;
+      if (!row) return false;
+      const stageEnteredAt = row.stage !== workflow.stage || !row.stage_entered_at ? new Date().toISOString() : row.stage_entered_at;
       const { data, error } = await client.from("tax_returns").update({
         stage: workflow.stage, owner_id: workflow.owner, due_date: workflow.due,
         next_action: workflow.nextAction, waiting_on: workflow.waitingOn, source: workflow.source,
-        services: workflow.services, reviewer_id: workflow.reviewerId, reviewed_at: workflow.reviewedAt,
+        services: workflow.services, ...(workflow.taxpayerType ? { taxpayer_type: workflow.taxpayerType } : {}), reviewer_id: workflow.reviewerId, reviewed_at: workflow.reviewedAt,
         delivered_at: workflow.deliveredAt, archived_at: workflow.archivedAt, desk: workflow.desk, revision: workflow.revision + 1,
+        stage_entered_at: stageEnteredAt,
       }).eq("id", id).eq("revision", workflow.revision).select("id");
       if (error) throw new Error(error.message);
       return data.length === 1;
     },
     async listReturns(profileId) {
       const { data, error } = await client.from("tax_returns")
-        .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, returnVersion:return_version")
+        .select("id, profileId:profile_id, taxYear:tax_year, entity, taxpayerType:taxpayer_type, filingTypeId:filing_type_id, returnVersion:return_version")
         .eq("profile_id", profileId).order("tax_year", { ascending: false }).order("entity");
       if (error) throw new Error(error.message);
       return (data as TaxReturn[]).map((item) => ({ ...item, returnVersion: item.returnVersion ?? 1 }));
@@ -1350,9 +1585,47 @@ function supabaseStore(client: SupabaseClient): Store {
       const { error } = await client.from("tax_returns").insert({
         profile_id: input.profileId, tax_year: input.taxYear,
         entity: input.entity, taxpayer_type: input.taxpayerType,
+        filing_type_id: input.filingTypeId || input.taxpayerType,
         stage: "lead", source: input.source ?? "inquiry", services: input.services ?? [],
+        stage_entered_at: new Date().toISOString(),
       });
       if (error && error.code !== "23505") throw new Error(error.message);
+    },
+    async getFilingCatalog() {
+      const { data, error } = await client.from("filing_catalog").select("catalog").eq("id", "firm").maybeSingle();
+      if (error) throw new Error(error.message);
+      return data?.catalog ? parseFilingCatalog(data.catalog) : defaultFilingCatalog();
+    },
+    async saveFilingCatalog(catalog) {
+      const parsed = parseFilingCatalog(catalog);
+      const { error } = await client.from("filing_catalog").upsert({ id: "firm", catalog: parsed, updated_at: new Date().toISOString() });
+      if (error) throw new Error(error.message);
+    },
+    async getOfficeHours() {
+      const { data, error } = await client.from("office_hours").select("hours").eq("id", "firm").maybeSingle();
+      if (error) throw new Error(error.message);
+      const hours = data?.hours ? parseOfficeHours(data.hours) : null;
+      return { saved: hours !== null, hours: hours ?? defaultOfficeHours() };
+    },
+    async saveOfficeHours(hours) {
+      const parsed = parseOfficeHours(hours);
+      if (!parsed) throw new Error("Could not read those hours.");
+      const { error } = await client.from("office_hours").upsert({ id: "firm", hours: parsed, updated_at: new Date().toISOString() });
+      if (error) throw new Error(error.message);
+    },
+    async getSignInMethods() {
+      const { data, error } = await client.from("sign_in_methods").select("methods").eq("id", "firm").maybeSingle();
+      if (error) {
+        if (error.code === "PGRST205" || error.code === "42P01") return defaultSignInMethods();
+        throw new Error(error.message);
+      }
+      return readableSignInMethods(data?.methods);
+    },
+    async saveSignInMethods(methods) {
+      const parsed = parseSignInMethods(methods);
+      if (!parsed || signInMethodsError(parsed)) throw new Error("Turn on at least one way to sign in.");
+      const { error } = await client.from("sign_in_methods").upsert({ id: "firm", methods: parsed, updated_at: new Date().toISOString() });
+      if (error) throw new Error(error.message);
     },
     async listTasks() {
       const profiles = await this.listProfiles();
@@ -1405,7 +1678,7 @@ function supabaseStore(client: SupabaseClient): Store {
       const { data } = await client.from("staff_allowlist").select("email").eq("email", email.toLowerCase()).maybeSingle();
       return Boolean(data);
     },
-    async createStaff({ email, name }) {
+    async createStaff({ email, name, staffRank = "staff" }) {
       const value = email.toLowerCase();
       const existing = await this.getProfileByEmail(value);
       if (existing?.role === "client") {
@@ -1416,15 +1689,44 @@ function supabaseStore(client: SupabaseClient): Store {
         throw new Error(allowError.message);
       }
       if (existing) {
-        if (name && !existing.name) {
-          await client.from("profiles").update({ name }).eq("id", existing.id);
-          return { ...existing, name };
-        }
-        return existing;
+        const nextName = name && !existing.name ? name : existing.name;
+        const { error } = await client.from("profiles").update({ name: nextName, staff_rank: staffRank }).eq("id", existing.id);
+        if (error) throw new Error(error.message);
+        return { ...existing, name: nextName, staffRank };
       }
-      const { data, error } = await client.from("profiles").insert({ email: value, role: "staff", name }).select("*").single();
+      const { data, error } = await client.from("profiles").insert({
+        email: value,
+        role: "staff",
+        name,
+        staff_rank: staffRank,
+        staff_status: "active",
+      }).select("*").single();
       if (error) {
         throw new Error(error.message);
+      }
+      return fromRow(data as ProfileRow);
+    },
+    async updateTeammate(id, patch) {
+      const existing = await this.getProfile(id);
+      if (!existing || existing.role !== "staff") return null;
+      const becomingInactive = existing.staffStatus !== "inactive" && patch.staffStatus === "inactive";
+      const { data, error } = await client.from("profiles").update({
+        name: patch.name,
+        staff_rank: patch.staffRank,
+        staff_status: patch.staffStatus,
+      }).eq("id", id).select("*").single();
+      if (error) throw new Error(error.message);
+      if (becomingInactive) {
+        const ownerClear = await client.from("tax_returns").update({ owner_id: null }).eq("owner_id", id);
+        if (ownerClear.error) throw new Error(ownerClear.error.message);
+        const reviewerClear = await client.from("tax_returns").update({ reviewer_id: null }).eq("reviewer_id", id);
+        if (reviewerClear.error) throw new Error(reviewerClear.error.message);
+        const assigneeClear = await client.from("conversations").update({ assignee_id: null }).eq("assignee_id", id);
+        if (assigneeClear.error) throw new Error(assigneeClear.error.message);
+      }
+      if (patch.staffStatus === "active" && !staffEmails().includes(existing.email.toLowerCase())) {
+        const { error: allowError } = await client.from("staff_allowlist").upsert({ email: existing.email.toLowerCase() });
+        if (allowError) throw new Error(allowError.message);
       }
       return fromRow(data as ProfileRow);
     },
@@ -1437,6 +1739,61 @@ function supabaseStore(client: SupabaseClient): Store {
         throw new Error(error.message);
       }
       return data ? fromRow(data as ProfileRow) : null;
+    },
+    async listTags() {
+      return remoteListTags(client);
+    },
+    async saveTag(name, id) {
+      return remoteSaveTag(client, name, id);
+    },
+    async ensureTag(name) {
+      return remoteEnsureTag(client, name);
+    },
+    async deleteTag(id) {
+      return remoteDeleteTag(client, id);
+    },
+    async listReturnTags() {
+      return remoteListReturnTags(client);
+    },
+    async addReturnTag(returnId, tagId) {
+      return remoteAddReturnTag(client, returnId, tagId);
+    },
+    async removeReturnTag(returnId, tagId) {
+      return remoteRemoveReturnTag(client, returnId, tagId);
+    },
+    async listAutomations() {
+      return remoteListAutomations(client);
+    },
+    async saveAutomation(rule) {
+      await remoteSaveAutomation(client, rule);
+    },
+    async deleteAutomation(id) {
+      await remoteDeleteAutomation(client, id);
+    },
+    async setAutomationEnabled(id, enabled) {
+      await remoteSetAutomationEnabled(client, id, enabled);
+    },
+    async automationFired(automationId, returnId, triggerKey) {
+      return remoteAutomationFired(client, automationId, returnId, triggerKey);
+    },
+    async recordAutomationFire(automationId, returnId, triggerKey) {
+      await remoteRecordFire(client, automationId, returnId, triggerKey);
+    },
+    async stampStageEntered(id) {
+      const current = await client.from("tax_returns").select("stage_entered_at").eq("id", id).maybeSingle();
+      if (current.error) throw new Error(current.error.message);
+      const existing = (current.data as { stage_entered_at: string | null } | null)?.stage_entered_at;
+      if (existing) return existing;
+      const at = new Date().toISOString();
+      const saved = await client.from("tax_returns").update({ stage_entered_at: at }).eq("id", id);
+      if (saved.error) throw new Error(saved.error.message);
+      return at;
+    },
+    async markPortalAccepted(profileId) {
+      const at = new Date().toISOString();
+      const { data, error } = await client.from("profiles").update({ portal_accepted_at: at }).eq("id", profileId).is("portal_accepted_at", null).select("id");
+      if (error) throw new Error(error.message);
+      return data.length === 1;
     },
   };
 }

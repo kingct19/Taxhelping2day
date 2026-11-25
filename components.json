@@ -24,6 +24,7 @@
   "registries": {
     "@evilcharts": "https://evilcharts.com/r/{name}.json",
     "@dashboardblocks": "https://www.dashboardblocks.com/r/{style}/{name}.json",
-    "@stealth": "https://www.stealth.pm/r/{name}.json"
+    "@stealth": "https://www.stealth.pm/r/{name}.json",
+    "@stepper": "https://francozeta-stepper.vercel.app/{name}.json"
   }
 }

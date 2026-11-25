@@ -1,3 +1,4 @@
+import { isFilingNeed, type FilingNeed } from "@/lib/filing-needs";
 import type { TaxpayerType } from "@/lib/types";
 
 export type DeskCheck = { done: boolean; at: string | null };
@@ -25,6 +26,8 @@ export type ReturnDesk = {
   issues: DeskIssue[];
   preparedVersion: number | null;
   reviewedVersion: number | null;
+  intakeAnswered: boolean;
+  filingNeeds: FilingNeed[];
 };
 
 export type CheckItem = { key: string; label: string; required: boolean };
@@ -39,6 +42,8 @@ export function emptyDesk(): ReturnDesk {
     issues: [],
     preparedVersion: null,
     reviewedVersion: null,
+    intakeAnswered: false,
+    filingNeeds: [],
   };
 }
 
@@ -165,6 +170,8 @@ export function parseDesk(value: unknown): ReturnDesk {
     issues: Array.isArray(row.issues) ? row.issues.filter(isIssue) : [],
     preparedVersion: typeof row.preparedVersion === "number" ? row.preparedVersion : null,
     reviewedVersion: typeof row.reviewedVersion === "number" ? row.reviewedVersion : null,
+    intakeAnswered: row.intakeAnswered === true,
+    filingNeeds: Array.isArray(row.filingNeeds) ? row.filingNeeds.filter((need): need is FilingNeed => typeof need === "string" && isFilingNeed(need)) : [],
   };
 }
 

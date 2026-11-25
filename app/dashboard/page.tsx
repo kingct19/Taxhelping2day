@@ -1,6 +1,7 @@
 import { SeasonDashboard, type DashboardFile, type DashboardTask } from "@/components/reports/season-dashboard";
 import { requireProfile } from "@/lib/auth";
 import { avatarUrl } from "@/lib/avatar";
+import { emptyIntake } from "@/lib/filing-needs";
 import { seasonFor } from "@/lib/season";
 import { getStore } from "@/lib/store";
 
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const staff = await requireProfile("staff");
   const store = getStore();
-  const [profiles, tasks, returns] = await Promise.all([store.listProfiles(), store.listTasks(), store.listTeamReturns()]);
+  const [profiles, tasks, returns, catalog] = await Promise.all([store.listProfiles(), store.listTasks(), store.listTeamReturns(), store.getFilingCatalog()]);
   const clients = profiles.filter((profile) => profile.role === "client");
   const files: DashboardFile[] = [];
   for (const client of clients) {
@@ -18,9 +19,9 @@ export default async function DashboardPage() {
       store.listSignatures(client.id),
       store.getIdentity(client.id),
     ]);
-    const season = seasonFor(client, signatures, documents);
     const owned = returns.filter((item) => item.profileId === client.id);
     for (const item of owned) {
+      const season = seasonFor(client, signatures, documents, item.desk.intakeAnswered ? { answered: true, needs: item.desk.filingNeeds } : emptyIntake(), catalog);
       files.push({
         id: item.id,
         profileId: client.id,

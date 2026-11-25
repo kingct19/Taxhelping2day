@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import { runDocumentsReady } from "@/lib/automation-run";
 import { localPacketDb } from "@/lib/signing-local";
 import { getStore } from "@/lib/store";
 
@@ -132,6 +133,7 @@ export async function syncSubmission(submissionId: number) {
             body: "Signed the engagement letter.",
           });
         }
+        await runDocumentsReady(taxReturn.profileId, taxReturn.id);
       }
     }
   }

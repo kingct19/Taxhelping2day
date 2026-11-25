@@ -113,7 +113,7 @@ async function main() {
   const ben = await person("ben.carter", "Ben Carter");
   await details(ben.id, "Ben Carter");
   const benReturn = await taxReturn(ben.id, "Carter, Ben");
-  await stage(benReturn.id, { stage: "onboarding", due: "2026-11-22", nextAction: "Send Ben the engagement letter" });
+  await stage(benReturn.id, { stage: "onboarding", due: "2026-11-22", nextAction: "Ask Ben what this return includes" });
 
   const chris = await person("chris.okonkwo", "Chris Okonkwo");
   await details(chris.id, "Chris Okonkwo", "Dana Okonkwo");

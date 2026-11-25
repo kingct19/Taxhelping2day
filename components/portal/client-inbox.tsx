@@ -7,6 +7,8 @@ import { ComposerShell } from "@/components/chat/composer-shell";
 import { PresenceAvatar } from "@/components/inbox/presence-avatar";
 import { MessageBubble } from "@/components/inbox/message-bubble";
 import { LiniqoArt, liniqo } from "@/components/liniqo-empty";
+import { ReplyHoursNote } from "@/components/portal/reply-hours";
+import type { HoursLine } from "@/lib/office-hours";
 import { postMessage } from "@/lib/actions";
 import { formatBytes, formatRelativeTime, initials } from "@/lib/inbox-view";
 import type { Message } from "@/lib/types";
@@ -190,6 +192,7 @@ export function ClientInbox({
   selfAvatar,
   messages,
   unread,
+  reply,
 }: {
   preparerName: string;
   preparerEmail: string;
@@ -199,6 +202,7 @@ export function ClientInbox({
   selfAvatar: string | null;
   messages: Message[];
   unread: number;
+  reply: { text: string; lines: HoursLine[] } | null;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
@@ -288,6 +292,7 @@ export function ClientInbox({
               </div>
             )}
           </ScrollArea>
+          {reply ? <ReplyHoursNote reply={reply.text} lines={reply.lines} /> : null}
           <ClientComposer />
         </div>
       </div>

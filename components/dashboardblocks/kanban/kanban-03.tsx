@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react'
 import {
-  BlockReady,
   BlockStateProvider,
   BlockStateRows,
   type BlockStateProps,
@@ -21,18 +20,23 @@ import {
   moveItem,
 } from '@/components/dashboardblocks/kanban'
 import { StatusLabel, statusToneClasses, type StatusTone } from '@/components/dashboardblocks/status-label'
+import { ReturnFilters } from '@/components/tasks/return-filter-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
 interface TaskCard extends KanbanItem {
   assignee: string | null
+  ownerId?: string | null
   client: string
+  email?: string
+  entity?: string
   avatar?: string | null
   due: string | null
   overdue: boolean
   settled: boolean
   waiting: 'client' | 'staff' | null
   year: number
+  tags?: string[]
 }
 
 interface Kanban3Props extends BlockStateProps {
@@ -46,6 +50,8 @@ interface Kanban3Props extends BlockStateProps {
   /** Leave out, or pass none, to show empty columns. */
   tickets?: TaskCard[]
   title: string
+  /** Signed-in preparer, so the board can filter to returns assigned to them. */
+  viewerId?: string | null
 }
 
 const noTickets: TaskCard[] = []
@@ -100,31 +106,13 @@ function glance(ticket: TaskCard): { label: string; tone: StatusTone } {
   }
 }
 
-function DeskSummary({ tickets }: { tickets: TaskCard[] }) {
-  const open = tickets.filter((ticket) => !ticket.settled).length
-  const onYou = tickets.filter((ticket) => ticket.waiting === 'staff').length
-  const onClient = tickets.filter((ticket) => ticket.waiting === 'client').length
-  const late = tickets.filter((ticket) => ticket.overdue).length
-  return (
-    <p className='text-muted-foreground text-sm'>
-      {open} open,{' '}
-      <StatusLabel variant='text' tone={onYou > 0 ? 'warning' : 'neutral'} className='text-sm'>
-        {onYou} on you
-      </StatusLabel>
-      ,{' '}
-      <StatusLabel variant='text' tone={onClient > 0 ? 'info' : 'neutral'} className='text-sm'>
-        {onClient} on the client
-      </StatusLabel>
-      {late > 0 ? (
-        <>
-          ,{' '}
-          <StatusLabel variant='text' tone='bad' className='text-sm'>
-            {late} late
-          </StatusLabel>
-        </>
-      ) : null}
-    </p>
-  )
+/** Drop index from the filtered board, mapped onto the full column so hidden cards keep their place. */
+function fullDropIndex(all: TaskCard[], shown: TaskCard[], id: string, column: string, visibleIndex: number) {
+  const anchor = getColumnItems(shown, column, id)[visibleIndex]
+  const siblings = getColumnItems(all, column, id)
+  if (!anchor) return siblings.length
+  const at = siblings.findIndex((item) => item.id === anchor.id)
+  return at === -1 ? siblings.length : at
 }
 
 function ReturnCard({ clock, ticket }: { clock: Date; ticket: TaskCard }) {
@@ -148,6 +136,15 @@ function ReturnCard({ clock, ticket }: { clock: Date; ticket: TaskCard }) {
           <p className='text-muted-foreground truncate text-xs'>{ticket.client}</p>
         </div>
       </div>
+      {ticket.tags && ticket.tags.length > 0 ? (
+        <div className='flex flex-wrap gap-1'>
+          {ticket.tags.slice(0, 3).map((tag) => (
+            <span key={tag} className='bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 text-[10px]'>
+              {tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
       <KanbanCardMenu className='absolute top-3 right-2' />
       <div className='flex min-h-6 items-center gap-2'>
         {due ? (
@@ -177,6 +174,7 @@ const Kanban3 = (props: Kanban3Props) => {
     status,
     tickets: loadedTickets = noTickets,
     title,
+    viewerId = null,
   } = props
   const clock = useMemo(() => new Date(now), [now])
   const [moves, setMoves] = useState<{ column: string; id: string; index: number }[]>([])
@@ -193,43 +191,43 @@ const Kanban3 = (props: Kanban3Props) => {
   return (
     <BlockStateProvider errorMessage={errorMessage} state={state}>
       <section className='@container flex flex-col gap-3'>
-        <header className='flex flex-col gap-0.5'>
-          <h2 className='sr-only'>{title}</h2>
-          <BlockReady className='text-sm'>
-            <DeskSummary tickets={tickets} />
-          </BlockReady>
-        </header>
+        <h2 className='sr-only'>{title}</h2>
         {state === 'error' && <BlockStateRows className='border-t pt-3' />}
         {state !== 'error' && (
-          <KanbanBoard
-            className='pb-2'
-            columns={columns}
-            itemName={itemName}
-            items={tickets}
-            label={`${title} board`}
-            onMove={(id, column, index) => {
-              if (onMove?.(id, column, index) === false) return false
-              setMoves((current) => [...current, { column, id, index }])
-            }}
-            onOpen={onOpen}
-          >
-            {columns.map((column) => (
-              <KanbanColumn key={column.id} column={column}>
-                {getColumnItems(tickets, column.id).map((ticket) => (
-                  <KanbanCard
-                    key={ticket.id}
-                    className={cn(
-                      'border border-border bg-white shadow-sm hover:bg-white hover:shadow-md [--kanban-card-surface:#fff] dark:border-transparent dark:bg-card dark:shadow-none dark:hover:bg-muted dark:[--kanban-card-surface:var(--color-card)]',
-                      ticket.id === selectedId && 'ring-2 ring-primary',
-                    )}
-                    item={ticket}
-                  >
-                    <ReturnCard clock={clock} ticket={ticket} />
-                  </KanbanCard>
+          <ReturnFilters items={tickets} viewerId={viewerId}>
+            {(visible, filtering) => (
+              <KanbanBoard
+                className='pb-2'
+                columns={columns}
+                itemName={itemName}
+                items={visible}
+                label={`${title} board`}
+                onMove={(id, column, index) => {
+                  const at = fullDropIndex(tickets, visible, id, column, index)
+                  if (onMove?.(id, column, at) === false) return false
+                  setMoves((current) => [...current, { column, id, index: at }])
+                }}
+                onOpen={onOpen}
+              >
+                {columns.map((column) => (
+                  <KanbanColumn key={column.id} column={column} empty={filtering ? 'No matches' : undefined}>
+                    {getColumnItems(visible, column.id).map((ticket) => (
+                      <KanbanCard
+                        key={ticket.id}
+                        className={cn(
+                          'border border-border bg-white shadow-sm hover:bg-white hover:shadow-md [--kanban-card-surface:#fff] dark:border-transparent dark:bg-card dark:shadow-none dark:hover:bg-muted dark:[--kanban-card-surface:var(--color-card)]',
+                          ticket.id === selectedId && 'ring-2 ring-primary',
+                        )}
+                        item={ticket}
+                      >
+                        <ReturnCard clock={clock} ticket={ticket} />
+                      </KanbanCard>
+                    ))}
+                  </KanbanColumn>
                 ))}
-              </KanbanColumn>
-            ))}
-          </KanbanBoard>
+              </KanbanBoard>
+            )}
+          </ReturnFilters>
         )}
       </section>
     </BlockStateProvider>

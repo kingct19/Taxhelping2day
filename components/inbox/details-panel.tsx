@@ -95,12 +95,14 @@ export function DetailsPanel({
   teammates,
   firmName,
   taskHref,
+  catalogTags = [],
   onPatch,
 }: {
   conversation: InboxConversation | null;
   teammates: InboxPerson[];
   firmName: string;
   taskHref: string;
+  catalogTags?: string[];
   onPatch: (patch: ConversationPatch) => void;
 }) {
   const router = useRouter();
@@ -110,7 +112,7 @@ export function DetailsPanel({
 
   const assigneeItems = [
     { label: "Unassigned", value: "unassigned" },
-    ...teammates.map((person) => ({ label: person.name || person.email, value: person.id })),
+    ...teammates.filter((person) => person.staffStatus === "active").map((person) => ({ label: person.name || person.email, value: person.id })),
   ];
   const teamItems = [
     { label: "No team inbox", value: "none" },
@@ -228,9 +230,28 @@ export function DetailsPanel({
                   addTag();
                 }}
               >
-                <Input value={tag} onChange={(event) => setTag(event.target.value)} placeholder="Add a tag" className="h-8" />
+                <Input value={tag} onChange={(event) => setTag(event.target.value)} placeholder="Add a tag" className="h-8" list="catalog-tags" />
+                <datalist id="catalog-tags">
+                  {catalogTags.map((item) => (
+                    <option key={item} value={item} />
+                  ))}
+                </datalist>
                 <Button type="submit" variant="outline" size="sm">Add</Button>
               </form>
+              {catalogTags.some((item) => !conversation.tags.includes(item)) ? (
+                <div className="flex flex-wrap gap-1 px-1">
+                  {catalogTags.filter((item) => !conversation.tags.includes(item)).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                      onClick={() => onPatch({ tags: [...conversation.tags, item] })}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </DetailsSection>
             <Separator />
             <DetailsSection title="Links">

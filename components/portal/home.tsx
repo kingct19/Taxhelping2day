@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon, FileTextIcon, LightbulbIcon, UserRoundIcon } from "lucide-react";
+import { ArrowRightIcon, ClockIcon, FileTextIcon, LightbulbIcon, UserRoundIcon } from "lucide-react";
 import { PortalAvatar } from "@/components/portal/portal-avatar";
+import { ReplyHours } from "@/components/portal/reply-hours";
+import { StageChecklist } from "@/components/portal/stage-checklist";
 import { ActivityTimeline, type ActivityItem } from "@/components/return-workspace/activity-timeline";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { Button } from "@/components/ui/button";
@@ -9,12 +11,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   clientActions,
   clientFirstName,
+  deriveClientStage,
   firmRequestedPoa,
   pickReturn,
   type LetterSnapshot,
 } from "@/lib/client-home";
+import { emptyIntake } from "@/lib/filing-needs";
+import { seasonFor } from "@/lib/season";
 import { engagementLetter } from "@/lib/engagement-letter";
 import { firm } from "@/lib/firm";
+import { replyExpectation, summarizeHours } from "@/lib/office-hours";
 import { requestThreads } from "@/lib/request-thread";
 import { activityGroup, describeActivity, formatDollars, shortDateTime } from "@/lib/return-progress";
 import { getStore } from "@/lib/store";
@@ -32,13 +38,16 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
   const store = getStore();
   const profile = await store.getProfile(profileId);
   if (!profile) return null;
-  const [signatures, messages, returns, filings, authorizations, invoices] = await Promise.all([
+  const [signatures, messages, returns, filings, authorizations, invoices, documents, catalog, officeHours] = await Promise.all([
     store.listSignatures(profile.id),
     store.listMessages(profile.id),
     store.listTeamReturns(),
     store.listFilings(),
     store.listAuthorizations(),
     store.listInvoices(),
+    store.listDocuments(profile.id),
+    store.getFilingCatalog(),
+    store.getOfficeHours(),
   ]);
   const mine = returns.filter((item) => item.profileId === profile.id);
   const current = pickReturn(mine);
@@ -87,6 +96,14 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
         group: activityGroup(described.label),
       };
     });
+  const season = seasonFor(
+    profile,
+    signatures,
+    documents,
+    current ? { answered: current.desk.intakeAnswered, needs: current.desk.filingNeeds } : emptyIntake(),
+    catalog,
+  );
+  const progress = deriveClientStage({ returnStage: current?.stage ?? null, filings: currentFilings, season });
   const first = clientFirstName(profile.name);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -97,8 +114,13 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
   return (
     <div className="min-h-0 flex-1 overflow-auto">
       <div className="flex flex-col gap-4 p-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pb-4">
+        <Card className="shadow-none">
+          <CardContent>
+            <StageChecklist stage={progress} />
+          </CardContent>
+        </Card>
         <div className="grid grid-cols-12 gap-4">
-          <Card className="relative col-span-12 overflow-hidden shadow-none xl:col-span-8 lg:h-48">
+          <Card className="relative col-span-12 overflow-hidden shadow-none xl:col-span-8 lg:min-h-48">
             <CardContent className="flex h-full flex-col justify-center gap-4 lg:pe-64">
               <div className="flex max-w-md flex-col gap-3">
                 <h1 className="text-2xl font-semibold tracking-tight">{greeting}, {first}</h1>
@@ -155,6 +177,18 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
               </ul>
             </CardContent>
           </Card>
+
+          {officeHours.saved ? (
+            <Card className="col-span-12 shadow-none">
+              <CardContent className="grid gap-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:items-start">
+                <div className="grid gap-2">
+                  <CardHeading icon={ClockIcon} title="When we reply" />
+                  <p className="text-sm text-muted-foreground">Send a message any time. We answer it during these hours.</p>
+                </div>
+                <ReplyHours reply={replyExpectation(officeHours.hours)} lines={summarizeHours(officeHours.hours)} />
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card className="col-span-12 shadow-none xl:col-span-8">
             <CardContent className="flex h-full flex-col gap-4">

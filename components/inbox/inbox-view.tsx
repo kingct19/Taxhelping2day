@@ -148,14 +148,14 @@ export function InboxView({ data }: { data: InboxDeskData }) {
             onPatch={(next) => { if (selected) patch(selected.id, next); }}
           />
         </div>
-        <div className={cn("hidden min-h-0 shrink-0 overflow-hidden xl:block", state.detailsOpen && selected ? "xl:w-80" : "xl:w-0")}>
-          <DetailsPanel conversation={selected} teammates={data.teammates} firmName={data.firmName} taskHref={taskHref} onPatch={(next) => { if (selected) patch(selected.id, next); }} />
+        <div className={cn("hidden min-h-0 shrink-0 overflow-hidden transition-[width] duration-300 ease-out xl:flex xl:justify-end", state.detailsOpen && selected ? "xl:w-80" : "xl:w-0")}>
+          <DetailsPanel conversation={selected} teammates={data.teammates} firmName={data.firmName} taskHref={taskHref} catalogTags={data.catalogTags} onPatch={(next) => { if (selected) patch(selected.id, next); }} />
         </div>
         {!detailsIsColumn ? (
           <Sheet open={detailsSheet && Boolean(selected)} onOpenChange={setDetailsSheet}>
             <SheetContent side="right" className="w-80 p-0" showCloseButton={false}>
               <SheetTitle className="sr-only">Conversation details</SheetTitle>
-              <DetailsPanel conversation={selected} teammates={data.teammates} firmName={data.firmName} taskHref={taskHref} onPatch={(next) => { if (selected) patch(selected.id, next); }} />
+              <DetailsPanel conversation={selected} teammates={data.teammates} firmName={data.firmName} taskHref={taskHref} catalogTags={data.catalogTags} onPatch={(next) => { if (selected) patch(selected.id, next); }} />
             </SheetContent>
           </Sheet>
         ) : null}

@@ -5,6 +5,7 @@ import { OverviewTab } from "@/components/return-workspace/overview-tab";
 import { PreparationTab } from "@/components/return-workspace/preparation-tab";
 import { ReturnBanner } from "@/components/return-workspace/return-banner";
 import { ReturnHeader } from "@/components/return-workspace/return-header";
+import { ReturnTags } from "@/components/return-workspace/return-tags";
 import { ReturnPanelFade } from "@/components/return-workspace/panel-fade";
 import { ReturnProgress } from "@/components/return-workspace/return-progress";
 import { ReturnTabs } from "@/components/return-workspace/return-tabs";
@@ -20,6 +21,7 @@ import { advanceOffer, blockerLines, isReturnTab, sendBackOffer, type ReturnTab 
 import { getReturnWorkflowState } from "@/lib/return-readiness";
 import { taxpayerTypeLabel } from "@/lib/types";
 import { getStore } from "@/lib/store";
+import { isActiveStaff } from "@/lib/teammates";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +37,7 @@ export default async function ReviewPage({
   const { profileId, returnId } = await params;
   const query = await searchParams;
   const store = getStore();
-  const [team, documents, signatures, messages, profiles, filings, authorizations, invoices] = await Promise.all([
+  const [team, documents, signatures, messages, profiles, filings, authorizations, invoices, catalog, firmTags, returnTags] = await Promise.all([
     store.listTeamReturns(),
     store.listDocuments(profileId),
     store.listSignatures(profileId),
@@ -44,13 +46,16 @@ export default async function ReviewPage({
     store.listFilings(returnId),
     store.listAuthorizations(returnId),
     store.listInvoices(returnId),
+    store.getFilingCatalog(),
+    store.listTags(),
+    store.listReturnTags(),
   ]);
   const item = team.find((row) => row.id === returnId && row.profileId === profileId);
   const client = profiles.find((person) => person.id === profileId);
   if (!item || !client) notFound();
 
   const authors = new Map(profiles.map((person) => [person.id, person.name || person.email]));
-  const teammates = profiles.filter((person) => person.role === "staff").map((person) => ({ id: person.id, name: authors.get(person.id) || person.email }));
+  const teammates = profiles.filter((person) => isActiveStaff(person)).map((person) => ({ id: person.id, name: authors.get(person.id) || person.email }));
   const returnMessages = messages.filter((message) => message.returnId === returnId);
   const threads = requestThreads(returnMessages);
   const invoice = invoices[0] ?? null;
@@ -63,6 +68,7 @@ export default async function ReviewPage({
     invoice,
     filings,
     note: "",
+    catalog,
   };
   const tab: ReturnTab = isReturnTab(query.tab) ? query.tab : "overview";
   const offer = advanceOffer(gate);
@@ -74,13 +80,14 @@ export default async function ReviewPage({
   const entries = documentEntries({
     returnId,
     stage: item.stage,
-    taxpayerType: client.taxpayerType,
+    taxpayerType: item.taxpayerType,
     documents,
     signatures,
     threads,
     messages,
     authors,
     canRemind: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),
+    desk: item.desk,
   });
   const clientName = client.name || client.email || "Unnamed customer";
   const yearLabel = `${item.taxYear} ${taxpayerTypeLabel(item.taxpayerType).toLowerCase()} return`;
@@ -126,6 +133,11 @@ export default async function ReviewPage({
         services={item.services}
         invoice={invoice}
       />
+      <ReturnTags
+        returnId={returnId}
+        catalog={firmTags}
+        applied={firmTags.filter((tag) => returnTags.some((row) => row.returnId === returnId && row.tagId === tag.id))}
+      />
       <ReturnBanner
         stage={item.stage}
         blocker={blockerLines(gate)[0] ?? null}
@@ -151,7 +163,7 @@ export default async function ReviewPage({
         teammates={teammates}
         entries={entries}
         fileId={query.file ?? null}
-        showOrganizer={item.stage === "documents" && missingOrganizer(client.taxpayerType, threads).length > 0}
+        showOrganizer={item.stage === "documents" && missingOrganizer(item.taxpayerType, threads, item.desk).length > 0}
         email={client.email}
         filings={filings}
         authorizations={authorizations}

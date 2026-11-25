@@ -1,3 +1,5 @@
+import type { IntakeAnswers } from "@/lib/filing-needs";
+import { emptyIntake } from "@/lib/filing-needs";
 import type { Stage, Workflow } from "@/lib/return-workflow";
 import { clientOwes, staffOwes, type RequestThread } from "@/lib/request-thread";
 import {
@@ -6,6 +8,7 @@ import {
   seasonFor,
   seasonHeadline,
   seasonHref,
+  type CatalogLists,
 } from "@/lib/season";
 import type {
   DocumentRecord,
@@ -239,9 +242,9 @@ function stageFallback(stage: Stage, name: string): string {
     case "lead":
       return `Open the engagement for ${name}`;
     case "onboarding":
-      return `Finish onboarding for ${name}`;
+      return `Confirm the filing type for ${name}`;
     case "documents":
-      return `Collect ${name}'s documents`;
+      return `Review ${name}'s documents, then send the engagement letter`;
     case "preparation":
       return `Prepare ${name}'s return`;
     case "review":
@@ -270,9 +273,11 @@ export function clientNext(input: {
   authorizations: EfileAuthorization[];
   returnVersion: number;
   stage: Stage | null;
+  intake?: IntakeAnswers;
+  catalog?: CatalogLists;
 }): NextStep {
-  const stage = seasonFor(input.profile, input.signatures, input.documents);
-  if (stage === "profile") {
+  const stage = seasonFor(input.profile, input.signatures, input.documents, input.intake ?? emptyIntake(), input.catalog);
+  if (stage === "profile" || stage === "scope") {
     return { headline: seasonHeadline(stage), detail: seasonDetail(stage), action: seasonAction(stage), href: seasonHref(stage), urgency: 0 };
   }
   const waiting = owedThreads(input.threads, clientOwes)[0];

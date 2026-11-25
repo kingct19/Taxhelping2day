@@ -2,9 +2,10 @@
 
 import { isStage, nextStage, sendBackTarget, stages } from "@/lib/return-workflow";
 import { deriveStage, filingPlace, filingPrompt, filingStatusLabel } from "@/lib/next-action";
-import { advanceBlocker, organizerBody, sendBackBlocker } from "@/lib/engagement";
+import { runDocumentsReady, runEfileSigned, runEnteredStage, runFilingAccepted, runInvited, runProfileComplete } from "@/lib/automation-run";
+import { advanceBlocker, sendBackBlocker } from "@/lib/engagement";
+import { seedOrganizer } from "@/lib/organizer";
 import { pickReturn } from "@/lib/client-home";
-import { documentRequests } from "@/lib/season";
 import { requestRoot, requestThreads } from "@/lib/request-thread";
 import { preparationBlockers, reviewBlockers } from "@/lib/return-readiness";
 import { preparationChecklist, reviewChecklist, type DeskIssue } from "@/lib/return-desk";
@@ -17,13 +18,11 @@ import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { siteUrl } from "@/lib/firm";
 import { getStore } from "@/lib/store";
+import { isActiveStaff, isStaffRank, isStaffStatus, teammateUpdateError } from "@/lib/teammates";
 import { buildSignedPdf } from "@/lib/pdf";
 import { formatBytes } from "@/lib/inbox-view";
-import { documentKinds, isConversationChannel, isEfileSigner, isFilingJurisdiction, isFilingStatus, isInvoiceStatus, isLeadSource, isRequestBlock, isTaskStatus, serviceLines, taxpayerTypes, type ConversationChannel, type ConversationPatch, type DocumentKind, type EfileSigner, type RequestState, type TaxpayerType } from "@/lib/types";
-
-function isTaxpayerType(value: string): value is TaxpayerType {
-  return taxpayerTypes.some((item) => item === value);
-}
+import { parseFilingCatalog, returnTaxpayerType } from "@/lib/filing-catalog";
+import { documentKinds, isConversationChannel, isEfileSigner, isFilingJurisdiction, isFilingStatus, isInvoiceStatus, isLeadSource, isRequestBlock, isTaskStatus, isTaxpayerType, orderedFilingTypes, primaryFilingType, serviceLines, type ConversationChannel, type ConversationPatch, type DocumentKind, type EfileSigner, type RequestState, type TaxpayerType } from "@/lib/types";
 
 function isDocumentKind(value: string): value is DocumentKind {
   return documentKinds.some((item) => item === value);
@@ -31,6 +30,12 @@ function isDocumentKind(value: string): value is DocumentKind {
 
 function sameName(left: string, right: string): boolean {
   return left.trim().toLowerCase().replace(/\s+/g, " ") === right.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+async function requireActiveStaff(id: string) {
+  if (!id) return;
+  const person = await getStore().getProfile(id);
+  if (!person || !isActiveStaff(person)) throw new Error("Choose a staff member.");
 }
 
 async function ensureAuthorizations(profileId: string, returnId: string, version: number) {
@@ -99,10 +104,13 @@ export type ProfileSaveState = { error: string | null };
 
 export async function saveProfile(_state: ProfileSaveState, formData: FormData): Promise<ProfileSaveState> {
   const profile = await requireProfile("client");
-  const taxpayerType = String(formData.get("taxpayerType") ?? "individual");
-  if (!isTaxpayerType(taxpayerType)) {
-    return { error: "Choose who we are preparing this return for." };
+  const store = getStore();
+  const catalog = await store.getFilingCatalog();
+  const filingTypes = orderedFilingTypes(formData.getAll("taxpayerType").map((value) => String(value)), catalog.types.map((type) => type.id));
+  if (filingTypes.length === 0) {
+    return { error: "Choose at least one filing type. A job and a business can both be selected." };
   }
+  const taxpayerType = filingTypes.some(isTaxpayerType) ? primaryFilingType(filingTypes) : profile.taxpayerType;
   const name = String(formData.get("name") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
@@ -121,7 +129,6 @@ export async function saveProfile(_state: ProfileSaveState, formData: FormData):
   if (rawTaxId && taxDigits.length !== 9) {
     return { error: "Enter the 9-digit taxpayer ID, or leave it blank to keep the number on file." };
   }
-  const store = getStore();
   try {
     await store.updateProfile(profile.id, {
       name,
@@ -131,6 +138,7 @@ export async function saveProfile(_state: ProfileSaveState, formData: FormData):
       state,
       zip,
       taxpayerType,
+      filingTypes,
       spouseName,
       taxYears,
       taxId: taxDigits || undefined,
@@ -142,6 +150,7 @@ export async function saveProfile(_state: ProfileSaveState, formData: FormData):
       body: "Profile saved.",
       kind: "event",
     });
+    await openFilingTypes(profile.id, filingTypes, name);
   } catch {
     return { error: "We could not save your profile. Check the fields and try again." };
   }
@@ -300,6 +309,7 @@ export async function inviteClient(formData: FormData) {
   }
   const store = getStore();
   const client = await store.createClient({ email, name });
+  await runInvited(client.id);
   await store.addMessage({
     profileId: client.id,
     authorId: staff.id,
@@ -319,20 +329,56 @@ export async function submitClientInvite(formData: FormData) {
 }
 
 export async function inviteTeammate(formData: FormData) {
-  await requireProfile("staff");
+  const actor = await requireProfile("staff");
+  if (actor.staffRank !== "owner") return { error: "Only an owner can change teammates." };
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const name = String(formData.get("name") ?? "").trim();
+  const rankValue = String(formData.get("staffRank") ?? "staff");
   if (!email.includes("@")) {
     return { error: "Enter an email address." };
   }
+  if (!isStaffRank(rankValue)) {
+    return { error: "Choose a role." };
+  }
   const store = getStore();
-  const teammate = await store.createStaff({ email, name });
+  const teammate = await store.createStaff({ email, name, staffRank: rankValue });
   if (!teammate) {
     return { error: "That email already belongs to a client." };
   }
   const delivered = await deliverInvite(email, "staff");
   revalidatePath("/settings/teammates");
   return delivered;
+}
+
+export async function updateTeammate(formData: FormData) {
+  const actor = await requireProfile("staff");
+  const store = getStore();
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  const nextRank = String(formData.get("staffRank") ?? "");
+  const nextStatus = String(formData.get("staffStatus") ?? "");
+  if (!isStaffRank(nextRank) || !isStaffStatus(nextStatus)) {
+    return { error: "Choose a role and a status." };
+  }
+  const profiles = await store.listProfiles();
+  const activeOwnerIds = profiles.filter((person) => person.role === "staff" && person.staffRank === "owner" && person.staffStatus === "active").map((person) => person.id);
+  const error = teammateUpdateError({
+    actorId: actor.id,
+    actorRank: actor.staffRank,
+    targetId: id,
+    nextRank,
+    nextStatus,
+    activeOwnerIds,
+  });
+  if (error) return { error };
+  const saved = await store.updateTeammate(id, { name, staffRank: nextRank, staffStatus: nextStatus });
+  if (!saved) return { error: "That teammate is not on this desk." };
+  revalidatePath("/settings/teammates");
+  revalidatePath("/settings/profile");
+  revalidatePath("/inbox");
+  revalidatePath("/returns");
+  revalidatePath("/tasks/table");
+  return { error: null };
 }
 
 export async function importClients(formData: FormData) {
@@ -407,7 +453,15 @@ export async function markPortalMessagesSeen(): Promise<{ updated: number }> {
 export async function updateConversation(id: string, patch: ConversationPatch) {
   await requireProfile("staff");
   if (!id) return;
-  await getStore().updateConversation(id, patch);
+  const store = getStore();
+  const next = patch.tags
+    ? { ...patch, tags: patch.tags.map((tag) => tag.trim()).filter(Boolean) }
+    : patch;
+  if (next.tags) {
+    for (const name of next.tags) await store.ensureTag(name);
+  }
+  if (next.assigneeId) await requireActiveStaff(next.assigneeId);
+  await store.updateConversation(id, next);
   revalidatePath("/inbox");
 }
 
@@ -550,6 +604,100 @@ export async function saveTaskNote(formData: FormData) {
   revalidatePath("/tasks");
 }
 
+async function openFilingTypes(profileId: string, filingTypes: string[], entity: string) {
+  const store = getStore();
+  const catalog = await store.getFilingCatalog();
+  const known = new Set(catalog.types.map((type) => type.id));
+  const owned = (await store.listTeamReturns()).filter((row) => row.profileId === profileId && !row.archivedAt);
+  const taxYear = owned.reduce((year, row) => Math.max(year, row.taxYear), new Date().getFullYear() - 1);
+  for (const filingTypeId of filingTypes) {
+    if (!known.has(filingTypeId)) continue;
+    if (owned.some((row) => row.taxYear === taxYear && (row.filingTypeId || row.taxpayerType) === filingTypeId)) continue;
+    await store.createReturn({ profileId, taxYear, entity, taxpayerType: returnTaxpayerType(filingTypeId), filingTypeId, source: "inquiry", services: ["tax_return"] });
+  }
+  const fresh = (await store.listTeamReturns()).filter((row) => row.profileId === profileId && !row.archivedAt && row.taxYear === taxYear);
+  for (const filingTypeId of filingTypes) {
+    if (!known.has(filingTypeId)) continue;
+    const current = fresh.find((row) => (row.filingTypeId || row.taxpayerType) === filingTypeId);
+    if (!current) throw new Error("Could not open the return.");
+    if (current.desk.intakeAnswered && current.services.includes("tax_return")) continue;
+    const saved = await store.updateWorkflow(current.id, {
+      ...current,
+      services: current.services.includes("tax_return") ? current.services : [...current.services, "tax_return"],
+      desk: { ...current.desk, intakeAnswered: true, filingNeeds: [] },
+    });
+    if (!saved) throw new Error("This return changed. Refresh and try again.");
+    revalidatePath(`/returns/${profileId}/${current.id}`);
+  }
+  revalidatePath("/contacts");
+  revalidatePath(`/contacts/${profileId}`);
+  revalidatePath("/returns");
+  revalidatePath("/portal");
+  revalidatePath("/portal/documents");
+  await runProfileComplete(profileId);
+}
+
+export async function chooseFilingType(_state: { error: string | null }, data: FormData): Promise<{ error: string | null }> {
+  const actor = await requireProfile();
+  const store = getStore();
+  const catalog = await store.getFilingCatalog();
+  const filingTypes = orderedFilingTypes(data.getAll("taxpayerType").map((value) => String(value)), catalog.types.map((type) => type.id));
+  const requestedId = String(data.get("returnId") ?? "");
+  const team = await store.listTeamReturns();
+  const requested = requestedId ? team.find((row) => row.id === requestedId) ?? null : null;
+  if (requested && actor.role === "client" && requested.profileId !== actor.id) return { error: "Return not found." };
+  const profileId = actor.role === "client" ? actor.id : requested?.profileId;
+  if (!profileId) return { error: "Return not found." };
+  const profile = await store.getProfile(profileId);
+  if (!profile || profile.role !== "client") return { error: "Return not found." };
+  const entity = profile.name.trim() || profile.email;
+  try {
+    await store.updateProfile(profile.id, {
+      name: profile.name,
+      phone: profile.phone,
+      address: profile.address,
+      city: profile.city,
+      state: profile.state,
+      zip: profile.zip,
+      taxpayerType: filingTypes.some(isTaxpayerType) ? primaryFilingType(filingTypes) : profile.taxpayerType,
+      filingTypes,
+      spouseName: profile.spouseName,
+      taxYears: profile.taxYears,
+    });
+    await openFilingTypes(profile.id, filingTypes, entity);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Could not open those returns." };
+  }
+  return { error: null };
+}
+
+export async function saveFilingCatalog(_state: { error: string | null }, data: FormData): Promise<{ error: string | null }> {
+  await requireProfile("staff");
+  const raw = String(data.get("catalog") ?? "");
+  if (raw.length > 100_000) return { error: "That catalog is too large." };
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { error: "Could not read the catalog." };
+  }
+  const catalog = parseFilingCatalog(parsed);
+  const store = getStore();
+  const [existing, team] = await Promise.all([store.getFilingCatalog(), store.listTeamReturns()]);
+  const used = new Set(team.map((row) => row.filingTypeId || row.taxpayerType));
+  for (const previous of existing.types) {
+    if (catalog.types.some((type) => type.id === previous.id)) continue;
+    if (isTaxpayerType(previous.id)) return { error: `Retire ${previous.label} instead of deleting it.` };
+    if (used.has(previous.id)) return { error: `Retire ${previous.label}. A return already uses it.` };
+  }
+  await store.saveFilingCatalog(catalog);
+  revalidatePath("/settings/filings");
+  revalidatePath("/portal/documents");
+  revalidatePath("/portal/profile");
+  revalidatePath("/contacts");
+  return { error: null };
+}
+
 export async function createTaxReturn(profileId: string, data: FormData) {
   await requireProfile("staff");
   const store = getStore();
@@ -562,6 +710,8 @@ export async function createTaxReturn(profileId: string, data: FormData) {
     throw new Error("Enter the taxpayer name, return type, and four-digit tax year.");
   }
   await store.createReturn({ profileId, taxYear, entity, taxpayerType });
+  const opened = (await store.listReturns(profileId)).find((item) => item.taxYear === taxYear && item.taxpayerType === taxpayerType && item.entity.toLowerCase() === entity.toLowerCase());
+  if (opened) await runEnteredStage(opened.id);
   revalidatePath(`/contacts/${profileId}`);
   revalidatePath("/returns");
   revalidatePath("/portal");
@@ -582,7 +732,7 @@ export async function moveReturnStage(id: string, revision: number, stage: strin
   if (stage === forward) {
     const blocker = advanceBlocker({ ...context, workflow, profile });
     if (blocker) return { ok: false, error: blocker };
-    if (stage === "documents") await seedOrganizer(current.profileId, id, staff.id, profile.taxpayerType);
+    if (stage === "documents") await seedOrganizer(current.profileId, id, staff.id, current.filingTypeId || current.taxpayerType, current.desk);
   } else {
     const blocker = sendBackBlocker(current.stage, context.filings);
     if (blocker) return { ok: false, error: blocker };
@@ -603,6 +753,7 @@ export async function moveReturnStage(id: string, revision: number, stage: strin
     archivedAt: leavingDelivery ? now : current.archivedAt,
   });
   if (!saved) return { ok: false, error: "This return changed. Refresh and try the move again." };
+  await runEnteredStage(id);
   if (stage === back) {
     await context.store.addMessage({
       profileId: current.profileId,
@@ -637,7 +788,7 @@ export async function saveReturnWorkflow(id: string, revision: number, data: For
   if (nextAction.length > 500 || (parsedDate && (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== due))) {
     throw new Error("Check the due date and the handoff note.");
   }
-  if (owner && (await store.getProfile(owner))?.role !== "staff") throw new Error("Choose a staff member.");
+  if (owner) await requireActiveStaff(owner);
   const current = (await store.listTeamReturns()).find((row) => row.id === id);
   const returnTo = data.get("returnTo") === "/tasks/table" ? "/tasks/table" : "/returns";
   if (!current || current.revision !== revision) redirect(`${returnTo}?conflict=1`);
@@ -681,7 +832,7 @@ function amountCents(raw: string): number | null {
 
 async function gateContext(profileId: string, returnId: string) {
   const store = getStore();
-  const [profile, signatures, messages, authorizations, invoices, filings, team] = await Promise.all([
+  const [profile, signatures, messages, authorizations, invoices, filings, team, catalog] = await Promise.all([
     store.getProfile(profileId),
     store.listSignatures(profileId),
     store.listMessages(profileId),
@@ -689,29 +840,11 @@ async function gateContext(profileId: string, returnId: string) {
     store.listInvoices(returnId),
     store.listFilings(returnId),
     store.listTeamReturns(),
+    store.getFilingCatalog(),
   ]);
   const workflow = team.find((row) => row.id === returnId && row.profileId === profileId) ?? null;
   const threads = requestThreads(messages.filter((row) => row.returnId === returnId));
-  return { store, profile, signatures, messages, authorizations, invoice: invoices[0] ?? null, filings, workflow, threads };
-}
-
-async function seedOrganizer(profileId: string, returnId: string, authorId: string, taxpayerType: TaxpayerType) {
-  const store = getStore();
-  const messages = await store.listMessages(profileId);
-  const threads = requestThreads(messages.filter((row) => row.returnId === returnId));
-  for (const request of documentRequests(taxpayerType).filter((item) => item.required)) {
-    if (threads.some((thread) => thread.root.body.startsWith(`Organizer: ${request.title}.`))) continue;
-    await store.addMessage({
-      profileId,
-      returnId,
-      authorId,
-      authorRole: "staff",
-      kind: "message",
-      body: organizerBody(request.title, request.detail),
-      requestState: "open",
-      requestBlock: "start",
-    });
-  }
+  return { store, profile, signatures, messages, authorizations, invoice: invoices[0] ?? null, filings, workflow, threads, catalog };
 }
 
 export async function sendOrganizer(profileId: string, returnId: string) {
@@ -721,7 +854,7 @@ export async function sendOrganizer(profileId: string, returnId: string) {
   const item = team.find((row) => row.id === returnId && row.profileId === profileId);
   if (!profile || profile.role !== "client" || !item) throw new Error("Return not found.");
   if (item.stage !== "documents") throw new Error("The organizer is part of document collection.");
-  await seedOrganizer(profileId, returnId, staff.id, profile.taxpayerType);
+  await seedOrganizer(profileId, returnId, staff.id, item.filingTypeId || item.taxpayerType, item.desk);
   await syncRequestStage(profileId, returnId);
   revalidateReturn(profileId, returnId);
 }
@@ -774,7 +907,7 @@ export async function saveReturnDesk(profileId: string, returnId: string, revisi
     if (area !== "preparation" && area !== "review") throw new Error("Choose where this issue belongs.");
     if (!title || title.length > 120 || detail.length > 1000) throw new Error("Enter a title for the issue.");
     if (priority !== "low" && priority !== "normal" && priority !== "high") throw new Error("Choose a priority.");
-    if (assigneeId && (await store.getProfile(assigneeId))?.role !== "staff") throw new Error("Choose a staff member.");
+    if (assigneeId) await requireActiveStaff(assigneeId);
     desk.issues.push({
       id: randomUUID(),
       area,
@@ -798,7 +931,7 @@ export async function saveReturnDesk(profileId: string, returnId: string, revisi
     note = `${issue.area === "review" ? "Review correction" : "Preparation issue"}: ${issue.title} ${intent === "resolve" ? "resolved" : "reopened"}.`;
   } else if (intent === "reviewer") {
     const nextReviewer = String(data.get("reviewer") ?? "");
-    if (nextReviewer && (await store.getProfile(nextReviewer))?.role !== "staff") throw new Error("Choose a staff member.");
+    if (nextReviewer) await requireActiveStaff(nextReviewer);
     reviewerId = nextReviewer || null;
     const person = nextReviewer ? await store.getProfile(nextReviewer) : null;
     note = nextReviewer ? `Assigned reviewer ${person?.name || person?.email || "a teammate"}.` : "Cleared the reviewer.";
@@ -823,6 +956,7 @@ export async function saveReturnDesk(profileId: string, returnId: string, revisi
       body: note,
     });
   }
+  if (stage !== current.stage) await runEnteredStage(returnId);
   revalidateReturn(profileId, returnId);
 }
 
@@ -864,7 +998,7 @@ export async function advanceEngagement(id: string, revision: number, data: Form
   }
   const stage = nextStage(current.stage);
   if (!stage) throw new Error("This engagement has no further stage.");
-  if (stage === "documents") await seedOrganizer(current.profileId, id, staff.id, profile.taxpayerType);
+  if (stage === "documents") await seedOrganizer(current.profileId, id, staff.id, current.filingTypeId || current.taxpayerType, current.desk);
   const messages = await context.store.listMessages(current.profileId);
   const derived = deriveStage({ ...current, stage }, requestThreads(messages.filter((row) => row.returnId === id)));
   const now = new Date().toISOString();
@@ -881,6 +1015,7 @@ export async function advanceEngagement(id: string, revision: number, data: Form
     desk,
   });
   if (!saved) redirect(`/returns/${current.profileId}/${id}?conflict=1`);
+  await runEnteredStage(id);
   if (current.stage === "preparation") {
     const reviewer = current.reviewerId ? await context.store.getProfile(current.reviewerId) : null;
     const who = reviewer ? ` Assigned reviewer ${reviewer.name || reviewer.email}.` : " No reviewer is assigned yet.";
@@ -945,6 +1080,7 @@ export async function sendBackEngagement(id: string, revision: number, data: For
     },
   });
   if (!saved) redirect(`/returns/${current.profileId}/${id}?conflict=1`);
+  await runEnteredStage(id);
   await store.addMessage({
     profileId: current.profileId, returnId: id, authorId: staff.id, authorRole: "staff", kind: "note",
     body: `Review correction: ${reason} Sent back to ${stages[stage]}.`,
@@ -985,6 +1121,8 @@ export async function createLead(data: FormData) {
   const existing = (await store.listReturns(client.id)).find((item) => item.taxYear === taxYear && item.taxpayerType === taxpayerType && item.entity.toLowerCase() === entity.toLowerCase());
   if (existing) throw new Error("That return is already open.");
   await store.createReturn({ profileId: client.id, taxYear, entity, taxpayerType, source, services: [] });
+  const opened = (await store.listTeamReturns()).find((row) => row.profileId === client.id && row.taxYear === taxYear && row.entity.toLowerCase() === entity.toLowerCase() && row.taxpayerType === taxpayerType);
+  if (opened) await runEnteredStage(opened.id);
   revalidatePath("/contacts");
   revalidatePath("/returns");
   redirect("/returns?stage=lead");
@@ -1008,6 +1146,8 @@ export async function openNextYear(profileId: string, returnId: string) {
     source: "returning",
     services: current.services,
   });
+  const opened = (await store.listReturns(profileId)).find((item) => item.taxYear === taxYear && item.taxpayerType === current.taxpayerType && item.entity.toLowerCase() === current.entity.toLowerCase());
+  if (opened) await runEnteredStage(opened.id);
   revalidatePath("/returns");
   revalidatePath(`/contacts/${profileId}`);
   redirect("/returns?stage=lead");
@@ -1044,6 +1184,7 @@ export async function recordIntakeReview(profileId: string, returnId: string, da
   await store.addMessage({profileId, returnId, documentId, signatureId, requestState: action === "request" ? "open" : undefined, requestBlock: action === "request" && isRequestBlock(block) ? block : undefined, authorId: staff.id,
     authorRole: "staff", kind: action === "request" ? "message" : "note", body});
   if (action === "request") await syncRequestStage(profileId, returnId);
+  await runDocumentsReady(profileId, returnId);
   revalidateReturn(profileId, returnId);
 }
 
@@ -1106,6 +1247,7 @@ export async function advanceRequest(profileId: string, previousId: string, form
     }
   }
   await syncRequestStage(profileId, previous.returnId);
+  await runDocumentsReady(profileId, previous.returnId);
   revalidateReturn(profileId, previous.returnId);
 }
 
@@ -1184,6 +1326,7 @@ export async function saveFiling(profileId: string, returnId: string, form: Form
     }
   }
   await store.updateWorkflow(returnId, { ...item, waitingOn: derived.waitingOn, nextAction, desk });
+  if (saved.status === "accepted") await runFilingAccepted(returnId);
   revalidateReturn(profileId, returnId);
 }
 
@@ -1251,6 +1394,7 @@ export async function attestEfile(returnId: string, form: FormData) {
     profileId: profile.id, returnId, authorId: profile.id, authorRole: "client", kind: "event",
     body: signer === "spouse" ? "Spouse authorized e-file for this return version." : "Authorized e-file for this return version.",
   });
+  await runEfileSigned(returnId);
   revalidateReturn(profile.id, returnId);
   redirect("/portal");
 }
@@ -1270,5 +1414,6 @@ export async function recordManualEfile(profileId: string, returnId: string, for
     evidence: `Paper signature recorded by staff. ${note}`,
   });
   await store.addMessage({ profileId, returnId, authorId: staff.id, authorRole: "staff", kind: "event", body: `Recorded a paper Form 8879 for the ${signer} on version ${item.returnVersion}.` });
+  await runEfileSigned(returnId);
   revalidateReturn(profileId, returnId);
 }

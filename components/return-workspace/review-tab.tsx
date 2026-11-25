@@ -112,7 +112,7 @@ export function ReviewTab({
             returnId={returnId}
             revision={workflow.revision}
             area="review"
-            items={reviewChecklist(gate.profile.taxpayerType)}
+            items={reviewChecklist(gate.workflow.taxpayerType)}
             saved={workflow.desk.reviewChecks}
           />
         </section>

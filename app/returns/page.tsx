@@ -15,6 +15,7 @@ import { requestThreads } from "@/lib/request-thread";
 import { stages, type WaitingOn } from "@/lib/return-workflow";
 import { stageTone } from "@/lib/status-tone";
 import { getStore } from "@/lib/store";
+import { isActiveStaff } from "@/lib/teammates";
 import { taxpayerTypeLabel, type Message } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -112,7 +113,7 @@ export default async function ReturnsPage({ searchParams }: {
     store.listTeamReturns(), store.listProfiles(), store.listRequestStates(), store.listFilings(), store.listAuthorizations(),
   ]);
   const people = new Map(profiles.map((person) => [person.id, person]));
-  const teammates = profiles.filter((person) => person.role === "staff");
+  const teammates = profiles.filter((person) => isActiveStaff(person));
   const nameOf = (id: string | null | undefined) => {
     if (!id) return "";
     const person = people.get(id);

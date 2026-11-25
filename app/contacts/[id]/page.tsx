@@ -11,9 +11,12 @@ import { ChevronLeftIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Badge } from "@/components/ui/badge";
 import { requireProfile } from "@/lib/auth";
+import { emptyIntake } from "@/lib/filing-needs";
+import { pickReturn } from "@/lib/client-home";
 import { seasonFor, seasonLabel } from "@/lib/season";
 import { getStore } from "@/lib/store";
-import { documentKindLabel, taxpayerTypeLabel } from "@/lib/types";
+import { catalogLabel } from "@/lib/filing-catalog";
+import { documentKindLabel, filingTypesOf } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -35,14 +38,16 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   if (!client || client.role !== "client") {
     notFound();
   }
-  const [documents, signatures, messages, identity, returns] = await Promise.all([
+  const [documents, signatures, messages, identity, returns, catalog] = await Promise.all([
     store.listDocuments(client.id),
     store.listSignatures(client.id),
     store.listMessages(client.id),
     store.getIdentity(client.id),
     store.listReturns(id),
+    store.getFilingCatalog(),
   ]);
-  const stage = seasonFor(client, signatures, documents);
+  const current = pickReturn((await store.listTeamReturns()).filter((item) => item.profileId === client.id));
+  const stage = seasonFor(client, signatures, documents, current ? { answered: current.desk.intakeAnswered, needs: current.desk.filingNeeds } : emptyIntake(), catalog);
   const visibleMessages = messages.filter((message) => message.kind !== "note");
 
   return (
@@ -63,14 +68,14 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
         <aside className="flex flex-col gap-3 overflow-auto border-b bg-sidebar p-4 lg:border-r lg:border-b-0">
           <h2 className="text-sm font-medium">Profile</h2>
           <Fact label="Phone" value={client.phone} />
-          <Fact label="Taxpayer" value={taxpayerTypeLabel(client.taxpayerType)} />
+          <Fact label="Taxpayer" value={filingTypesOf(client).map((type) => catalogLabel(catalog, type)).join(", ")} />
           <Fact label="Address" value={[client.address, client.city, client.state, client.zip].filter(Boolean).join(", ")} />
           <Fact label="Spouse" value={client.spouseName} />
           <Fact label="Tax years" value={client.taxYears} />
           <Fact label="Taxpayer ID" value={client.taxIdLast4 ? `Ending ${client.taxIdLast4}` : ""} />
         </aside>
         <section className="flex min-h-0 flex-col gap-3 overflow-auto p-4">
-          <TaxReturnList returns={returns} />
+          <TaxReturnList returns={returns} labels={Object.fromEntries(catalog.types.map((type) => [type.id, type.label]))} />
           <details className="rounded-md border p-3">
             <summary className="cursor-pointer text-sm font-medium">Open a tax return</summary>
             <form action={createTaxReturn.bind(null, id)} className="mt-3 grid gap-3 text-sm">
