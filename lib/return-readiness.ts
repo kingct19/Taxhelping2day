@@ -3,13 +3,13 @@ import { filingPlace } from "@/lib/next-action";
 import { clientOwes, staffOwes } from "@/lib/request-thread";
 import { missingRequiredChecks, preparationChecklist, recordedCheckCount, reviewChecklist, type DeskIssue } from "@/lib/return-desk";
 import { returnTabHref, type ReturnTab } from "@/lib/return-progress";
-import { stageOrder, type Stage } from "@/lib/return-workflow";
+import { stageIndex, type Stage } from "@/lib/return-workflow";
 import type { FilingStatus } from "@/lib/types";
 
 export type Readiness = "not_started" | "in_progress" | "complete" | "blocked" | "needs_attention" | "unknown";
 
 export type StageReadiness = {
-  id: "documents" | "preparation" | "review" | "approval" | "filing" | "delivery";
+  id: "documents" | "letter" | "preparation" | "review" | "approval" | "filing" | "delivery";
   label: string;
   stage: Stage;
   tab: ReturnTab;
@@ -87,15 +87,15 @@ export function filingDeskLabel(status: FilingStatus): string {
 }
 
 function atLeast(stage: Stage, target: Stage): boolean {
-  return stageOrder.indexOf(stage) >= stageOrder.indexOf(target);
+  return stageIndex(stage) >= stageIndex(target);
 }
 
 function after(stage: Stage, target: Stage): boolean {
-  return stageOrder.indexOf(stage) > stageOrder.indexOf(target);
+  return stageIndex(stage) > stageIndex(target);
 }
 
 function before(stage: Stage, target: Stage): boolean {
-  return stageOrder.indexOf(stage) < stageOrder.indexOf(target);
+  return stageIndex(stage) < stageIndex(target);
 }
 
 function worst(values: Readiness[]): Readiness {
@@ -140,6 +140,44 @@ export function getDocumentReadiness(input: GateInput): { readiness: Readiness; 
   if (before(workflow.stage, "documents")) return { readiness: "not_started", detail: "Document collection has not started" };
   if (workflow.stage === "documents") return { readiness: "in_progress", detail: "No required requests have been recorded yet" };
   return { readiness: "unknown", detail: "No document checklist was recorded for this return" };
+}
+
+function letterProgress(input: GateInput): string | null {
+  switch (input.letter) {
+    case "signed":
+      return "The client signed the engagement letter";
+    case "opened":
+      return "The client opened the engagement letter";
+    case "sent":
+      return "Sent. Waiting for the client to open it";
+    case "declined":
+      return "The client declined the engagement letter";
+    case "unsigned":
+    case undefined:
+      return null;
+    default: {
+      const exhaustive: never = input.letter;
+      return exhaustive;
+    }
+  }
+}
+
+export function getLetterReadiness(input: GateInput, documents: { readiness: Readiness }): { readiness: Readiness; detail: string } {
+  const signed = input.signatures.some((item) => item.kind === "engagement") || input.letter === "signed";
+  if (signed) return { readiness: "complete", detail: "The client signed the engagement letter" };
+  const progress = letterProgress(input);
+  if (input.letter === "declined") return { readiness: "blocked", detail: progress ?? "The client declined the engagement letter" };
+  if (documents.readiness !== "complete") {
+    return { readiness: "not_started", detail: "Send it after the required documents are in" };
+  }
+  if (before(input.workflow.stage, "documents")) {
+    return { readiness: "not_started", detail: "Send it after the required documents are in" };
+  }
+  if (after(input.workflow.stage, "documents")) {
+    return { readiness: "blocked", detail: progress ?? "The engagement letter is not signed" };
+  }
+  if (progress) return { readiness: "in_progress", detail: progress };
+  return { readiness: "in_progress", detail: "Send the engagement letter for the client to sign" };
 }
 
 export function getPreparationReadiness(input: GateInput): { readiness: Readiness; detail: string } {
@@ -268,6 +306,7 @@ function communication(input: GateInput): string {
 
 export function getReturnWorkflowState(input: GateInput): WorkflowState {
   const documents = getDocumentReadiness(input);
+  const letter = getLetterReadiness(input, documents);
   const preparation = getPreparationReadiness(input);
   const review = getReviewReadiness(input);
   const authorization = getAuthorizationReadiness(input);
@@ -275,15 +314,24 @@ export function getReturnWorkflowState(input: GateInput): WorkflowState {
   const delivery = getDeliveryReadiness(input);
   const stages: StageReadiness[] = [
     { id: "documents", label: "Documents", stage: "documents", tab: "documents", ...documents },
+    { id: "letter", label: "Engagement letter", stage: "documents", tab: "overview", ...letter },
     { id: "preparation", label: "Preparation", stage: "preparation", tab: "preparation", ...preparation },
     { id: "review", label: "Internal Review", stage: "review", tab: "review", ...review },
     { id: "approval", label: "Client Authorization", stage: "approval", tab: "review", ...authorization },
     { id: "filing", label: "Filing", stage: "filing", tab: "filing", ...filing },
     { id: "delivery", label: "Delivery", stage: "delivery", tab: "filing", ...delivery },
   ];
+  if (input.workflow.stage === "canceled") {
+    return {
+      stages,
+      overall: "not_started",
+      actions: [],
+      summary: [{ label: "Status", value: "Canceled by the client" }],
+    };
+  }
   const operational = input.workflow.stage === "renewal" ? "delivery" : input.workflow.stage;
-  const cursor = stageOrder.indexOf(operational);
-  const relevant = stages.filter((stage) => stageOrder.indexOf(stage.stage) <= cursor || stage.readiness !== "not_started");
+  const cursor = stageIndex(operational);
+  const relevant = stages.filter((stage) => stageIndex(stage.stage) <= cursor || stage.readiness !== "not_started");
   const overall = relevant.length === 0 ? "not_started" : worst(relevant.map((stage) => stage.readiness));
   const link = (tab: ReturnTab) => returnTabHref(input.profile.id, input.workflow.id, tab);
   const actions = workActions(input, stages, link);
@@ -294,6 +342,7 @@ export function getReturnWorkflowState(input: GateInput): WorkflowState {
     actions,
     summary: [
       { label: "Documents", value: documents.detail },
+      { label: "Engagement", value: letter.detail },
       { label: "Preparation", value: openPrep.length ? `${openPrep.length} open ${openPrep.length === 1 ? "issue" : "issues"}` : preparation.detail },
       { label: "Review", value: review.detail },
       { label: "Authorization", value: authorization.detail },
@@ -331,6 +380,20 @@ function workActions(input: GateInput, stages: StageReadiness[], href: (tab: Ret
       who: "Preparer",
       blocking: documentStage.readiness === "blocked",
       href: href("documents"),
+      due,
+    });
+  }
+  const letterStage = stages.find((stage) => stage.id === "letter");
+  if (letterStage?.readiness === "in_progress" || letterStage?.readiness === "blocked") {
+    const sent = input.letter === "sent" || input.letter === "opened" || input.letter === "declined";
+    actions.push({
+      id: "letter",
+      title: input.letter === "declined" ? "The engagement letter was declined" : sent ? "Waiting on the engagement letter" : "Send the engagement letter",
+      description: letterStage.detail,
+      priority: "high",
+      who: "Preparer",
+      blocking: true,
+      href: href("overview"),
       due,
     });
   }

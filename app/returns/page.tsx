@@ -1,5 +1,8 @@
 import Image from "next/image";
+import { cookies } from "next/headers";
 import Link from "next/link";
+import { RememberForm, RememberLink } from "@/components/remember-view";
+import { decodeView, viewCookie } from "@/lib/view-cookie";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +15,7 @@ import { requireProfile } from "@/lib/auth";
 import { avatarUrl } from "@/lib/avatar";
 import { staffNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
-import { stages, type WaitingOn } from "@/lib/return-workflow";
+import { isStage, shownStage, stages, type WaitingOn } from "@/lib/return-workflow";
 import { stageTone } from "@/lib/status-tone";
 import { getStore } from "@/lib/store";
 import { isActiveStaff } from "@/lib/teammates";
@@ -54,14 +57,39 @@ function waitingTone(waiting: Exclude<WaitingOn, null>) {
   }
 }
 
-function boardHref(current: { q?: string; owner?: string; stage?: string; requests?: string; waiting?: string }, patch: { q?: string | null; owner?: string | null; stage?: string | null; requests?: string | null; waiting?: string | null }) {
-  const next = { ...current, ...patch };
+type ReturnsView = { q?: string; owner?: string; stage?: string; requests?: string; waiting?: string };
+
+function savedReturns(raw: string | null): ReturnsView {
+  if (!raw) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+    const item = parsed as Record<string, unknown>;
+    const view: ReturnsView = {};
+    if (typeof item.q === "string" && item.q) view.q = item.q;
+    if (item.owner === "mine" || item.owner === "unassigned") view.owner = item.owner;
+    if (typeof item.stage === "string" && isStage(item.stage)) view.stage = item.stage;
+    if (item.requests === "review" || item.requests === "waiting") view.requests = item.requests;
+    if (item.waiting === "staff" || item.waiting === "client") view.waiting = item.waiting;
+    return view;
+  } catch {
+    return {};
+  }
+}
+
+function boardHref(current: ReturnsView, patch: { q?: string | null; owner?: string | null; stage?: string | null; requests?: string | null; waiting?: string | null }) {
+  const next: ReturnsView = { ...current };
+  for (const [key, value] of Object.entries(patch)) {
+    const name = key as keyof ReturnsView;
+    if (value) next[name] = value;
+    else delete next[name];
+  }
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(next)) {
     if (value) params.set(key, value);
   }
   const search = params.toString();
-  return search ? `/returns?${search}` : "/returns";
+  return { href: search ? `/returns?${search}` : "/returns", saved: JSON.stringify(next) };
 }
 
 function todayStamp() {
@@ -106,7 +134,17 @@ export default async function ReturnsPage({ searchParams }: {
 }) {
   const staff = await requireProfile("staff");
   const query = await searchParams;
-  const waiting = waitingFilter(query.waiting);
+  const named = ["q", "owner", "stage", "requests", "waiting"] as const;
+  const explicit = named.some((key) => query[key] !== undefined);
+  const saved = explicit ? {} : savedReturns(decodeView((await cookies()).get(viewCookie.returns)?.value));
+  const view = {
+    q: query.q ?? saved.q,
+    owner: query.owner ?? saved.owner,
+    stage: query.stage ?? saved.stage,
+    requests: query.requests ?? saved.requests,
+    waiting: query.waiting ?? saved.waiting,
+  };
+  const waiting = waitingFilter(view.waiting);
   const today = todayStamp();
   const store = getStore();
   const [returns, profiles, requestRows, filings, authorizations] = await Promise.all([
@@ -122,36 +160,37 @@ export default async function ReturnsPage({ searchParams }: {
   const messages = requestRows.filter((row): row is typeof row & { requestState: NonNullable<typeof row.requestState> } => Boolean(row.requestState));
   const rows = returns.filter((item) => {
     const clientName = nameOf(item.profileId);
-    if (query.q && ![item.entity, String(item.taxYear), clientName, people.get(item.profileId)?.email].join(" ").toLowerCase().includes(query.q.trim().toLowerCase())) return false;
-    return query.stage ? item.stage === query.stage : item.stage !== "renewal";
+    if (view.q && ![item.entity, String(item.taxYear), clientName, people.get(item.profileId)?.email].join(" ").toLowerCase().includes(view.q.trim().toLowerCase())) return false;
+    return view.stage ? shownStage(item) === view.stage : shownStage(item) !== "renewal";
   }).map((item) => {
     const clientName = nameOf(item.profileId) || "Unnamed customer";
+    const stage = shownStage(item);
     const threads = requestThreads(messages.filter((row) => row.returnId === item.id) as Message[]);
     const next = staffNext({
       name: clientName,
       due: item.due,
-      stage: item.stage,
+      stage,
       threads,
       filings: filings.filter((row) => row.returnId === item.id),
       authorizations: authorizations.filter((row) => row.returnId === item.id),
       returnVersion: item.returnVersion,
     });
-    return { item, next, threads, clientName };
+    return { item, stage, next, threads, clientName };
   }).filter(({ threads }) => {
-    if (query.requests === "review") return threads.some((thread) => thread.latest.requestState === "responded" || thread.latest.requestState === "unavailable");
-    if (query.requests === "waiting") return threads.some((thread) => thread.latest.requestState === "open" || thread.latest.requestState === "replacement");
+    if (view.requests === "review") return threads.some((thread) => thread.latest.requestState === "responded" || thread.latest.requestState === "unavailable");
+    if (view.requests === "waiting") return threads.some((thread) => thread.latest.requestState === "open" || thread.latest.requestState === "replacement");
     return true;
   }).sort((a, b) => a.next.urgency - b.next.urgency || (a.item.due ?? "9999").localeCompare(b.item.due ?? "9999"));
-  const onStaff = rows.filter((row) => row.item.waitingOn === "staff").length;
-  const onClient = rows.filter((row) => row.item.waitingOn === "client").length;
+  const onStaff = rows.filter((row) => row.stage !== "canceled" && row.item.waitingOn === "staff").length;
+  const onClient = rows.filter((row) => row.stage !== "canceled" && row.item.waitingOn === "client").length;
   const unassigned = rows.filter((row) => !row.item.owner).length;
   const visible = rows.filter((row) => {
-    if (query.owner === "mine" && row.item.owner !== staff.id) return false;
-    if (query.owner === "unassigned" && row.item.owner) return false;
-    if (waiting && row.item.waitingOn !== waiting) return false;
+    if (view.owner === "mine" && row.item.owner !== staff.id) return false;
+    if (view.owner === "unassigned" && row.item.owner) return false;
+    if (waiting && (row.stage === "canceled" || row.item.waitingOn !== waiting)) return false;
     return true;
   });
-  const filters = { q: query.q, owner: query.owner, stage: query.stage, requests: query.requests, waiting };
+  const filters = { q: view.q, owner: view.owner, stage: view.stage, requests: view.requests, waiting };
 
   return (
     <div className="min-h-0 flex-1 overflow-auto">
@@ -174,41 +213,41 @@ export default async function ReturnsPage({ searchParams }: {
         ) : null}
         <div className="grid grid-cols-12 gap-4">
           <QueueCard
-            href={boardHref(filters, { waiting: waiting === "staff" ? null : "staff" })}
+            {...boardHref(filters, { waiting: waiting === "staff" ? null : "staff" })}
             label="On you"
-            value={onStaff}
+            count={onStaff}
             hint="The firm owes the next step"
             active={waiting === "staff"}
             art="/images/illustrations/on-you.png"
           />
           <QueueCard
-            href={boardHref(filters, { waiting: waiting === "client" ? null : "client" })}
+            {...boardHref(filters, { waiting: waiting === "client" ? null : "client" })}
             label="On the client"
-            value={onClient}
+            count={onClient}
             hint="Waiting for something from them"
             active={waiting === "client"}
             art="/images/illustrations/on-the-client.png"
           />
           <QueueCard
-            href={boardHref(filters, { owner: query.owner === "unassigned" ? null : "unassigned" })}
+            {...boardHref(filters, { owner: view.owner === "unassigned" ? null : "unassigned" })}
             label="Unassigned"
-            value={unassigned}
+            count={unassigned}
             hint="No preparer yet"
-            active={query.owner === "unassigned"}
+            active={view.owner === "unassigned"}
             art="/images/illustrations/unassigned.png"
           />
         </div>
         <Card>
           <CardContent className="flex flex-col gap-4">
-            <form className="flex flex-wrap items-end gap-3">
+            <RememberForm view={viewCookie.returns} keys={["q", "owner", "stage", "requests", "waiting"]} className="flex flex-wrap items-end gap-3">
               {waiting ? <input type="hidden" name="waiting" value={waiting} /> : null}
               <label className="grid gap-1 text-xs text-muted-foreground">
                 Find a customer
-                <Input name="q" defaultValue={query.q} placeholder="Name, email, or year" className="w-56" />
+                <Input name="q" defaultValue={view.q} placeholder="Name, email, or year" className="w-56" />
               </label>
               <label className="grid gap-1 text-xs text-muted-foreground">
                 Preparer
-                <select className={selectStyle} name="owner" defaultValue={query.owner ?? ""}>
+                <select className={selectStyle} name="owner" defaultValue={view.owner ?? ""}>
                   <option value="">Anyone</option>
                   <option value="mine">Assigned to me</option>
                   <option value="unassigned">Unassigned</option>
@@ -216,7 +255,7 @@ export default async function ReturnsPage({ searchParams }: {
               </label>
               <label className="grid gap-1 text-xs text-muted-foreground">
                 Stage
-                <select className={selectStyle} name="stage" defaultValue={query.stage ?? ""}>
+                <select className={selectStyle} name="stage" defaultValue={view.stage ?? ""}>
                   <option value="">Open returns</option>
                   {Object.entries(stages).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
@@ -225,7 +264,7 @@ export default async function ReturnsPage({ searchParams }: {
               </label>
               <label className="grid gap-1 text-xs text-muted-foreground">
                 Documents
-                <select className={selectStyle} name="requests" defaultValue={query.requests ?? ""}>
+                <select className={selectStyle} name="requests" defaultValue={view.requests ?? ""}>
                   <option value="">Any documents</option>
                   <option value="review">Ready for the firm to review</option>
                   <option value="waiting">Still with the customer</option>
@@ -235,7 +274,7 @@ export default async function ReturnsPage({ searchParams }: {
               <p className="pb-1.5 text-sm text-muted-foreground tabular-nums">
                 {visible.length} {visible.length === 1 ? "return" : "returns"}
               </p>
-            </form>
+            </RememberForm>
             {visible.length === 0 ? (
               <LiniqoEmpty {...liniqo.taxDesk}>
                 No returns in this view. A return is opened from the customer’s <Link href="/contacts">contact</Link>.
@@ -250,11 +289,11 @@ export default async function ReturnsPage({ searchParams }: {
                   <span>Preparer</span>
                   <span className="sr-only">Open</span>
                 </li>
-                {visible.map(({ item, next, clientName }) => {
+                {visible.map(({ item, stage, next, clientName }) => {
                   const email = people.get(item.profileId)?.email;
                   const filedAs = sameParty(item.entity, clientName) ? null : item.entity;
                   const owner = nameOf(item.owner) || "Unassigned";
-                  const overdue = Boolean(item.due && item.due < today);
+                  const overdue = stage !== "canceled" && Boolean(item.due && item.due < today);
                   const photo = avatarUrl(item.profileId, people.get(item.profileId)?.avatarPath);
                   return (
                     <li key={item.id} className="border-b py-3 last:border-b-0">
@@ -276,8 +315,8 @@ export default async function ReturnsPage({ searchParams }: {
                           </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant={stageTone(item.stage)}>{stages[item.stage]}</Badge>
-                          {item.waitingOn ? <Badge variant={waitingTone(item.waitingOn)}>{waitingLabel(item.waitingOn)}</Badge> : null}
+                          <Badge variant={stageTone(stage)}>{stages[stage]}</Badge>
+                          {stage !== "canceled" && item.waitingOn ? <Badge variant={waitingTone(item.waitingOn)}>{waitingLabel(item.waitingOn)}</Badge> : null}
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">{next.headline}</p>
@@ -324,17 +363,20 @@ export default async function ReturnsPage({ searchParams }: {
   );
 }
 
-function QueueCard({ href, label, value, hint, active, art }: {
+function QueueCard({ href, saved, label, count, hint, active, art }: {
   href: string;
+  saved: string;
   label: string;
-  value: number;
+  count: number;
   hint: string;
   active: boolean;
   art: string;
 }) {
   return (
-    <Link
+    <RememberLink
       href={href}
+      view={viewCookie.returns}
+      value={saved}
       aria-current={active ? "page" : undefined}
       className={cn(
         "relative col-span-12 flex min-h-36 flex-col gap-1 overflow-hidden rounded-xl bg-card px-4 py-3 pe-28 ring-1 ring-foreground/10 sm:min-h-40 sm:pe-32 lg:col-span-4 lg:min-h-44 lg:pe-44",
@@ -342,7 +384,7 @@ function QueueCard({ href, label, value, hint, active, art }: {
       )}
     >
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-2xl font-semibold tabular-nums">{value.toLocaleString("en-US")}</span>
+      <span className="text-2xl font-semibold tabular-nums">{count.toLocaleString("en-US")}</span>
       <span className="text-xs text-muted-foreground">{active ? "Showing these returns" : hint}</span>
       <Image
         src={art}
@@ -351,6 +393,6 @@ function QueueCard({ href, label, value, hint, active, art }: {
         height={768}
         className="pointer-events-none absolute bottom-0 end-0 h-20 w-auto sm:h-24 lg:h-40"
       />
-    </Link>
+    </RememberLink>
   );
 }

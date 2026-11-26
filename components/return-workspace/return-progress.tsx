@@ -1,24 +1,48 @@
 import Link from "next/link";
-import { CheckIcon } from "lucide-react";
 import { LinkPendingMark } from "@/components/ui/button";
+import { Stepper, StepperDescription, StepperIndicator, StepperItem, StepperLabel, StepperList, StepperTrigger } from "@/components/ui/stepper";
 import { readinessLabel, type Readiness, type StageReadiness } from "@/lib/return-readiness";
 import { returnTabHref } from "@/lib/return-progress";
 import type { Stage } from "@/lib/return-workflow";
 import { cn } from "@/lib/utils";
 
-function markClass(readiness: Readiness, current: boolean): string {
+function activeStepId(steps: StageReadiness[], operational: Stage): string | null {
+  switch (operational) {
+    case "canceled":
+    case "lead":
+    case "onboarding":
+      return null;
+    case "renewal":
+      return "delivery";
+    case "documents": {
+      const documents = steps.find((step) => step.id === "documents");
+      const letter = steps.find((step) => step.id === "letter");
+      if (documents && documents.readiness !== "complete") return "documents";
+      return letter?.id ?? "documents";
+    }
+    case "preparation":
+    case "review":
+    case "approval":
+    case "filing":
+    case "delivery":
+      return steps.find((step) => step.stage === operational)?.id ?? null;
+    default: {
+      const exhaustive: never = operational;
+      return exhaustive;
+    }
+  }
+}
+
+function isProblem(readiness: Readiness): boolean {
   switch (readiness) {
-    case "complete":
-      return "bg-foreground text-background";
-    case "in_progress":
-      return "bg-foreground/10 text-foreground ring-1 ring-foreground/30";
     case "blocked":
-      return "bg-destructive/10 text-destructive ring-1 ring-destructive/40";
     case "needs_attention":
-    case "unknown":
-      return "bg-amber-500/15 text-amber-800 ring-1 ring-amber-500/40 dark:text-amber-200";
+      return true;
     case "not_started":
-      return current ? "bg-foreground/10 text-foreground ring-1 ring-foreground/30" : "bg-muted text-muted-foreground";
+    case "in_progress":
+    case "complete":
+    case "unknown":
+      return false;
     default: {
       const exhaustive: never = readiness;
       return exhaustive;
@@ -37,32 +61,45 @@ export function ReturnProgress({
   profileId: string;
   returnId: string;
 }) {
+  if (operational === "canceled") {
+    return (
+      <div className="rounded-lg border px-3 py-3">
+        <p className="text-sm font-medium">Canceled</p>
+        <p className="text-sm text-muted-foreground">This return is no longer moving through Documents, Preparation, Review, Authorization, Filing, or Delivery.</p>
+      </div>
+    );
+  }
+
+  const currentId = activeStepId(steps, operational);
+  const currentIndex = steps.findIndex((step) => step.id === currentId);
+  const track = steps.map((step) => ({ value: step.id }));
+  const stepperSteps = currentIndex >= 0 ? track : [{ value: "before" }, ...track];
+  const stepperValue = currentIndex >= 0 ? steps[currentIndex].id : "before";
+
   return (
-    <ol aria-label="Return progress" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-      {steps.map((step, index) => {
-        const current = step.stage === operational || (operational === "renewal" && step.stage === "delivery");
-        return (
-          <li key={step.id}>
-            <Link
-              href={returnTabHref(profileId, returnId, step.tab)}
-              scroll={false}
-              aria-current={current ? "step" : undefined}
-              className="flex min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 hover:bg-muted has-data-[pending]:bg-muted"
-            >
-              <span className={cn("flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium", markClass(step.readiness, current))}>
-                {step.readiness === "complete" ? <CheckIcon className="size-3" aria-hidden="true" /> : index + 1}
-              </span>
-              <span className="min-w-0">
-                <span className={cn("block truncate text-sm", current && "font-medium")}>{step.label}</span>
-                <span className={cn("block truncate text-xs", step.readiness === "blocked" ? "text-destructive" : "text-muted-foreground")}>
-                  {readinessLabel(step.readiness)}
-                </span>
-              </span>
-              <LinkPendingMark />
-            </Link>
-          </li>
-        );
-      })}
-    </ol>
+    <Stepper value={stepperValue} steps={stepperSteps} orientation="horizontal" className="gap-0">
+      <StepperList aria-label="Return progress" className="pb-0">
+        {steps.map((step, index) => {
+          const current = index === currentIndex;
+          const problem = isProblem(step.readiness);
+          const finished = step.readiness === "complete";
+          const passed = !problem && currentIndex >= 0 && index < currentIndex;
+          return (
+            <StepperItem key={step.id} value={step.id} completed={passed} error={problem} defaultTrigger={false}>
+              <StepperTrigger asChild>
+                <Link href={returnTabHref(profileId, returnId, step.tab)} scroll={false}>
+                  <StepperIndicator>{finished || passed ? "✓" : problem ? "!" : index + 1}</StepperIndicator>
+                  <span className="grid gap-0.5">
+                    <StepperLabel>{step.label}</StepperLabel>
+                    <StepperDescription className={cn(problem && "text-destructive")}>{readinessLabel(step.readiness)}</StepperDescription>
+                  </span>
+                  <LinkPendingMark />
+                </Link>
+              </StepperTrigger>
+            </StepperItem>
+          );
+        })}
+      </StepperList>
+    </Stepper>
   );
 }

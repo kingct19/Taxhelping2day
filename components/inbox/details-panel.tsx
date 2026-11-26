@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDownIcon, FileIcon, LinkIcon, SendHorizontalIcon, SparklesIcon, XIcon } from "lucide-react";
@@ -106,6 +107,7 @@ export function DetailsPanel({
   onPatch: (patch: ConversationPatch) => void;
 }) {
   const router = useRouter();
+  const [panel, setPanel] = useSavedState<"details" | "copilot">("view:inbox-details-tab", "details", (value): value is "details" | "copilot" => value === "details" || value === "copilot");
   const [tag, setTag] = useState("");
   const [ask, setAsk] = useState("");
   if (!conversation) return null;
@@ -149,7 +151,13 @@ export function DetailsPanel({
 
   return (
     <aside className="flex h-full w-80 shrink-0 flex-col border-l bg-sidebar">
-      <Tabs defaultValue="details" className="flex min-h-0 flex-1 flex-col">
+      <Tabs
+        value={panel}
+        onValueChange={(value) => {
+          if (value === "details" || value === "copilot") setPanel(value);
+        }}
+        className="flex min-h-0 flex-1 flex-col"
+      >
         <div className="flex h-14 shrink-0 items-center border-b px-3">
           <TabsList>
             <TabsTrigger value="details">Details</TabsTrigger>

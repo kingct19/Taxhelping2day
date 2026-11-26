@@ -1,6 +1,6 @@
-import { isStage, stageOrder, stages, type Stage } from "@/lib/return-workflow";
+import { isStage, stageIndex, stageOrder, stages, type Stage } from "@/lib/return-workflow";
 
-export const automationEvents = ["invited", "accepted", "profile_complete", "documents_ready", "efile_signed", "filing_accepted"] as const;
+export const automationEvents = ["invited", "accepted", "profile_complete", "documents_ready", "efile_signed", "filing_accepted", "return_cancelled"] as const;
 export type AutomationEvent = (typeof automationEvents)[number];
 
 export const triggerKinds = ["event", "entered_stage", "stage_age", "tag_added", "tag_removed"] as const;
@@ -75,6 +75,7 @@ const defaultIds = {
   filing: "a1000000-0000-4000-8000-000000000006",
   documentsWait: "a1000000-0000-4000-8000-000000000007",
   leadCheck: "a1000000-0000-4000-8000-000000000008",
+  cancelled: "a1000000-0000-4000-8000-000000000009",
 } as const;
 
 function blankRule(input: Pick<Automation, "id" | "name" | "enabled" | "triggerKind" | "position"> & Partial<Automation>): Automation {
@@ -124,6 +125,7 @@ export function defaultAutomations(): Automation[] {
       emailBody: "Hi {{client_name}}, {{firm_name}} invited you to the portal. Sign in to get started: {{portal_link}}",
       position: 7,
     }),
+    blankRule({ id: defaultIds.cancelled, name: "Return cancelled", enabled: true, triggerKind: "event", event: "return_cancelled", moveToStage: "canceled", position: 8 }),
   ];
 }
 
@@ -159,6 +161,8 @@ export function eventLabel(event: AutomationEvent): string {
       return "Form 8879 is signed";
     case "filing_accepted":
       return "a filing is accepted";
+    case "return_cancelled":
+      return "the client cancels a return";
     default: {
       const exhaustive: never = event;
       return exhaustive;
@@ -266,8 +270,9 @@ export function fillEmail(template: string, values: { clientName: string; firmNa
 
 export function allowsAutomationMove(trigger: TriggerKind, from: Stage, to: Stage): boolean {
   if (from === to) return false;
+  if (to === "canceled") return true;
   if (trigger === "tag_added" || trigger === "tag_removed" || trigger === "stage_age") return true;
-  return stageOrder.indexOf(to) > stageOrder.indexOf(from);
+  return stageIndex(to) > stageIndex(from);
 }
 
 export function daysSince(iso: string, now: Date): number {

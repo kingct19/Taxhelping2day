@@ -12,12 +12,17 @@ import {
   clientActions,
   clientFirstName,
   deriveClientStage,
+  documentsForReturn,
   firmRequestedPoa,
   pickReturn,
+  returnClientStatus,
+  returnHoldsUpload,
+  returnTypeName,
   type LetterSnapshot,
 } from "@/lib/client-home";
 import { emptyIntake } from "@/lib/filing-needs";
 import { seasonFor } from "@/lib/season";
+import { refreshProfileLetters } from "@/lib/docuseal";
 import { engagementLetter } from "@/lib/engagement-letter";
 import { firm } from "@/lib/firm";
 import { replyExpectation, summarizeHours } from "@/lib/office-hours";
@@ -38,6 +43,7 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
   const store = getStore();
   const profile = await store.getProfile(profileId);
   if (!profile) return null;
+  await refreshProfileLetters(profile.id);
   const [signatures, messages, returns, filings, authorizations, invoices, documents, catalog, officeHours] = await Promise.all([
     store.listSignatures(profile.id),
     store.listMessages(profile.id),
@@ -50,26 +56,48 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
     store.getOfficeHours(),
   ]);
   const mine = returns.filter((item) => item.profileId === profile.id);
-  const current = pickReturn(mine);
-  const currentFilings = filings.filter((filing) => filing.returnId === current?.id);
-  const currentAuthorizations = authorizations.filter((item) => item.returnId === current?.id);
-  const threads = requestThreads(messages.filter((message) => !current || !message.returnId || message.returnId === current.id));
+  const open = mine
+    .filter((item) => !item.archivedAt && item.stage !== "canceled")
+    .sort((left, right) => right.taxYear - left.taxYear || left.id.localeCompare(right.id));
+  const current = pickReturn(open);
   const letterState = await engagementLetter(mine.map((item) => item.id));
   const letter: LetterSnapshot = letterState.status;
   const returnIds = new Set(mine.map((item) => item.id));
   const sentInvoices = invoices.filter((invoice) => returnIds.has(invoice.returnId) && invoice.status === "sent");
-  const invoice = sentInvoices.find((item) => item.returnId === current?.id) ?? sentInvoices[0] ?? null;
   const poaAsked = firmRequestedPoa(messages);
+  const rows = open.map((item) => {
+    const name = returnTypeName(item, catalog);
+    const threads = requestThreads(messages.filter((message) => message.returnId === item.id));
+    const season = seasonFor(
+      profile,
+      signatures,
+      documentsForReturn(item.id, documents, messages),
+      { answered: item.desk.intakeAnswered, needs: item.desk.filingNeeds },
+      catalog,
+      { threads, filingTypeId: item.filingTypeId || item.taxpayerType },
+    );
+    return {
+      item,
+      label: `${item.taxYear} ${name.label}`,
+      season,
+      status: returnClientStatus(season, item.stage, filings.filter((filing) => filing.returnId === item.id)),
+      holdsUpload: returnHoldsUpload(season, item.stage),
+    };
+  });
   const actions = clientActions({
     profile,
     signatures,
-    threads,
-    authorizations: currentAuthorizations,
-    filings: currentFilings,
-    invoice,
     letter,
     poaAsked,
-    returnVersion: current?.returnVersion ?? 1,
+    files: rows.map((row) => ({
+      id: row.item.id,
+      label: row.label,
+      threads: requestThreads(messages.filter((message) => message.returnId === row.item.id)),
+      authorizations: authorizations.filter((item) => item.returnId === row.item.id),
+      filings: filings.filter((filing) => filing.returnId === row.item.id),
+      invoice: sentInvoices.find((invoice) => invoice.returnId === row.item.id) ?? null,
+      returnVersion: row.item.returnVersion,
+    })),
   });
   const owner = current?.owner ? await store.getProfile(current.owner) : null;
   const authors = new Map<string, string>([[profile.id, profile.name || "You"]]);
@@ -96,14 +124,15 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
         group: activityGroup(described.label),
       };
     });
-  const season = seasonFor(
-    profile,
-    signatures,
-    documents,
-    current ? { answered: current.desk.intakeAnswered, needs: current.desk.filingNeeds } : emptyIntake(),
-    catalog,
-  );
-  const progress = deriveClientStage({ returnStage: current?.stage ?? null, filings: currentFilings, season });
+  const primary = rows.find((row) => row.item.id === current?.id) ?? rows[0] ?? null;
+  const season = rows.some((row) => row.holdsUpload) ? "documents" : primary?.season ?? seasonFor(profile, signatures, documents, emptyIntake(), catalog);
+  const progress = rows.some((row) => row.holdsUpload)
+    ? "upload_documents"
+    : deriveClientStage({
+        returnStage: primary?.item.stage ?? null,
+        filings: filings.filter((filing) => filing.returnId === primary?.item.id),
+        season,
+      });
   const first = clientFirstName(profile.name);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -117,6 +146,18 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
         <Card className="shadow-none">
           <CardContent>
             <StageChecklist stage={progress} />
+            {rows.length > 0 ? (
+              <ul className="mt-4 grid gap-2">
+                {rows.map((row) => (
+                  <li key={row.item.id}>
+                    <Link href={`/portal/documents?return=${row.item.id}`} className="flex items-center justify-between gap-3 rounded-lg px-2 py-1 text-sm hover:bg-muted">
+                      <span>{row.item.taxYear} · {returnTypeName(row.item, catalog).label}</span>
+                      <span className="text-muted-foreground">{row.status}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </CardContent>
         </Card>
         <div className="grid grid-cols-12 gap-4">
@@ -125,16 +166,20 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
               <div className="flex max-w-md flex-col gap-3">
                 <h1 className="text-2xl font-semibold tracking-tight">{greeting}, {first}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {current ? "Stay informed on this return. Here is the work still moving." : "Your return stays in one place. Here is the next step."}
+                  {open.length > 1
+                    ? "Each year is its own return. The list above shows what is still moving."
+                    : current
+                      ? "Stay informed on this return. Here is the work still moving."
+                      : "Your return stays in one place. Here is the next step."}
                 </p>
                 {readOnly ? (
                   <Button className="mt-2 w-fit rounded-lg" disabled>
-                    View documents
+                    View returns
                     <ArrowRightIcon />
                   </Button>
                 ) : (
                   <Button nativeButton={false} className="mt-2 w-fit rounded-lg" render={<Link href="/portal/documents" />}>
-                    View documents
+                    View returns
                     <ArrowRightIcon />
                   </Button>
                 )}
@@ -195,10 +240,10 @@ export async function PortalHome({ profileId, readOnly = false }: { profileId: s
               <div className="flex items-center justify-between gap-3">
                 <CardHeading icon={FileTextIcon} title="What needs you" />
                 {readOnly ? (
-                  <Button variant="outline" size="sm" disabled>Documents</Button>
+                  <Button variant="outline" size="sm" disabled>Returns</Button>
                 ) : (
                   <Button nativeButton={false} variant="outline" size="sm" render={<Link href="/portal/documents" />}>
-                    Documents
+                    Returns
                   </Button>
                 )}
               </div>

@@ -6,7 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { advanceRequest, uploadDocument } from "@/lib/actions";
 import { requirementStatusLabel, requirementTone, type RequirementCardModel } from "@/lib/client-home";
-import type { DocumentKind } from "@/lib/types";
+import type { DocumentKind, DocumentRecord } from "@/lib/types";
+
+function FilePreview({ file }: { file: DocumentRecord }) {
+  const image = file.contentType.startsWith("image/");
+  if (image) {
+    return (
+      <a href={`/files/documents/${file.id}?preview=1`} className="grid w-fit gap-1">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/files/documents/${file.id}?preview=1`} alt={file.filename} className="max-h-48 max-w-full rounded-lg border object-cover" />
+        <span className="text-xs text-muted-foreground break-all">{file.filename}</span>
+      </a>
+    );
+  }
+  return (
+    <a className="text-sm underline break-all" href={`/files/documents/${file.id}`}>
+      {file.filename}
+    </a>
+  );
+}
 
 function documentIcon(kind: DocumentKind | null): LucideIcon {
   switch (kind) {
@@ -65,12 +83,10 @@ export function RequirementCards({ cards, readOnly = false }: { cards: Requireme
               <p className="text-sm text-muted-foreground">Uploaded. The firm still needs to review this. An upload is not an acceptance.</p>
             ) : null}
             {card.files.length > 0 ? (
-              <ul className="grid gap-1">
+              <ul className="grid gap-2">
                 {card.files.map((file) => (
                   <li key={file.id}>
-                    <a className="text-sm underline break-all" href={`/files/documents/${file.id}`}>
-                      {file.filename}
-                    </a>
+                    <FilePreview file={file} />
                   </li>
                 ))}
               </ul>
@@ -80,7 +96,7 @@ export function RequirementCards({ cards, readOnly = false }: { cards: Requireme
                 <UploadField
                   action={advanceRequest.bind(null, card.respond.profileId, card.respond.latestId)}
                   label={card.files.length > 0 ? "Replace file" : "Upload"}
-                  fields={{}}
+                  fields={{ kind: card.kind ?? "other" }}
                 />
                 {card.allowUnavailable ? (
                   <form action={advanceRequest.bind(null, card.respond.profileId, card.respond.latestId)} className="grid gap-2">
@@ -96,7 +112,7 @@ export function RequirementCards({ cards, readOnly = false }: { cards: Requireme
               <UploadField
                 action={uploadDocument}
                 label={card.files.length > 0 ? "Add another file" : "Upload"}
-                fields={{ kind: card.upload.kind, title: card.upload.title }}
+                fields={{ kind: card.upload.kind, title: card.upload.title, returnId: card.upload.returnId }}
               />
             ) : null}
           </li>

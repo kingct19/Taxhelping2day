@@ -1,6 +1,7 @@
 "use client";
 
 import { Children, cloneElement, isValidElement, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
@@ -26,6 +27,10 @@ const filters = [
 ] as const;
 
 type FilterId = (typeof filters)[number]["id"];
+
+function isFilterId(value: unknown): value is FilterId {
+  return filters.some((item) => item.id === value);
+}
 
 function tagName(tags: FirmTag[], id: string) {
   return tags.find((tag) => tag.id === id)?.name ?? "a deleted tag";
@@ -73,7 +78,7 @@ function fromRule(rule: Automation): AutomationDraft {
 
 export function AutomationDesk({ rules, tags }: { rules: Automation[]; tags: FirmTag[] }) {
   const router = useRouter();
-  const [filter, setFilter] = useState<FilterId>("all");
+  const [filter, setFilter] = useSavedState<FilterId>("view:automations", "all", isFilterId);
   const [draft, setDraft] = useState<AutomationDraft | null>(null);
   const [moveOn, setMoveOn] = useState(true);
   const [emailOn, setEmailOn] = useState(false);
@@ -250,6 +255,7 @@ function applyWhen(draft: AutomationDraft, choice: WhenChoice): AutomationDraft 
     case "documents_ready":
     case "efile_signed":
     case "filing_accepted":
+    case "return_cancelled":
       return { ...draft, triggerKind: "event", event: choice };
     default: {
       const exhaustive: never = choice;
@@ -339,7 +345,7 @@ function AutomationFlow({
         <div className="flex min-h-9 flex-wrap items-center gap-2">
           <span>{lead} update the stage to</span>
           <PillSelect value={draft.moveToStage ?? "onboarding"} onChange={(moveToStage) => onDraft({ ...draft, moveToStage })} label="Stage">
-            {stageOrder.map((stage) => (
+            {[...stageOrder, "canceled" as const].map((stage) => (
               <option key={stage} value={stage}>{stages[stage]}</option>
             ))}
           </PillSelect>

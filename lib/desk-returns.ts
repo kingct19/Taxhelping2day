@@ -3,7 +3,7 @@ import { avatarUrl } from "@/lib/avatar";
 import { advanceBlocker, sendBackBlocker } from "@/lib/engagement";
 import { staffNext } from "@/lib/next-action";
 import { requestThreads } from "@/lib/request-thread";
-import { nextStage, sendBackTarget, type Stage, type WaitingOn } from "@/lib/return-workflow";
+import { nextStage, sendBackTarget, shownStage, type Stage, type WaitingOn } from "@/lib/return-workflow";
 import { getStore } from "@/lib/store";
 import type { TaxpayerType } from "@/lib/types";
 
@@ -79,17 +79,18 @@ export async function loadDeskReturns(): Promise<DeskReturn[]> {
       const pack = byClient.get(item.profileId);
       const threads = requestThreads((pack?.messages ?? []).filter((row) => row.returnId === item.id));
       const returnFilings = filings.filter((row) => row.returnId === item.id);
+      const stage = shownStage(item);
       const next = staffNext({
         name: clientName,
         due: item.due,
-        stage: item.stage,
+        stage,
         threads,
         filings: returnFilings,
         authorizations: authorizations.filter((row) => row.returnId === item.id),
         returnVersion: item.returnVersion,
       });
-      const forward = nextStage(item.stage);
-      const back = sendBackTarget(item.stage);
+      const forward = nextStage(stage);
+      const back = sendBackTarget(stage);
       const gate = profile
         ? {
             workflow: item,
@@ -106,19 +107,19 @@ export async function loadDeskReturns(): Promise<DeskReturn[]> {
         id: item.id,
         profileId: item.profileId,
         revision: item.revision,
-        stage: item.stage,
+        stage,
         clientName,
         clientEmail: profile?.email ?? "",
         avatar: avatarUrl(item.profileId, profile?.avatarPath),
         entity: item.entity,
         taxpayerType: item.taxpayerType,
         taxYear: item.taxYear,
-        headline: next.urgency < 7 ? next.headline : item.nextAction.trim() || next.headline,
+        headline: stage === "canceled" || next.urgency < 7 ? next.headline : item.nextAction.trim() || next.headline,
         step: next.headline,
         detail: next.detail,
         due: item.due,
-        overdue: Boolean(item.due && item.due < today && item.stage !== "delivery" && item.stage !== "renewal"),
-        waitingOn: item.waitingOn,
+        overdue: Boolean(item.due && item.due < today && stage !== "delivery" && stage !== "renewal" && stage !== "canceled"),
+        waitingOn: stage === "canceled" ? null : item.waitingOn,
         ownerId: item.owner,
         ownerName: nameOf(item.owner) || "Unassigned",
         tags: returnTags.flatMap((row) => (row.returnId === item.id ? [tagName.get(row.tagId) ?? ""] : [])).filter(Boolean),

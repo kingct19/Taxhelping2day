@@ -1,21 +1,37 @@
 import Link from "next/link";
+import { LetterTrail, letterPhaseLabel, signingPhase } from "@/components/letter-trail";
 import { packetDb, signingConfigured } from "@/lib/docuseal";
+import { engagementLetterTitle } from "@/lib/engagement-letter";
 import { packetFiles, packetSigners } from "@/lib/smartdoc-prefill";
-import { sendEngagement, sendSmartdocToReturn } from "@/lib/signing-actions";
+import { getStore } from "@/lib/store";
+import { taxpayerTypeLabel } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { sendEngagement } from "@/lib/signing-actions";
+import { SendDocumentForm } from "@/components/smartdocs/send-document-form";
 import { Button } from "@/components/ui/button";
 
-const selectStyle = "h-8 w-full rounded-lg border border-input bg-white px-2 text-sm";
-
-type LibraryTemplate = { id: string; name: string; docuseal_template_id: number | null; archived_at: string | null };
+type LibraryTemplate = { id: string; name: string; kind: string | null; docuseal_template_id: number | null; archived_at: string | null };
 
 export async function EngagementPacket({ profileId, returnId, email }: { profileId: string; returnId: string; email: string }) {
   const db = packetDb();
-  const packetsResult = db ? await db.from("signing_packets").select("id,template_id,template_ref,recipient,status,signer_states,files").eq("return_id", returnId) : null;
+  const store = getStore();
+  const [client, returns] = await Promise.all([store.getProfile(profileId), store.listReturns(profileId)]);
+  const filed = returns.find((item) => item.id === returnId);
+  const letterTitle = filed
+    ? engagementLetterTitle({
+        name: client?.name || filed.entity,
+        year: filed.taxYear,
+        type: taxpayerTypeLabel(filed.taxpayerType).toLowerCase(),
+        entity: filed.entity,
+      })
+    : "Engagement letter";
+  const packetsResult = db ? await db.from("signing_packets").select("id,template_id,template_ref,recipient,status,signer_states,files,sent_at").eq("return_id", returnId) : null;
   if (packetsResult?.error) throw packetsResult.error;
-  const templatesResult = db ? await db.from("signing_templates").select("id,name,docuseal_template_id,archived_at").is("archived_at", null).order("name") : null;
+  const templatesResult = db ? await db.from("signing_templates").select("id,name,kind,docuseal_template_id,archived_at").order("name") : null;
   if (templatesResult?.error) throw templatesResult.error;
+  const templates = (templatesResult?.data ?? []) as LibraryTemplate[];
   const packets = packetsResult?.data ?? [];
-  const library = ((templatesResult?.data ?? []) as LibraryTemplate[]).filter((template) => template.docuseal_template_id);
+  const library = templates.filter((template) => !template.archived_at && template.docuseal_template_id);
   const envTemplate = Number(process.env.DOCUSEAL_ENGAGEMENT_TEMPLATE_ID);
   const envInLibrary = library.some((template) => template.docuseal_template_id === envTemplate);
   const envSent = packets.some((packet) => packet.template_id === envTemplate && !packet.template_ref);
@@ -28,12 +44,25 @@ export async function EngagementPacket({ profileId, returnId, email }: { profile
       </div>
       {packets.map((packet) => {
         const files = packetFiles(packet.files);
+        const signers = packetSigners(packet.signer_states);
+        const signer = signers[0];
+        const phase = signingPhase(packet.status, signer);
+        const template = templates.find((item) => item.id === packet.template_ref);
+        const engagement = template?.kind === "engagement" || (!packet.template_ref && packet.template_id === envTemplate);
+        const title = engagement ? letterTitle : template?.name || "Document";
         return (
-          <div key={packet.id} className="grid gap-1 text-sm">
-            <p>{packet.recipient} · {packet.status}</p>
-            {packetSigners(packet.signer_states).map((person) => (
-              <p key={person.email} className="text-muted-foreground">{person.email} · {person.status}</p>
-            ))}
+          <div key={packet.id} className="grid gap-2 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-medium">{title}</p>
+              <Badge variant={phase === "signed" ? "success" : phase === "declined" ? "destructive" : "progress"}>{letterPhaseLabel(phase)}</Badge>
+            </div>
+            <p className="text-muted-foreground">{packet.recipient}</p>
+            <LetterTrail
+              phase={phase}
+              sentAt={signer?.sentAt || packet.sent_at || null}
+              openedAt={signer?.openedAt || null}
+              signedAt={signer?.completedAt || null}
+            />
             {files.map((file, index) => (
               <a className="underline" key={`${packet.id}-${index}`} href={`/files/packets/${packet.id}/${index}`}>{file.name}</a>
             ))}
@@ -41,15 +70,7 @@ export async function EngagementPacket({ profileId, returnId, email }: { profile
         );
       })}
       {library.length > 0 ? (
-        <form action={sendSmartdocToReturn.bind(null, profileId, returnId)} className="grid gap-2">
-          <label className="grid gap-1">
-            <span className="text-xs font-medium text-muted-foreground">Document</span>
-            <select className={selectStyle} name="template" defaultValue={library[0]?.id}>
-              {library.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
-            </select>
-          </label>
-          <Button type="submit" size="sm" className="w-fit">Send to {email}</Button>
-        </form>
+        <SendDocumentForm profileId={profileId} returnId={returnId} email={email} templates={library} />
       ) : null}
       {signingConfigured() && !envInLibrary && !envSent ? (
         <form action={sendEngagement.bind(null, profileId, returnId)}>

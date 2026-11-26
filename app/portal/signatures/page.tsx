@@ -1,10 +1,12 @@
 import { EfilePanel } from "@/components/efile-panel";
+import { LetterTrail, letterPhaseLabel } from "@/components/letter-trail";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { PoaPanel } from "@/components/portal/poa-panel";
 import { requireProfile } from "@/lib/auth";
 import { pickReturn, showPoa } from "@/lib/client-home";
-import { packetDb } from "@/lib/docuseal";
-import { engagementLetter } from "@/lib/engagement-letter";
+import { packetDb, refreshProfileLetters } from "@/lib/docuseal";
+import { engagementLetter, engagementLetterTitle } from "@/lib/engagement-letter";
+import { taxpayerTypeLabel } from "@/lib/types";
 import { packetFiles } from "@/lib/smartdoc-prefill";
 import { getStore } from "@/lib/store";
 import { signerLabel } from "@/lib/next-action";
@@ -24,6 +26,7 @@ type ClientPacket = {
 
 export default async function SignaturesPage() {
   const profile = await requireProfile("client");
+  await refreshProfileLetters(profile.id);
   const store = getStore();
   const [signatures, messages, returns, authorizations] = await Promise.all([
     store.listSignatures(profile.id),
@@ -47,24 +50,25 @@ export default async function SignaturesPage() {
     : null;
   if (packets?.error) throw packets.error;
   const packetRows = (packets?.data ?? []) as ClientPacket[];
-  const names = new Map<string, string>();
+  const names = new Map<string, { name: string; kind: string | null }>();
   if (db) {
-    const templates = await db.from("signing_templates").select("id,name");
+    const templates = await db.from("signing_templates").select("id,name,kind");
     if (templates.error) throw templates.error;
-    for (const template of templates.data ?? []) names.set(template.id, template.name);
+    for (const template of templates.data ?? []) names.set(template.id, { name: template.name, kind: template.kind });
   }
 
   const awaitingLetter = letter.status === "unsigned" && !engagement;
   const awaitingEfile = Boolean(current) && rows.length === 0;
   const awaitingPoa = poaVisible && !poa && !poaReady;
-  const readyLetter = letter.status === "ready";
+  const letterPacket = letter.status === "unsigned" ? null : letter.packetId;
+  const openLetter = letter.status === "sent" || letter.status === "opened" ? letter : null;
+  const finishedLetter = letter.status === "signed" || letter.status === "declined" ? letter : null;
   const readyPoa = poaVisible && !poa && poaReady;
-  const pendingLetter = letter.status === "waiting" && !engagement;
-  const openPackets = packetRows.filter((packet) => packet.status !== "completed");
-  const donePackets = packetRows.filter((packet) => packet.status === "completed");
-  const ready = readyLetter || needed.length > 0 || readyPoa || pendingLetter;
+  const openPackets = packetRows.filter((packet) => packet.status !== "completed" && packet.id !== letterPacket);
+  const donePackets = packetRows.filter((packet) => packet.status === "completed" && (packet.id !== letterPacket || !engagement));
+  const ready = Boolean(openLetter) || needed.length > 0 || readyPoa;
   const preparing = awaitingLetter || awaitingEfile || awaitingPoa || openPackets.length > 0;
-  const completed = Boolean(engagement) || signedAuth.length > 0 || donePackets.length > 0 || Boolean(poa);
+  const completed = Boolean(engagement) || Boolean(finishedLetter) || signedAuth.length > 0 || donePackets.length > 0 || Boolean(poa);
 
   return (
     <div className="grid gap-5">
@@ -84,22 +88,21 @@ export default async function SignaturesPage() {
       {ready ? (
         <section className="grid gap-2">
           <h2 className="text-sm font-medium">Ready to sign</h2>
-          {readyLetter ? (
-            <article className="grid gap-2 rounded-xl bg-card px-3 py-3 ring-1 ring-foreground/10">
+          {openLetter ? (
+            <article className="grid gap-3 rounded-xl bg-card px-3 py-3 ring-1 ring-foreground/10">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium">{letter.title}</p>
-                <Badge variant="progress">Engagement letter</Badge>
+                <p className="font-medium">{openLetter.title}</p>
+                <Badge variant="progress">{letterPhaseLabel(openLetter.status)}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">This starts the work. It does not authorize e-file.</p>
-              <Button nativeButton={false} className="w-fit" size="sm" render={<a href={letter.href} target="_blank" rel="noreferrer" />}>
-                Review and sign
-              </Button>
-            </article>
-          ) : null}
-          {pendingLetter ? (
-            <article className="grid gap-1 rounded-xl bg-card px-3 py-3 text-sm ring-1 ring-foreground/10">
-              <p className="font-medium">Engagement letter</p>
-              <p className="text-muted-foreground">Sent by email. Open the DocuSeal message to finish it. The signed copy appears here afterward.</p>
+              <LetterTrail phase={openLetter.status} sentAt={openLetter.sentAt} openedAt={openLetter.openedAt} signedAt={openLetter.signedAt} />
+              {openLetter.href ? (
+                <Button nativeButton={false} className="w-fit" size="sm" render={<a href={openLetter.href} target="_blank" rel="noreferrer" />}>
+                  Review and sign
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">Open the DocuSeal email to finish signing. The signed copy appears here afterward.</p>
+              )}
             </article>
           ) : null}
           {current && needed.length > 0 ? (
@@ -123,7 +126,10 @@ export default async function SignaturesPage() {
           ) : null}
           {openPackets.map((packet) => {
             const item = mine.find((row) => row.id === packet.return_id);
-            const title = (packet.template_ref && names.get(packet.template_ref)) || "Document";
+            const template = packet.template_ref ? names.get(packet.template_ref) : undefined;
+            const title = item && template?.kind === "engagement"
+              ? engagementLetterTitle({ name: profile.name, year: item.taxYear, type: taxpayerTypeLabel(item.taxpayerType).toLowerCase(), entity: item.entity })
+              : template?.name || "Document";
             return (
               <article key={packet.id} className="rounded-xl bg-card px-3 py-3 text-sm ring-1 ring-foreground/10">
                 <p className="font-medium">{title}</p>
@@ -137,7 +143,20 @@ export default async function SignaturesPage() {
       {completed ? (
         <section className="grid gap-2">
           <h2 className="text-sm font-medium">Completed</h2>
-          {engagement ? (
+          {finishedLetter ? (
+            <article className="grid gap-3 rounded-xl bg-card px-3 py-3 ring-1 ring-foreground/10">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-medium">{finishedLetter.title}</p>
+                <Badge variant={finishedLetter.status === "signed" ? "success" : "destructive"}>{letterPhaseLabel(finishedLetter.status)}</Badge>
+              </div>
+              <LetterTrail phase={finishedLetter.status} sentAt={finishedLetter.sentAt} openedAt={finishedLetter.openedAt} signedAt={finishedLetter.signedAt} />
+              {engagement ? (
+                <a className="text-sm underline" href={`/files/signatures/${engagement.id}`}>
+                  Download signed engagement letter{engagement.signedAt ? ` · ${shortDate(engagement.signedAt)}` : ""}
+                </a>
+              ) : null}
+            </article>
+          ) : engagement ? (
             <a className="text-sm underline" href={`/files/signatures/${engagement.id}`}>
               Download signed engagement letter{engagement.signedAt ? ` · ${shortDate(engagement.signedAt)}` : ""}
             </a>
@@ -149,7 +168,11 @@ export default async function SignaturesPage() {
             </p>
           ))}
           {donePackets.map((packet) => {
-            const title = (packet.template_ref && names.get(packet.template_ref)) || "Signed document";
+            const template = packet.template_ref ? names.get(packet.template_ref) : undefined;
+            const item = mine.find((row) => row.id === packet.return_id);
+            const title = item && template?.kind === "engagement"
+              ? engagementLetterTitle({ name: profile.name, year: item.taxYear, type: taxpayerTypeLabel(item.taxpayerType).toLowerCase(), entity: item.entity })
+              : template?.name || "Signed document";
             const files = packetFiles(packet.files);
             return files.map((file, index) => (
               <a key={`${packet.id}-${index}`} className="text-sm underline" href={`/files/packets/${packet.id}/${index}`}>

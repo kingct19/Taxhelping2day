@@ -1,11 +1,10 @@
 "use server";
 
-import { isStage, nextStage, sendBackTarget, stages } from "@/lib/return-workflow";
+import { clientMayCancel, isStage, nextStage, sendBackTarget, stages } from "@/lib/return-workflow";
 import { deriveStage, filingPlace, filingPrompt, filingStatusLabel } from "@/lib/next-action";
-import { runDocumentsReady, runEfileSigned, runEnteredStage, runFilingAccepted, runInvited, runProfileComplete } from "@/lib/automation-run";
+import { runDocumentsReady, runEfileSigned, runEnteredStage, runFilingAccepted, runInvited, runProfileComplete, runReturnCancelled } from "@/lib/automation-run";
 import { advanceBlocker, sendBackBlocker } from "@/lib/engagement";
 import { seedOrganizer } from "@/lib/organizer";
-import { pickReturn } from "@/lib/client-home";
 import { requestRoot, requestThreads } from "@/lib/request-thread";
 import { preparationBlockers, reviewBlockers } from "@/lib/return-readiness";
 import { preparationChecklist, reviewChecklist, type DeskIssue } from "@/lib/return-desk";
@@ -22,7 +21,7 @@ import { isActiveStaff, isStaffRank, isStaffStatus, teammateUpdateError } from "
 import { buildSignedPdf } from "@/lib/pdf";
 import { formatBytes } from "@/lib/inbox-view";
 import { parseFilingCatalog, returnTaxpayerType } from "@/lib/filing-catalog";
-import { documentKinds, isConversationChannel, isEfileSigner, isFilingJurisdiction, isFilingStatus, isInvoiceStatus, isLeadSource, isRequestBlock, isTaskStatus, isTaxpayerType, orderedFilingTypes, primaryFilingType, serviceLines, type ConversationChannel, type ConversationPatch, type DocumentKind, type EfileSigner, type RequestState, type TaxpayerType } from "@/lib/types";
+import { documentKinds, isConversationChannel, isEfileSigner, isFilingJurisdiction, isFilingStatus, isInvoiceStatus, isLeadSource, isRequestBlock, isTaskStatus, isTaxpayerType, orderedFilingTypes, primaryFilingType, serviceLines, type ConversationChannel, type ConversationPatch, type DocumentKind, type EfileSigner, type Profile, type RequestState, type TaxpayerType } from "@/lib/types";
 
 function isDocumentKind(value: string): value is DocumentKind {
   return documentKinds.some((item) => item === value);
@@ -203,15 +202,17 @@ export async function uploadDocument(formData: FormData) {
     throw new Error("Choose a file up to 15 MB.");
   }
   const store = getStore();
+  const requestedId = String(formData.get("returnId") ?? "");
+  const returns = (await store.listTeamReturns()).filter((item) => item.profileId === profile.id && !item.archivedAt);
+  const current = returns.find((item) => item.id === requestedId) ?? null;
   const document = await store.addDocument({
     profileId: profile.id,
+    returnId: current?.id ?? null,
     kind,
     filename: file.name,
     contentType: file.type || "application/octet-stream",
     bytes: Buffer.from(await file.arrayBuffer()),
   });
-  const returns = (await store.listTeamReturns()).filter((item) => item.profileId === profile.id);
-  const current = pickReturn(returns);
   if (current) {
     const root = await store.addMessage({
       profileId: profile.id,
@@ -242,7 +243,8 @@ export async function uploadDocument(formData: FormData) {
       profileId: profile.id,
       authorId: profile.id,
       authorRole: "client",
-      body: `Uploaded ${file.name}.`,
+      documentId: document.id,
+      body: `Uploaded ${file.name} for review.`,
       kind: "event",
     });
     revalidatePortal();
@@ -669,6 +671,116 @@ export async function chooseFilingType(_state: { error: string | null }, data: F
     return { error: error instanceof Error ? error.message : "Could not open those returns." };
   }
   return { error: null };
+}
+
+async function firmAuthorId(): Promise<string> {
+  const people = await getStore().listProfiles();
+  const staff = people.find((person) => person.role === "staff" && isActiveStaff(person));
+  if (!staff) throw new Error("The firm is not ready to open a return yet.");
+  return staff.id;
+}
+
+async function openClientReturn(profile: Profile, taxYear: number, filingTypeId: string) {
+  const store = getStore();
+  const freshProfile = await store.getProfile(profile.id);
+  if (!freshProfile || freshProfile.role !== "client") throw new Error("Return not found.");
+  const catalog = await store.getFilingCatalog();
+  const type = catalog.types.find((item) => item.id === filingTypeId && !item.retired);
+  if (!type) throw new Error("That filing type is not available.");
+  if (!Number.isInteger(taxYear) || taxYear < 1900 || taxYear > 9999) throw new Error("Enter a four-digit tax year.");
+  const owned = (await store.listTeamReturns()).filter((row) => row.profileId === freshProfile.id);
+  const prior = [...owned].sort((left, right) => right.taxYear - left.taxYear).find((row) => (row.filingTypeId || row.taxpayerType) === filingTypeId && !row.archivedAt);
+  const entity = (prior?.entity || freshProfile.name.trim() || freshProfile.email).slice(0, 150);
+  if (!entity) throw new Error("Add your name before opening a return.");
+  const same = owned.find((row) => row.taxYear === taxYear && (row.filingTypeId || row.taxpayerType) === filingTypeId && row.entity.toLowerCase() === entity.toLowerCase());
+  if (same && (same.archivedAt || same.stage === "canceled")) {
+    if (same.stage !== "canceled" && !clientMayCancel(same.stage)) throw new Error("That year is already on file.");
+    const stage = same.stage === "canceled" ? (same.desk.intakeAnswered ? "documents" : "lead") : same.stage;
+    const restored = await store.updateWorkflow(same.id, { ...same, archivedAt: null, stage, waitingOn: null, nextAction: "" });
+    if (!restored) throw new Error("This return changed. Refresh and try again.");
+  } else if (!same) {
+    await store.createReturn({
+      profileId: freshProfile.id,
+      taxYear,
+      entity,
+      taxpayerType: returnTaxpayerType(filingTypeId),
+      filingTypeId,
+      source: prior ? "returning" : "inquiry",
+      services: prior?.services.includes("tax_return") ? prior.services : ["tax_return"],
+    });
+  }
+  const current = (await store.listTeamReturns()).find((row) => row.profileId === freshProfile.id && !row.archivedAt && row.taxYear === taxYear && (row.filingTypeId || row.taxpayerType) === filingTypeId && row.entity.toLowerCase() === entity.toLowerCase());
+  if (!current) throw new Error("Could not open the return.");
+  const filingTypes = orderedFilingTypes([...(freshProfile.filingTypes ?? [freshProfile.taxpayerType]), filingTypeId], catalog.types.map((item) => item.id));
+  await store.updateProfile(freshProfile.id, {
+    name: freshProfile.name,
+    phone: freshProfile.phone,
+    address: freshProfile.address,
+    city: freshProfile.city,
+    state: freshProfile.state,
+    zip: freshProfile.zip,
+    taxpayerType: filingTypes.some(isTaxpayerType) ? primaryFilingType(filingTypes) : freshProfile.taxpayerType,
+    filingTypes,
+    spouseName: freshProfile.spouseName,
+    taxYears: freshProfile.taxYears,
+  });
+  if (!current.desk.intakeAnswered || !current.services.includes("tax_return") || current.stage === "lead" || current.stage === "onboarding") {
+    const saved = await store.updateWorkflow(current.id, {
+      ...current,
+      stage: current.stage === "lead" || current.stage === "onboarding" ? "documents" : current.stage,
+      services: current.services.includes("tax_return") ? current.services : [...current.services, "tax_return"],
+      desk: { ...current.desk, intakeAnswered: true, filingNeeds: [] },
+    });
+    if (!saved) throw new Error("This return changed. Refresh and try again.");
+  }
+  const opened = (await store.listTeamReturns()).find((row) => row.id === current.id) ?? current;
+  await seedOrganizer(freshProfile.id, opened.id, await firmAuthorId(), filingTypeId, opened.desk);
+  await syncRequestStage(freshProfile.id, opened.id);
+  await runEnteredStage(opened.id);
+  revalidateReturn(freshProfile.id, opened.id);
+}
+
+export async function addYearFilingType(_state: { error: string | null }, formData: FormData): Promise<{ error: string | null }> {
+  try {
+    const profile = await requireProfile("client");
+    const taxYear = Number(formData.get("year"));
+    const filingTypeId = String(formData.get("filingTypeId") ?? "");
+    const store = getStore();
+    const [catalog, owned] = await Promise.all([store.getFilingCatalog(), store.listTeamReturns()]);
+    const type = catalog.types.find((item) => item.id === filingTypeId && !item.retired);
+    if (!type) return { error: "Choose a return type." };
+    if (!Number.isInteger(taxYear) || taxYear < 1900 || taxYear > 9999) return { error: "Choose a tax year." };
+    const open = owned.some((row) => row.profileId === profile.id && !row.archivedAt && row.stage !== "canceled" && row.taxYear === taxYear && (row.filingTypeId || row.taxpayerType) === filingTypeId);
+    if (open) return { error: `You already have a ${type.label} return for ${taxYear}.` };
+    await openClientReturn(profile, taxYear, filingTypeId);
+    return { error: null };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Could not open that return." };
+  }
+}
+
+export async function cancelClientReturn(_state: { error: string | null }, formData: FormData): Promise<{ error: string | null }> {
+  try {
+    const profile = await requireProfile("client");
+    const id = String(formData.get("returnId") ?? "");
+    const store = getStore();
+    const current = (await store.listTeamReturns()).find((row) => row.id === id && row.profileId === profile.id && !row.archivedAt);
+    if (!current) return { error: "That return is no longer on your list." };
+    if (!clientMayCancel(current.stage)) return { error: "The firm has already started this return. Ask them to close it." };
+    await store.addMessage({
+      profileId: profile.id,
+      returnId: current.id,
+      authorId: profile.id,
+      authorRole: "client",
+      kind: "event",
+      body: `Cancelled the ${current.taxYear} return.`,
+    });
+    await runReturnCancelled(current.id);
+    revalidateReturn(profile.id, current.id);
+    return { error: null };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Could not cancel that return." };
+  }
 }
 
 export async function saveFilingCatalog(_state: { error: string | null }, data: FormData): Promise<{ error: string | null }> {
@@ -1211,8 +1323,16 @@ export async function advanceRequest(profileId: string, previousId: string, form
     } else {
       const file = form.get("file");
       if (!(file instanceof File) || !file.size || file.size > 15 * 1024 * 1024) throw new Error("Choose a file up to 15 MB.");
-      const doc = await store.addDocument({profileId, kind:"other", filename:file.name,
-        contentType:file.type || "application/octet-stream", bytes:Buffer.from(await file.arrayBuffer())});
+      const requestedKind = String(form.get("kind") ?? "");
+      const kind = isDocumentKind(requestedKind) ? requestedKind : "other";
+      const doc = await store.addDocument({
+        profileId,
+        returnId: previous.returnId,
+        kind,
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        bytes: Buffer.from(await file.arrayBuffer()),
+      });
       documentId = doc.id;
       body = `Uploaded ${doc.filename} for review.`;
       state = "responded";

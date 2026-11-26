@@ -1,5 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
+import { cookies } from "next/headers";
+import { RememberLink } from "@/components/remember-view";
+import { decodeView, viewCookie } from "@/lib/view-cookie";
 import { FileTextIcon } from "lucide-react";
 import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
 import { NewSmartdocDialog } from "@/components/smartdocs/new-smartdoc-dialog";
@@ -46,7 +48,9 @@ function SmartdocThumb({ src, name }: { src: string | null; name: string }) {
 
 export default async function SmartdocsPage({ searchParams }: { searchParams: Promise<{ archived?: string }> }) {
   await requireProfile("staff");
-  const archivedView = (await searchParams).archived === "1";
+  const archived = (await searchParams).archived;
+  const saved = decodeView((await cookies()).get(viewCookie.smartdocs)?.value);
+  const archivedView = archived === "1" || (archived === undefined && saved === "1");
   const db = packetDb();
   const ready = builderConfigured();
   const templates: TemplateRow[] = [];
@@ -96,8 +100,8 @@ export default async function SmartdocsPage({ searchParams }: { searchParams: Pr
         <NewSmartdocDialog disabled={!ready} />
       </header>
       <div className="flex shrink-0 items-center gap-4 border-b px-6 py-3 text-sm">
-        <Link href="/smartdocs" className={archivedView ? "text-muted-foreground" : "font-medium"}>My smartdocs {activeCount}</Link>
-        <Link href="/smartdocs?archived=1" className={archivedView ? "font-medium" : "text-muted-foreground"}>Archived smartdocs {archivedCount}</Link>
+        <RememberLink href="/smartdocs" view={viewCookie.smartdocs} value="0" className={archivedView ? "text-muted-foreground" : "font-medium"}>My smartdocs {activeCount}</RememberLink>
+        <RememberLink href="/smartdocs?archived=1" view={viewCookie.smartdocs} value="1" className={archivedView ? "font-medium" : "text-muted-foreground"}>Archived smartdocs {archivedCount}</RememberLink>
       </div>
       {!ready ? (
         <p className="max-w-2xl px-6 py-4 text-sm text-muted-foreground">

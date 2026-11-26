@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import { useRouter } from "next/navigation";
 import { FileIcon, PaperclipIcon, SmileIcon, XIcon, ZapIcon } from "lucide-react";
 import { ComposerShell, type ComposerMode } from "@/components/chat/composer-shell";
@@ -35,7 +36,7 @@ export function ReplyComposer({ conversationId, suggestions }: { conversationId:
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState("");
-  const [mode, setMode] = useState<ComposerMode>("reply");
+  const [mode, setMode] = useSavedState<ComposerMode>("view:composer-mode", "reply", (value): value is ComposerMode => value === "reply" || value === "note");
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [repliesOpen, setRepliesOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);

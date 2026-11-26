@@ -141,6 +141,7 @@ function owedThreads(threads: RequestThread[], owes: (state: NonNullable<Request
 }
 
 export function deriveStage(current: Workflow, threads: RequestThread[]): Pick<Workflow, "waitingOn" | "nextAction"> {
+  if (current.stage === "canceled") return { waitingOn: null, nextAction: "Client cancelled this return." };
   const active = threads.filter((thread) => {
     const state = thread.latest.requestState;
     return state !== "accepted" && state !== "waived" && state != null;
@@ -195,6 +196,9 @@ export function staffNext(input: {
   authorizations: EfileAuthorization[];
   returnVersion: number;
 }): NextStep {
+  if (input.stage === "canceled") {
+    return { headline: "Client cancelled this return", detail: "", action: null, href: null, urgency: 9 };
+  }
   const review = owedThreads(input.threads, staffOwes)[0];
   if (review?.latest.requestState) {
     return {
@@ -257,6 +261,8 @@ function stageFallback(stage: Stage, name: string): string {
       return `Deliver ${name}'s return`;
     case "renewal":
       return `Carry ${name} into next year`;
+    case "canceled":
+      return `Client cancelled this return`;
     default: {
       const exhaustive: never = stage;
       return exhaustive;

@@ -1,6 +1,8 @@
-import { packetDb } from "@/lib/docuseal";
+import { LetterTrail } from "@/components/letter-trail";
+import { packetDb, refreshProfileLetters } from "@/lib/docuseal";
 import { requireProfile } from "@/lib/auth";
-import { engagementLetter } from "@/lib/engagement-letter";
+import { engagementLetter, engagementLetterTitle } from "@/lib/engagement-letter";
+import { taxpayerTypeLabel } from "@/lib/types";
 import { packetFiles } from "@/lib/smartdoc-prefill";
 import { getStore } from "@/lib/store";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -18,6 +20,7 @@ type ClientPacket = {
 
 export default async function EngagementPage() {
   const profile = await requireProfile("client");
+  await refreshProfileLetters(profile.id);
   const signatures = await getStore().listSignatures(profile.id);
   const returns = await getStore().listReturns(profile.id);
   const db = packetDb();
@@ -25,11 +28,11 @@ export default async function EngagementPage() {
     ? await db.from("signing_packets").select("id,return_id,status,files,template_ref").in("return_id", returns.map((item) => item.id))
     : null;
   if (packets?.error) throw packets.error;
-  const names = new Map<string, string>();
+  const names = new Map<string, { name: string; kind: string | null }>();
   if (db) {
-    const templates = await db.from("signing_templates").select("id,name");
+    const templates = await db.from("signing_templates").select("id,name,kind");
     if (templates.error) throw templates.error;
-    for (const template of templates.data ?? []) names.set(template.id, template.name);
+    for (const template of templates.data ?? []) names.set(template.id, { name: template.name, kind: template.kind });
   }
   const signed = signatures.find((item) => item.kind === "engagement");
   const rows = (packets?.data ?? []) as ClientPacket[];
@@ -38,7 +41,7 @@ export default async function EngagementPage() {
   return (
     <>
       <a className="text-sm underline" href="/portal/signatures">All signatures</a>
-      <h1 className="font-serif text-3xl">Engagement letter</h1>
+      <h1 className="font-serif text-3xl">{letter.status === "unsigned" ? "Engagement letter" : letter.title}</h1>
       <Alert>
         <AlertTitle>Documents for signature</AlertTitle>
         <AlertDescription>
@@ -48,7 +51,10 @@ export default async function EngagementPage() {
       {rows.map((packet) => {
         const item = returns.find((row) => row.id === packet.return_id);
         const files = packetFiles(packet.files);
-        const title = (packet.template_ref && names.get(packet.template_ref)) || "Engagement letter";
+        const template = packet.template_ref ? names.get(packet.template_ref) : undefined;
+        const title = item && template?.kind === "engagement"
+          ? engagementLetterTitle({ name: profile.name, year: item.taxYear, type: taxpayerTypeLabel(item.taxpayerType).toLowerCase(), entity: item.entity })
+          : template?.name || "Engagement letter";
         return (
           <section key={packet.id} className="grid gap-1">
             <h2 className="font-medium">{title}</h2>
@@ -59,7 +65,10 @@ export default async function EngagementPage() {
           </section>
         );
       })}
-      {letter.status === "ready" ? (
+      {letter.status === "sent" || letter.status === "opened" || letter.status === "signed" || letter.status === "declined" ? (
+        <LetterTrail phase={letter.status} sentAt={letter.sentAt} openedAt={letter.openedAt} signedAt={letter.signedAt} />
+      ) : null}
+      {letter.status !== "unsigned" && letter.href ? (
         <Button nativeButton={false} className="w-fit" render={<a href={letter.href} target="_blank" rel="noreferrer" />}>
           Review and sign
         </Button>

@@ -52,8 +52,20 @@ export function prefillValues(fieldNames: string[], profile: PrefillProfile): Re
   return values;
 }
 
-export type PacketSigner = { email: string; status: string };
+export type PacketSigner = {
+  email: string;
+  status: string;
+  sentAt: string | null;
+  openedAt: string | null;
+  completedAt: string | null;
+};
 export type PacketFile = { name: string };
+
+function stamp(item: object, camel: string, snake: string): string | null {
+  const record = item as Record<string, unknown>;
+  const value = record[camel] ?? record[snake];
+  return typeof value === "string" && value ? value : null;
+}
 
 export function packetSigners(value: unknown): PacketSigner[] {
   if (!Array.isArray(value)) return [];
@@ -61,8 +73,11 @@ export function packetSigners(value: unknown): PacketSigner[] {
     if (!item || typeof item !== "object") return [];
     const email = "email" in item && typeof item.email === "string" ? item.email : "";
     const status = "status" in item && typeof item.status === "string" ? item.status : "";
-    if (!email) return [];
-    return [{ email, status }];
+    const sentAt = stamp(item, "sentAt", "sent_at");
+    const openedAt = stamp(item, "openedAt", "opened_at");
+    const completedAt = stamp(item, "completedAt", "completed_at");
+    if (!email && !status) return [];
+    return [{ email, status, sentAt, openedAt, completedAt }];
   });
 }
 

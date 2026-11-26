@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import Image from "next/image";
 import Link from "next/link";
 import { ActivityIcon, ArrowRightIcon, ArrowUpIcon, ArrowDownIcon, ChartColumnIcon, FileTextIcon, LightbulbIcon, ListTodoIcon, PieChartIcon, SendIcon, UserRoundIcon, UsersIcon } from "lucide-react";
@@ -14,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { initials } from "@/lib/inbox-view";
 import type { SeasonStage } from "@/lib/season";
-import { stageOrder, stages, type Stage, type WaitingOn } from "@/lib/return-workflow";
+import { stageIndex, stageOrder, stages, type Stage, type WaitingOn } from "@/lib/return-workflow";
 import { stageTone } from "@/lib/status-tone";
 import { taxpayerTypeLabel, taxpayerTypes, type TaskKind, type TaskStatus, type TaxpayerType } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,10 @@ export type DashboardTask = {
 };
 
 type Range = "7d" | "30d" | "90d" | "all";
+
+function isRange(value: unknown): value is Range {
+  return value === "7d" || value === "30d" || value === "90d" || value === "all";
+}
 
 const ranges: { id: Range; label: string; days: number | null }[] = [
   { id: "7d", label: "Last 7 days", days: 7 },
@@ -132,7 +137,7 @@ function CardHeading({ icon: Icon, title }: { icon: typeof FileTextIcon; title: 
 }
 
 export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardFile[]; tasks: DashboardTask[]; now: number; name: string }) {
-  const [range, setRange] = useState<Range>("30d");
+  const [range, setRange] = useSavedState<Range>("view:season-range", "30d", isRange);
   const window = ranges.find((item) => item.id === range) ?? ranges[1];
 
   const stats = useMemo(() => {
@@ -189,7 +194,7 @@ export function SeasonDashboard({ files, tasks, now, name }: { files: DashboardF
   const openTaskCount = tasks.filter((task) => task.status === "open").length;
   const delivered = files.filter((file) => file.stage === "delivery" || file.stage === "renewal").length;
   const deskFiles = [...files]
-    .sort((a, b) => fileUrgency(a) - fileUrgency(b) || stageOrder.indexOf(a.stage) - stageOrder.indexOf(b.stage))
+    .sort((a, b) => fileUrgency(a) - fileUrgency(b) || stageIndex(a.stage) - stageIndex(b.stage))
     .slice(0, 6);
 
   return (

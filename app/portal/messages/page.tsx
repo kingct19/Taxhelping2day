@@ -19,7 +19,11 @@ export default async function MessagesPage() {
   ]);
   const current = pickReturn(returns.filter((item) => item.profileId === profile.id));
   const owner = current?.owner ? await store.getProfile(current.owner) : null;
-  const conversation = messages.filter((message) => message.kind !== "note" && !message.requestState);
+  const conversation = messages.filter((message) => {
+    if (message.kind === "note") return false;
+    if (message.kind === "event" && message.documentId) return true;
+    return !message.requestState;
+  });
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

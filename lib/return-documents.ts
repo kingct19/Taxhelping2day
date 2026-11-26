@@ -90,7 +90,10 @@ export function documentEntries(input: {
       .filter((entry) => entry.returnId === input.returnId)
       .flatMap((entry) => [entry.documentId, entry.signatureId].filter((id): id is string => Boolean(id))),
   );
-  const documents = input.documents.filter((doc) => !input.messages.some((row) => row.documentId === doc.id && row.requestState && row.returnId && row.returnId !== input.returnId));
+  const documents = input.documents.filter((doc) => {
+    if (doc.returnId && doc.returnId !== input.returnId) return false;
+    return !input.messages.some((row) => row.documentId === doc.id && row.requestState && row.returnId && row.returnId !== input.returnId);
+  });
   const claimed = new Set<string>();
   const rows: DocumentEntry[] = [];
 

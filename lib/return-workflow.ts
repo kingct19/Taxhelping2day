@@ -12,6 +12,7 @@ export const stages = {
   filing: "Filing",
   delivery: "Delivery",
   renewal: "Renewal",
+  canceled: "Canceled",
 } as const;
 
 export const stageOrder = [
@@ -67,11 +68,43 @@ export const initialWorkflow: Workflow = {
 };
 
 export function isStage(value: string): value is Stage {
-  return stageOrder.some((stage) => stage === value);
+  return Object.hasOwn(stages, value);
+}
+
+/** A client close, including older closes that were only archived. */
+export function shownStage(item: { stage: Stage; archivedAt: string | null }): Stage {
+  if (item.stage === "canceled") return "canceled";
+  if (item.archivedAt && clientMayCancel(item.stage)) return "canceled";
+  return item.stage;
+}
+
+export function clientMayCancel(stage: Stage): boolean {
+  switch (stage) {
+    case "lead":
+    case "onboarding":
+    case "documents":
+      return true;
+    case "preparation":
+    case "review":
+    case "approval":
+    case "filing":
+    case "delivery":
+    case "renewal":
+    case "canceled":
+      return false;
+    default: {
+      const exhaustive: never = stage;
+      return exhaustive;
+    }
+  }
+}
+
+export function stageIndex(stage: Stage): number {
+  return stageOrder.findIndex((item) => item === stage);
 }
 
 export function nextStage(stage: Stage): Stage | null {
-  const index = stageOrder.indexOf(stage);
+  const index = stageIndex(stage);
   if (index < 0 || index >= stageOrder.length - 1) return null;
   return stageOrder[index + 1];
 }
@@ -90,6 +123,7 @@ export function sendBackTarget(stage: Stage): Stage | null {
     case "preparation":
     case "delivery":
     case "renewal":
+    case "canceled":
       return null;
     default: {
       const exhaustive: never = stage;

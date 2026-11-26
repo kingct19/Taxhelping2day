@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { SearchIcon, XIcon } from "lucide-react";
 import { ContactRowActions } from "@/components/contacts/contact-row-actions";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSavedState } from "@/hooks/use-saved-state";
 import { isTaxpayerType, taxpayerTypeLabel, type TaxpayerType } from "@/lib/types";
 
 export type ContactRow = {
@@ -80,10 +81,20 @@ function haystack(client: ContactRow, labels: Record<string, string>) {
     .toLowerCase();
 }
 
+type ContactFilterState = { query: string; state: string; domain: string };
+
+function isContactFilterState(value: unknown): value is ContactFilterState {
+  if (!value || typeof value !== "object") return false;
+  const item = value as ContactFilterState;
+  return typeof item.query === "string" && typeof item.state === "string" && typeof item.domain === "string";
+}
+
 export function ContactsDirectory({ title, clients, typeLabels = {}, inviteDescription }: { title: string; clients: ContactRow[]; typeLabels?: Record<string, string>; inviteDescription: string }) {
-  const [query, setQuery] = useState("");
-  const [state, setState] = useState("any");
-  const [domain, setDomain] = useState("any");
+  const [saved, setSaved] = useSavedState("view:contacts-directory", { query: "", state: "any", domain: "any" }, isContactFilterState);
+  const { query, state, domain } = saved;
+  const setQuery = (next: string) => setSaved((current) => ({ ...current, query: next }));
+  const setState = (next: string) => setSaved((current) => ({ ...current, state: next }));
+  const setDomain = (next: string) => setSaved((current) => ({ ...current, domain: next }));
   const filtering = query.trim().length > 0 || state !== "any" || domain !== "any";
   const places = useMemo(() => {
     const seen = new Map<string, string>();

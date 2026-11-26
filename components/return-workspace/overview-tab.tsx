@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EngagementPacket } from "@/components/engagement-packet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { describeActivity, returnTabHref, shortDate, shortDateTime } from "@/lib/return-progress";
@@ -43,12 +44,14 @@ function readinessTone(readiness: Readiness): "success" | "destructive" | "atten
 export function OverviewTab({
   profileId,
   returnId,
+  email,
   state,
   messages,
   authors,
 }: {
   profileId: string;
   returnId: string;
+  email: string;
   state: WorkflowState;
   messages: Message[];
   authors: Map<string, string>;
@@ -83,6 +86,9 @@ export function OverviewTab({
           </ul>
         )}
       </section>
+      <div className="lg:col-span-2">
+        <EngagementPacket profileId={profileId} returnId={returnId} email={email} />
+      </div>
       <section className="grid content-start gap-3 rounded-lg border p-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-medium">Status</h2>

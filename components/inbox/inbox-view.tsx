@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useReducer, useRef, useState } from "react";
+import { readSaved, writeSaved } from "@/hooks/use-saved-state";
 import { useRouter } from "next/navigation";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationView } from "@/components/inbox/conversation-view";
@@ -11,15 +12,37 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { markConversationRead, updateConversation } from "@/lib/actions";
-import { compareConversations, filterLabel, matchesInboxFilter, matchesSearch } from "@/lib/inbox-view";
-import type { ConversationPatch } from "@/lib/types";
+import { compareConversations, filterLabel, inboxFolderIds, inboxViewIds, matchesInboxFilter, matchesSearch, sortOptions, type InboxFilter, type SortOption } from "@/lib/inbox-view";
+import { isTeamInbox, type ConversationPatch } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+type InboxChrome = {
+  filter: InboxFilter;
+  sort: SortOption;
+  search: string;
+  sidebarOpen: boolean;
+  detailsOpen: boolean;
+};
+
+function isInboxChrome(value: unknown): value is InboxChrome {
+  if (!value || typeof value !== "object") return false;
+  const item = value as InboxChrome;
+  if (typeof item.search !== "string" || typeof item.sidebarOpen !== "boolean" || typeof item.detailsOpen !== "boolean") return false;
+  if (typeof item.sort !== "string" || !sortOptions.some((option) => option === item.sort)) return false;
+  const filter = item.filter;
+  if (!filter || typeof filter !== "object") return false;
+  if (filter.type === "folder") return inboxFolderIds.some((id) => id === filter.id);
+  if (filter.type === "view") return inboxViewIds.some((id) => id === filter.id);
+  if (filter.type === "team") return typeof filter.id === "string" && isTeamInbox(filter.id);
+  return false;
+}
 
 export function InboxView({ data }: { data: InboxDeskData }) {
   const router = useRouter();
   const [state, dispatch] = useReducer(inboxReducer, data, initialInboxState);
   const [sidebarSheet, setSidebarSheet] = useState(false);
   const [detailsSheet, setDetailsSheet] = useState(false);
+  const [chromeReady, setChromeReady] = useState(false);
   const sidebarIsColumn = useMediaQuery("(min-width: 1024px)");
   const detailsIsColumn = useMediaQuery("(min-width: 1280px)");
   const dataRef = useRef(data);
@@ -42,6 +65,29 @@ export function InboxView({ data }: { data: InboxDeskData }) {
     )
     .join("|");
   const appliedProfile = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const saved = readSaved("view:inbox", isInboxChrome);
+    if (saved) {
+      dispatch({ type: "filter", filter: saved.filter });
+      dispatch({ type: "sort", sort: saved.sort });
+      dispatch({ type: "search", search: saved.search });
+      dispatch({ type: "sidebar", open: saved.sidebarOpen });
+      dispatch({ type: "details", open: saved.detailsOpen });
+    }
+    setChromeReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!chromeReady) return;
+    writeSaved("view:inbox", {
+      filter: state.filter,
+      sort: state.sort,
+      search: state.search,
+      sidebarOpen: state.sidebarOpen,
+      detailsOpen: state.detailsOpen,
+    });
+  }, [chromeReady, state.detailsOpen, state.filter, state.search, state.sidebarOpen, state.sort]);
 
   useEffect(() => {
     dispatch({ type: "sync", conversations: dataRef.current.conversations });

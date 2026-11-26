@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import Link from "next/link";
 import { BranchSwitcher, BranchSwitcherContent, BranchSwitcherControl } from "@/components/ui/branch-switcher";
 import { Citation, Citations, CitationSources, type CitationSource } from "@/components/ui/citations";
@@ -127,7 +128,7 @@ export function AssistantDesk({
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState(prompt ?? "");
   const [seenPrompt, setSeenPrompt] = useState(prompt);
-  const [model, setModel] = useState("desk");
+  const [model, setModel] = useSavedState("view:assistant-model", "desk", (value): value is string => typeof value === "string" && models.some((item) => item.value === value));
   const [generating, setGenerating] = useState(false);
   const area = useRef<HTMLTextAreaElement>(null);
   const stream = useRef<StreamTarget | null>(null);

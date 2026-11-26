@@ -14,7 +14,7 @@ import { intakeBlocker } from "@/lib/engagement";
 import { deriveStage } from "@/lib/next-action";
 import { seedOrganizer } from "@/lib/organizer";
 import { requestThreads } from "@/lib/request-thread";
-import { stageOrder, stages, type Stage, type TeamReturn } from "@/lib/return-workflow";
+import { stageIndex, stageOrder, stages, type Stage, type TeamReturn } from "@/lib/return-workflow";
 import { getStore } from "@/lib/store";
 import { isActiveStaff } from "@/lib/teammates";
 import type { Profile } from "@/lib/types";
@@ -50,7 +50,7 @@ function matches(rule: Automation, signal: ReturnSignal, item: TeamReturn, now: 
 function fireKey(rule: Automation, signal: ReturnSignal, item: TeamReturn): string | null {
   switch (rule.triggerKind) {
     case "event":
-      return rule.event;
+      return rule.event === "return_cancelled" ? `${rule.event}:${item.revision}` : rule.event;
     case "entered_stage":
       return rule.stage ? `entered:${rule.stage}:${signal.kind === "entered_stage" ? signal.stageEnteredAt : item.stageEnteredAt}` : null;
     case "stage_age":
@@ -91,7 +91,7 @@ async function moveReturn(current: TeamReturn, rule: Automation, stage: Stage): 
   const threads = requestThreads(messages.filter((row) => row.returnId === current.id));
   const derived = deriveStage({ ...current, stage }, threads);
   const now = new Date().toISOString();
-  const dest = stageOrder.indexOf(stage);
+  const dest = stageIndex(stage);
   const delivery = stageOrder.indexOf("delivery");
   const saved = await store.updateWorkflow(current.id, {
     ...current,
@@ -181,7 +181,7 @@ async function applyRule(rule: Automation, item: TeamReturn, key: string, revali
 async function runForReturn(signal: ReturnSignal) {
   const store = getStore();
   let item = (await store.listTeamReturns()).find((row) => row.id === signal.returnId);
-  if (!item || item.archivedAt) return;
+  if (!item || item.archivedAt || item.stage === "canceled") return;
   const started = item.stage;
   const rules = (await store.listAutomations()).filter((rule) => rule.enabled);
   const now = new Date();
@@ -286,6 +286,10 @@ export async function runEfileSigned(returnId: string) {
 
 export async function runFilingAccepted(returnId: string) {
   await runForReturn({ kind: "event", event: "filing_accepted", returnId, revalidate: true });
+}
+
+export async function runReturnCancelled(returnId: string) {
+  await runForReturn({ kind: "event", event: "return_cancelled", returnId, revalidate: true });
 }
 
 export async function runEnteredStage(returnId: string) {

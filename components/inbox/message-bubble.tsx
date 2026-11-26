@@ -10,6 +10,20 @@ const deliveryLabel: Record<MessageDelivery, string> = {
   "not-seen": "Not seen",
 };
 
+function uploadedName(body: string): string | null {
+  const match = /^Uploaded (.+) for review\.$/.exec(body);
+  return match?.[1] ?? null;
+}
+
+function eventFile(message: Message): { name: string; url: string; image: boolean } | null {
+  const attachment = message.attachments.find((item) => item.documentId && item.documentId === message.documentId) ?? message.attachments[0];
+  const id = message.documentId ?? attachment?.documentId ?? null;
+  const name = attachment?.name || uploadedName(message.body);
+  if (!id || !name) return null;
+  const image = attachment?.type === "image" || /\.(png|jpe?g|gif|webp|heic|heif)$/i.test(name);
+  return { name, url: `/files/documents/${id}${image ? "?preview=1" : ""}`, image };
+}
+
 function Attachments({ attachments, own }: { attachments: MessageAttachment[]; own: boolean }) {
   const images = attachments.filter((item) => item.type === "image");
   const files = attachments.filter((item) => item.type === "file");
@@ -49,7 +63,25 @@ export function MessageBubble({
 }) {
   if (message.kind === "note" && viewer === "client") return null;
   if (message.kind === "event") {
-    return <p className="text-center text-xs text-muted-foreground">{message.body}</p>;
+    const file = eventFile(message);
+    return (
+      <div className="grid justify-items-center gap-2">
+        <p className="text-center text-xs text-muted-foreground">{message.body}</p>
+        {file?.image ? (
+          <a href={file.url} target="_blank" rel="noopener noreferrer" className="block w-fit overflow-hidden rounded-xl border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={file.url} alt={file.name} className="max-h-64 max-w-72 object-cover" />
+          </a>
+        ) : file ? (
+          <a href={file.url} className="flex w-64 items-center gap-3 rounded-xl border bg-card px-3 py-2.5 hover:bg-muted/50">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+              <FileIcon className="size-4" />
+            </span>
+            <span className="min-w-0 truncate text-xs font-medium">{file.name}</span>
+          </a>
+        ) : null}
+      </div>
+    );
   }
   const own = message.authorRole === viewer && message.kind === "message";
   const note = message.kind === "note";

@@ -4,12 +4,12 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { ease } from "@/lib/motion";
 
-export function ReturnPanelFade({ panel, children }: { panel: string; children: ReactNode }) {
+export function ReturnPanelFade({ panel, children, mode = "popLayout" }: { panel: string; children: ReactNode; mode?: "sync" | "wait" | "popLayout" }) {
   const reduce = useReducedMotion();
 
   return (
     <div className="relative">
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence mode={mode} initial={false}>
         <motion.div
           key={panel}
           initial={reduce ? false : { opacity: 0 }}

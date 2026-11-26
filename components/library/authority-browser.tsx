@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,8 +76,12 @@ export function AuthorityBrowser({ firm }: { firm: AuthorityRef[] }) {
     ],
     [firm],
   );
-  const [shelfId, setShelfId] = useState("irc");
-  const [query, setQuery] = useState("");
+  const [view, setView] = useSavedState("view:authority", { shelfId: "irc", query: "" }, (value): value is { shelfId: string; query: string } => {
+    if (!value || typeof value !== "object") return false;
+    const item = value as { shelfId?: unknown; query?: unknown };
+    return typeof item.shelfId === "string" && typeof item.query === "string";
+  });
+  const { shelfId, query } = view;
   const [page, setPage] = useState(0);
   const [corpus, setCorpus] = useState<CorpusFile | null>(null);
   const [loading, setLoading] = useState(false);
@@ -192,8 +197,7 @@ export function AuthorityBrowser({ firm }: { firm: AuthorityRef[] }) {
   const to = Math.min(totalCount, (currentPage + 1) * pageSize);
 
   function openShelf(id: string) {
-    setShelfId(id);
-    setQuery("");
+    setView({ shelfId: id, query: "" });
     setPage(0);
     setReadingHref("");
     if (shelves.find((item) => item.id === id)?.corpus !== shelf.corpus) {
@@ -276,7 +280,7 @@ export function AuthorityBrowser({ firm }: { firm: AuthorityRef[] }) {
             <Input
               value={query}
               onChange={(event) => {
-                setQuery(event.target.value);
+                setView((current) => ({ ...current, query: event.target.value }));
                 setPage(0);
               }}
               placeholder={searchPlaceholder(shelf)}

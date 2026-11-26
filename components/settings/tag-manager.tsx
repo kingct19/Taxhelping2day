@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import { useRouter } from "next/navigation";
 import { deleteTagAction, saveTagAction } from "@/lib/automation-actions";
 import type { FirmTag } from "@/lib/automations";
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input";
 
 export function TagManager({ tags }: { tags: FirmTag[] }) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useSavedState("view:tags", "", (value): value is string => typeof value === "string");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();

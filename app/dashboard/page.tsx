@@ -1,7 +1,9 @@
 import { SeasonDashboard, type DashboardFile, type DashboardTask } from "@/components/reports/season-dashboard";
 import { requireProfile } from "@/lib/auth";
 import { avatarUrl } from "@/lib/avatar";
+import { documentsForReturn } from "@/lib/client-home";
 import { emptyIntake } from "@/lib/filing-needs";
+import { requestThreads } from "@/lib/request-thread";
 import { seasonFor } from "@/lib/season";
 import { getStore } from "@/lib/store";
 
@@ -14,14 +16,23 @@ export default async function DashboardPage() {
   const clients = profiles.filter((profile) => profile.role === "client");
   const files: DashboardFile[] = [];
   for (const client of clients) {
-    const [documents, signatures, identity] = await Promise.all([
+    const [documents, signatures, identity, messages] = await Promise.all([
       store.listDocuments(client.id),
       store.listSignatures(client.id),
       store.getIdentity(client.id),
+      store.listMessages(client.id),
     ]);
     const owned = returns.filter((item) => item.profileId === client.id);
     for (const item of owned) {
-      const season = seasonFor(client, signatures, documents, item.desk.intakeAnswered ? { answered: true, needs: item.desk.filingNeeds } : emptyIntake(), catalog);
+      const threads = requestThreads(messages.filter((message) => message.returnId === item.id));
+      const season = seasonFor(
+        client,
+        signatures,
+        documentsForReturn(item.id, documents, messages),
+        item.desk.intakeAnswered ? { answered: true, needs: item.desk.filingNeeds } : emptyIntake(),
+        catalog,
+        { threads, filingTypeId: item.filingTypeId || item.taxpayerType },
+      );
       files.push({
         id: item.id,
         profileId: client.id,

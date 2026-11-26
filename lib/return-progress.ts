@@ -1,7 +1,7 @@
 import { advanceBlocker, sendBackBlocker, type GateInput } from "@/lib/engagement";
 import { filingPlace } from "@/lib/next-action";
 import { clientOwes, staffOwes } from "@/lib/request-thread";
-import { nextStage, sendBackTarget, stages, stageOrder, type Stage } from "@/lib/return-workflow";
+import { nextStage, sendBackTarget, stageIndex, stages, type Stage } from "@/lib/return-workflow";
 import type { Message } from "@/lib/types";
 
 export const returnTabs = ["overview", "documents", "preparation", "review", "filing", "activity"] as const;
@@ -29,10 +29,11 @@ export function trackName(stage: Stage): string | null {
 }
 
 export function trackVisual(stage: Stage, step: Stage, blocked: boolean): TrackVisual {
+  if (stage === "canceled") return "pending";
   if (stage === "renewal") return "complete";
   if (stage === "lead" || stage === "onboarding") return "pending";
-  const current = stageOrder.indexOf(stage);
-  const index = stageOrder.indexOf(step);
+  const current = stageIndex(stage);
+  const index = stageIndex(step);
   if (index < current) return "complete";
   if (index === current) return blocked ? "blocked" : "active";
   return "pending";
@@ -105,6 +106,8 @@ export function tabForStage(stage: Stage): ReturnTab {
     case "filing":
     case "delivery":
       return "filing";
+    case "canceled":
+      return "overview";
     default: {
       const exhaustive: never = stage;
       return exhaustive;
@@ -192,6 +195,8 @@ export type ActivityIconName = (typeof activityIconNames)[number];
 
 export function describeActivity(message: Pick<Message, "kind" | "body">): { label: string; tone: ActivityToneName; icon: ActivityIconName } {
   const body = message.body;
+  if (body.startsWith("Opened the engagement letter")) return { label: "Engagement letter", tone: "info", icon: "update" };
+  if (body.startsWith("Signed the engagement letter")) return { label: "Engagement letter", tone: "success", icon: "update" };
   if (body.includes("Form 8879") || body.includes("Return version")) return { label: "Authorization", tone: "info", icon: "authorization" };
   if (body.startsWith("Recorded ") && body.includes("firm entered")) return { label: "Filing status", tone: "warning", icon: "filing" };
   if (body.startsWith("Delivered")) return { label: "Delivery", tone: "success", icon: "delivery" };

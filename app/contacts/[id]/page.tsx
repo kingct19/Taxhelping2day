@@ -1,145 +1,189 @@
-import { EngagementLetterForm } from "@/components/contacts/engagement-letter-form";
-import { IdentityForm } from "@/components/identity-form";
-import { LiniqoEmpty, liniqo } from "@/components/liniqo-empty";
-import { TaxReturnList } from "@/components/tax-return-list";
-import { createTaxReturn } from "@/lib/actions";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ChevronLeftIcon } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button-variants";
-import { Badge } from "@/components/ui/badge";
+import { ClientFiles } from "@/components/contacts/client-files";
+import { ClientHeader } from "@/components/contacts/client-header";
+import { ClientOverview } from "@/components/contacts/client-overview";
+import { ClientReturns } from "@/components/contacts/client-returns";
+import { ClientSignatures } from "@/components/contacts/client-signatures";
+import { ClientSummary } from "@/components/contacts/client-summary";
+import { ClientTabs } from "@/components/contacts/client-tabs";
+import { SubpageNav } from "@/components/subpage-nav";
 import { requireProfile } from "@/lib/auth";
-import { emptyIntake } from "@/lib/filing-needs";
-import { pickReturn } from "@/lib/client-home";
-import { seasonFor, seasonLabel } from "@/lib/season";
+import { avatarUrl } from "@/lib/avatar";
+import { isClientTab, partitionReturns, type ClientTab } from "@/lib/client-file";
+import { catalogLabel, type FilingCatalog } from "@/lib/filing-catalog";
+import { shortDate } from "@/lib/return-progress";
+import { stages, type TeamReturn } from "@/lib/return-workflow";
 import { getStore } from "@/lib/store";
-import { catalogLabel } from "@/lib/filing-catalog";
-import { documentKindLabel, filingTypesOf } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { filingTypesOf, type DocumentRecord, type EfileAuthorization, type FilingRecord, type IdentityNote, type Profile, type SignatureRecord } from "@/lib/types";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="max-w-[65%] truncate text-right text-sm">{value || "Not on file"}</span>
-    </div>
-  );
+function chosenTab(value: string | undefined): ClientTab {
+  return isClientTab(value) ? value : "overview";
 }
 
-export default async function ContactPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ContactPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   await requireProfile("staff");
   const { id } = await params;
+  const query = await searchParams;
   const store = getStore();
   const client = await store.getProfile(id);
   if (!client || client.role !== "client") {
     notFound();
   }
-  const [documents, signatures, messages, identity, returns, catalog] = await Promise.all([
+  const [documents, signatures, identity, catalog, team, filings, authorizations] = await Promise.all([
     store.listDocuments(client.id),
     store.listSignatures(client.id),
-    store.listMessages(client.id),
     store.getIdentity(client.id),
-    store.listReturns(id),
     store.getFilingCatalog(),
+    store.listTeamReturns(),
+    store.listFilings(),
+    store.listAuthorizations(),
   ]);
-  const current = pickReturn((await store.listTeamReturns()).filter((item) => item.profileId === client.id));
-  const stage = seasonFor(client, signatures, documents, current ? { answered: current.desk.intakeAnswered, needs: current.desk.filingNeeds } : emptyIntake(), catalog);
-  const visibleMessages = messages.filter((message) => message.kind !== "note");
+  const returns = team.filter((item) => item.profileId === client.id);
+  const returnIds = new Set(returns.map((item) => item.id));
+  const clientFilings = filings.filter((item) => returnIds.has(item.returnId));
+  const clientAuthorizations = authorizations.filter((item) => returnIds.has(item.returnId));
+  const labels = Object.fromEntries(catalog.types.map((type) => [type.id, type.label]));
+  const tab = chosenTab(query.tab);
+  const { open, filed } = partitionReturns(returns);
+  const signedCount = signatures.length + clientAuthorizations.filter((item) => item.status === "signed").length;
+  const filing = filingTypesOf(client).map((type) => catalogLabel(catalog, type)).join(", ") || "Taxpayer";
+  const name = client.name || client.email;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-        <Link href="/contacts" aria-label="Back to contacts" className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}>
-          <ChevronLeftIcon />
-        </Link>
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold">{client.name || client.email}</h1>
-          <p className="truncate text-xs text-muted-foreground">{client.email}</p>
-        </div>
-        <Link href={`/inbox?id=${client.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-auto")}>
-          Open conversation
-        </Link>
-      </div>
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[18rem_minmax(0,1fr)_20rem]">
-        <aside className="flex flex-col gap-3 overflow-auto border-b bg-sidebar p-4 lg:border-r lg:border-b-0">
-          <h2 className="text-sm font-medium">Profile</h2>
-          <Fact label="Phone" value={client.phone} />
-          <Fact label="Taxpayer" value={filingTypesOf(client).map((type) => catalogLabel(catalog, type)).join(", ")} />
-          <Fact label="Address" value={[client.address, client.city, client.state, client.zip].filter(Boolean).join(", ")} />
-          <Fact label="Spouse" value={client.spouseName} />
-          <Fact label="Tax years" value={client.taxYears} />
-          <Fact label="Taxpayer ID" value={client.taxIdLast4 ? `Ending ${client.taxIdLast4}` : ""} />
-        </aside>
-        <section className="flex min-h-0 flex-col gap-3 overflow-auto p-4">
-          <TaxReturnList returns={returns} labels={Object.fromEntries(catalog.types.map((type) => [type.id, type.label]))} />
-          <details className="rounded-md border p-3">
-            <summary className="cursor-pointer text-sm font-medium">Open a tax return</summary>
-            <form action={createTaxReturn.bind(null, id)} className="mt-3 grid gap-3 text-sm">
-              <label>Taxpayer or entity name<Input name="entity" maxLength={150} required /></label>
-              <label>Tax year<Input name="year" type="number" min={1900} max={9999} required /></label>
-              <label>Return type
-                <select name="type" className="block rounded-md border p-2" defaultValue={client.taxpayerType}>
-                  <option value="individual">Individual</option>
-                  <option value="business">Business</option>
-                  <option value="nonprofit">Nonprofit</option>
-                </select>
-              </label>
-              <Button type="submit" className="w-fit">Open return</Button>
-            </form>
-          </details>
-          <h2 className="text-sm font-medium">Activity</h2>
-          {visibleMessages.length === 0 ? (
-            <LiniqoEmpty {...liniqo.greeting} className="px-0 py-4" artClassName="size-24">No messages on this file yet.</LiniqoEmpty>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {visibleMessages.map((message) => (
-                <li key={message.id} className="rounded-lg border px-3 py-2 text-sm">
-                  <p className="text-xs text-muted-foreground">
-                    {message.kind === "event" ? "Update" : message.authorRole} ·{" "}
-                    {new Date(message.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                  </p>
-                  <p className="mt-1 whitespace-pre-wrap">{message.body}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <aside className="flex flex-col gap-4 overflow-auto border-t bg-sidebar p-4 xl:border-t-0 xl:border-l">
-          <h2 className="text-sm font-medium">This season</h2>
-          <Fact label="Stage" value={seasonLabel(stage)} />
-          <EngagementLetterForm profileId={client.id} returns={returns.map((item) => ({ id: item.id, taxYear: item.taxYear, entity: item.entity }))} />
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={signatures.some((item) => item.kind === "poa") ? "success" : "warning"}>
-              {signatures.some((item) => item.kind === "poa") ? "Form 2848 signed" : "Form 2848 open"}
-            </Badge>
-            <Badge variant={identity?.attested ? "success" : "warning"}>{identity?.attested ? "Identity checked" : "Identity open"}</Badge>
-          </div>
-          <h2 className="text-sm font-medium">Documents</h2>
-          {documents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">None uploaded.</p>
-          ) : (
-            <ul className="flex flex-col gap-2 text-sm">
-              {documents.map((document) => (
-                <li key={document.id}>
-                  <a className="underline" href={`/files/documents/${document.id}`}>
-                    {documentKindLabel(document.kind)}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-          <h2 className="text-sm font-medium">Identity</h2>
-          <IdentityForm key={`${client.id}-${identity?.attested ?? false}-${identity?.note ?? ""}`} clientId={client.id} identity={identity} />
-          <h2 className="text-sm font-medium">Desk</h2>
-          <Link href={`/tasks?client=${client.id}`} className="text-sm underline">
-            Open this client on the desk
-          </Link>
-        </aside>
-      </div>
-    </div>
+    <main className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 content-start gap-4 overflow-auto px-4 py-4 md:px-6">
+      <SubpageNav
+        backHref="/contacts"
+        backLabel="Back to contacts"
+        crumbs={[{ href: "/contacts", label: "Contacts" }, { label: name }]}
+      />
+      <ClientHeader
+        name={name}
+        email={client.email}
+        avatar={avatarUrl(client.id, client.avatarPath)}
+        filing={filing}
+        phone={client.phone}
+        since={shortDate(client.createdAt)}
+        portal={client.portalAcceptedAt ? shortDate(client.portalAcceptedAt) : ""}
+        stage={open[0]?.stage ?? null}
+        deskHref={`/tasks?client=${client.id}`}
+        conversationHref={`/inbox?id=${client.id}`}
+      />
+      <ClientSummary
+        profileId={client.id}
+        tab={tab}
+        cards={[
+          {
+            tab: "returns",
+            label: "Open returns",
+            detail: open.length === 0 ? "None open" : open.length === 1 ? stages[open[0].stage] : `${open.length} in progress`,
+            count: open.length,
+          },
+          {
+            tab: "returns",
+            label: "Filed years",
+            detail: filed.length === 0 ? "None filed" : `${filed.length} filed`,
+            count: filed.length,
+          },
+          {
+            tab: "files",
+            label: "Files",
+            detail: documents.length === 0 ? "None uploaded" : `${documents.length} on file`,
+            count: documents.length,
+          },
+          {
+            tab: "signed",
+            label: "Signed",
+            detail: signedCount === 0 ? "Nothing signed" : `${signedCount} signed`,
+            count: signedCount,
+          },
+        ]}
+      />
+      <ClientTabs tab={tab} profileId={client.id} />
+      <ClientPanel
+        tab={tab}
+        client={client}
+        catalog={catalog}
+        labels={labels}
+        returns={returns}
+        documents={documents}
+        signatures={signatures}
+        identity={identity}
+        filings={clientFilings}
+        authorizations={clientAuthorizations}
+      />
+    </main>
   );
+}
+
+function ClientPanel({
+  tab,
+  client,
+  catalog,
+  labels,
+  returns,
+  documents,
+  signatures,
+  identity,
+  filings,
+  authorizations,
+}: {
+  tab: ClientTab;
+  client: Profile;
+  catalog: FilingCatalog;
+  labels: Record<string, string>;
+  returns: TeamReturn[];
+  documents: DocumentRecord[];
+  signatures: SignatureRecord[];
+  identity: IdentityNote | null;
+  filings: FilingRecord[];
+  authorizations: EfileAuthorization[];
+}) {
+  switch (tab) {
+    case "overview":
+      return (
+        <ClientOverview
+          profile={client}
+          catalog={catalog}
+          labels={labels}
+          returns={returns}
+          documents={documents}
+          signatures={signatures}
+          identity={identity}
+        />
+      );
+    case "returns":
+      return (
+        <ClientReturns
+          profileId={client.id}
+          taxpayerType={client.taxpayerType}
+          returns={returns}
+          filings={filings}
+          labels={labels}
+        />
+      );
+    case "files":
+      return <ClientFiles documents={documents} />;
+    case "signed":
+      return (
+        <ClientSignatures
+          profileId={client.id}
+          signatures={signatures}
+          identity={identity}
+          returns={returns}
+          authorizations={authorizations}
+        />
+      );
+    default: {
+      const exhaustive: never = tab;
+      return exhaustive;
+    }
+  }
 }

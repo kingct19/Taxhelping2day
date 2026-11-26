@@ -21,11 +21,14 @@ import { stageTone } from "@/lib/status-tone";
 import { taxpayerTypeLabel } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const columns = stageOrder.map((stage, index) => ({
-  id: stage,
-  title: stages[stage],
-  color: `var(--color-chart-${(index % 5) + 1})`,
-}));
+const columns = [
+  ...stageOrder.map((stage, index) => ({
+    id: stage,
+    title: stages[stage],
+    color: `var(--color-chart-${(index % 5) + 1})`,
+  })),
+  { id: "canceled", title: stages.canceled, color: "var(--color-destructive)" },
+];
 
 function initials(name: string) {
   const letters = name
@@ -214,6 +217,7 @@ export function TaskWorkspace({
         ...toFilterableReturn(row),
         id: row.id,
         column: row.stage,
+        canceled: row.stage === "canceled",
         avatar: row.avatar,
         due: row.due,
         tags: row.tags,
@@ -224,6 +228,10 @@ export function TaskWorkspace({
   function move(id: string, column: string) {
     const current = returns.find((row) => row.id === id);
     if (!current || current.stage === column || !isStage(column)) return false;
+    if (current.stage === "canceled" || column === "canceled") {
+      toast.error("A canceled return stays in Canceled.");
+      return false;
+    }
     if (column === current.forward) {
       if (current.forwardBlock) {
         toast.error(current.forwardBlock);

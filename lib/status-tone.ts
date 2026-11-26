@@ -23,6 +23,8 @@ export function stageTone(stage: Stage): StatusTone {
       return "success";
     case "renewal":
       return "neutral";
+    case "canceled":
+      return "destructive";
     default: {
       const exhaustive: never = stage;
       return exhaustive;

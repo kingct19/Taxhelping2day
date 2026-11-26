@@ -34,6 +34,7 @@ interface TaskCard extends KanbanItem {
   due: string | null
   overdue: boolean
   settled: boolean
+  canceled?: boolean
   waiting: 'client' | 'staff' | null
   year: number
   tags?: string[]
@@ -90,6 +91,7 @@ function initials(name: string) {
 }
 
 function glance(ticket: TaskCard): { label: string; tone: StatusTone } {
+  if (ticket.canceled) return { label: 'Canceled', tone: 'bad' }
   if (ticket.settled) return { label: 'Delivered', tone: 'good' }
   if (ticket.overdue) return { label: 'Late', tone: 'bad' }
   switch (ticket.waiting) {

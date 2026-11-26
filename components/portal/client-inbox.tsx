@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import { useRouter } from "next/navigation";
 import { FileIcon, PaperclipIcon, SearchIcon, SmileIcon, XIcon } from "lucide-react";
 import { ComposerShell } from "@/components/chat/composer-shell";
@@ -205,7 +206,7 @@ export function ClientInbox({
   reply: { text: string; lines: HoursLine[] } | null;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useSavedState("view:portal-messages", "", (value): value is string => typeof value === "string");
   const last = messages.at(-1);
   const query = search.trim().toLowerCase();
   const visible = query

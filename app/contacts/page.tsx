@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { cookies } from "next/headers";
+import { RememberLink } from "@/components/remember-view";
+import { decodeView, viewCookie } from "@/lib/view-cookie";
 import { requireProfile } from "@/lib/auth";
 import { ContactsDirectory, type ContactRow } from "@/components/contacts/contacts-directory";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -42,7 +44,8 @@ function addedOn(value: string) {
 export default async function ContactsPage({ searchParams }: { searchParams: Promise<{ segment?: string }> }) {
   await requireProfile("staff");
   const { segment: segmentQuery } = await searchParams;
-  const segment = segmentQuery && isSegment(segmentQuery) ? segmentQuery : "all";
+  const saved = decodeView((await cookies()).get(viewCookie.contacts)?.value);
+  const segment = segmentQuery && isSegment(segmentQuery) ? segmentQuery : saved && isSegment(saved) ? saved : "all";
   const store = getStore();
   const [profiles, catalog, methods] = await Promise.all([store.listProfiles(), store.getFilingCatalog(), store.getSignInMethods()]);
   const rows = profiles.filter((profile) => profile.role === "client");
@@ -98,8 +101,10 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
               }
             }).length;
             return (
-              <Link
+              <RememberLink
                 key={item}
+                view={viewCookie.contacts}
+                value={item}
                 href={item === "all" ? "/contacts" : `/contacts?segment=${item}`}
                 aria-current={active ? "page" : undefined}
                 className={cn(
@@ -109,7 +114,7 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
               >
                 <span className="flex-1 truncate text-left">{segmentLabel(item)}</span>
                 <span className="text-xs text-muted-foreground tabular-nums">{count}</span>
-              </Link>
+              </RememberLink>
             );
           })}
         </nav>

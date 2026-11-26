@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { SearchIcon, XIcon } from "lucide-react";
 import { BlockReady } from "@/components/dashboardblocks/block-state";
 import { StatusLabel } from "@/components/dashboardblocks/status-label";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSavedState } from "@/hooks/use-saved-state";
 import {
   isDueFilter,
   isWaitingFilter,
@@ -16,12 +17,30 @@ import {
   type WaitingFilter,
 } from "@/lib/return-filters";
 
+type ReturnFilterState = {
+  query: string;
+  waiting: WaitingFilter;
+  due: DueFilter;
+  owner: string;
+  year: string;
+};
+
+const emptyFilters: ReturnFilterState = { query: "", waiting: "any", due: "any", owner: "any", year: "any" };
+
+function isReturnFilterState(value: unknown): value is ReturnFilterState {
+  if (!value || typeof value !== "object") return false;
+  const item = value as ReturnFilterState;
+  return typeof item.query === "string" && isWaitingFilter(item.waiting) && isDueFilter(item.due) && typeof item.owner === "string" && typeof item.year === "string";
+}
+
 export function useReturnFilters<T extends FilterableReturn>(items: T[], viewerId: string | null = null) {
-  const [query, setQuery] = useState("");
-  const [waiting, setWaiting] = useState<WaitingFilter>("any");
-  const [due, setDue] = useState<DueFilter>("any");
-  const [owner, setOwner] = useState("any");
-  const [year, setYear] = useState("any");
+  const [saved, setSaved] = useSavedState("view:return-filters", emptyFilters, isReturnFilterState);
+  const { query, waiting, due, owner, year } = saved;
+  const setQuery = (next: string) => setSaved((current) => ({ ...current, query: next }));
+  const setWaiting = (next: WaitingFilter) => setSaved((current) => ({ ...current, waiting: next }));
+  const setDue = (next: DueFilter) => setSaved((current) => ({ ...current, due: next }));
+  const setOwner = (next: string) => setSaved((current) => ({ ...current, owner: next }));
+  const setYear = (next: string) => setSaved((current) => ({ ...current, year: next }));
   const filtering = query.trim().length > 0 || waiting !== "any" || due !== "any" || owner !== "any" || year !== "any";
   const visible = useMemo(
     () => items.filter((item) => matchesReturn(item, { query, waiting, due, owner, year, viewerId })),
@@ -37,11 +56,7 @@ export function useReturnFilters<T extends FilterableReturn>(items: T[], viewerI
   const years = useMemo(() => [...new Set(items.map((item) => item.year))].sort((left, right) => right - left), [items]);
 
   function clear() {
-    setQuery("");
-    setWaiting("any");
-    setDue("any");
-    setOwner("any");
-    setYear("any");
+    setSaved(emptyFilters);
   }
 
   return { query, setQuery, waiting, setWaiting, due, setDue, owner, setOwner, year, setYear, preparers, years, viewerId, filtering, visible, clear };

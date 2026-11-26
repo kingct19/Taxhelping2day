@@ -1,5 +1,6 @@
 import type { FilingNeed, IntakeAnswers } from "@/lib/filing-needs";
 import { emptyIntake } from "@/lib/filing-needs";
+import { clientOwes, type RequestThread } from "@/lib/request-thread";
 import { filingTypesOf, isTaxpayerType, type DocumentKind, type DocumentRecord, type Profile, type SignatureRecord, type TaxpayerType } from "@/lib/types";
 
 export const seasonStages = ["profile", "scope", "documents", "letter", "ready"] as const;
@@ -193,6 +194,24 @@ export function receivedRequest(request: DocumentRequest, documents: DocumentRec
   return documents.some((document) => document.kind === request.kind);
 }
 
+function threadMatches(body: string, title: string): boolean {
+  return body === title || body.startsWith(`Organizer: ${title}.`);
+}
+
+export function returnStillNeedsDocuments(requests: DocumentRequest[], documents: DocumentRecord[], threads: RequestThread[]): boolean {
+  const used = new Set<string>();
+  return requests.some((request) => {
+    if (!request.required) return false;
+    const matched = threads.filter((thread) => threadMatches(thread.root.body, request.title));
+    if (matched.some((thread) => thread.latest.requestState && clientOwes(thread.latest.requestState))) return true;
+    if (matched.some((thread) => thread.latest.requestState && !clientOwes(thread.latest.requestState))) return false;
+    const file = documents.find((document) => document.kind === request.kind && !used.has(document.id));
+    if (!file) return true;
+    used.add(file.id);
+    return false;
+  });
+}
+
 function missingRequests(requests: DocumentRequest[], documents: DocumentRecord[]): boolean {
   const remaining = new Map<DocumentKind, number>();
   for (const document of documents) remaining.set(document.kind, (remaining.get(document.kind) ?? 0) + 1);
@@ -211,13 +230,23 @@ export function seasonFor(
   documents: DocumentRecord[],
   intake: IntakeAnswers = emptyIntake(),
   catalog?: CatalogLists,
+  scope?: { threads: RequestThread[]; filingTypeId: string },
 ): SeasonStage {
   if (!profile.name || !profile.address || !profile.taxIdLast4) return "profile";
   const signed = signatures.some((signature) => signature.kind === "engagement");
-  const requests = intake.answered ? documentsForIds(filingTypesOf(profile), catalog) : documentRequests(profile.taxpayerType);
-  if (signed) return missingRequests(requests, documents) ? "documents" : "ready";
+  const requests = scope
+    ? intake.answered
+      ? documentsForId(scope.filingTypeId, catalog)
+      : isTaxpayerType(scope.filingTypeId)
+        ? documentRequests(scope.filingTypeId)
+        : documentRequests(profile.taxpayerType)
+    : intake.answered
+      ? documentsForIds(filingTypesOf(profile), catalog)
+      : documentRequests(profile.taxpayerType);
+  const missing = scope ? returnStillNeedsDocuments(requests, documents, scope.threads) : missingRequests(requests, documents);
+  if (signed) return missing ? "documents" : "ready";
   if (!intake.answered) return "scope";
-  if (missingRequests(requests, documents)) return "documents";
+  if (missing) return "documents";
   return "letter";
 }
 

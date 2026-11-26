@@ -79,10 +79,10 @@ const wages = documentRequests("individual", ["wages"]).filter((item) => item.re
 assert.deepEqual(wages, ["Photo ID", "Last year's return", "W-2s"]);
 
 const docs: DocumentRecord[] = [
-  { id: "id", profileId: profile.id, kind: "photo_id", filename: "id.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "prior", profileId: profile.id, kind: "prior_return", filename: "prior.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "w2", profileId: profile.id, kind: "w2", filename: "w2.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "form-1099", profileId: profile.id, kind: "1099", filename: "1099.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "id", profileId: profile.id, returnId: null, kind: "photo_id", filename: "id.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "prior", profileId: profile.id, returnId: null, kind: "prior_return", filename: "prior.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "w2", profileId: profile.id, returnId: null, kind: "w2", filename: "w2.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "form-1099", profileId: profile.id, returnId: null, kind: "1099", filename: "1099.pdf", contentType: "application/pdf", createdAt: "2026-01-01T00:00:00.000Z" },
 ];
 const intake: IntakeAnswers = { answered: true, needs: ["wages"] };
 assert.equal(seasonFor(profile, [], [], intake), "documents");

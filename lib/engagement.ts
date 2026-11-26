@@ -6,6 +6,9 @@ import { nextStage, sendBackTarget } from "@/lib/return-workflow";
 import type { RequestThread } from "@/lib/request-thread";
 import { isTaxpayerType, type EfileAuthorization, type FilingRecord, type Invoice, type Profile, type SignatureRecord } from "@/lib/types";
 
+export const letterPhases = ["unsigned", "sent", "opened", "signed", "declined"] as const;
+export type LetterPhase = (typeof letterPhases)[number];
+
 export type GateInput = {
   workflow: TeamReturn;
   profile: Profile;
@@ -16,6 +19,7 @@ export type GateInput = {
   filings: FilingRecord[];
   note?: string;
   catalog?: CatalogLists;
+  letter?: LetterPhase;
 };
 
 export function organizerBody(title: string, detail: string): string {
@@ -23,7 +27,7 @@ export function organizerBody(title: string, detail: string): string {
 }
 
 export function isOrganizerItem(body: string, title: string): boolean {
-  return body.startsWith(`Organizer: ${title}.`);
+  return body === title || body.startsWith(`Organizer: ${title}.`);
 }
 
 export function requestsFor(type: string, desk?: Pick<ReturnDesk, "intakeAnswered" | "filingNeeds">, catalog?: CatalogLists) {
@@ -99,6 +103,8 @@ export function advanceBlocker(input: GateInput): string | null {
       return null;
     case "renewal":
       return nextStage(workflow.stage) ? null : "Open the next tax year from this file.";
+    case "canceled":
+      return "The client cancelled this return.";
     default: {
       const exhaustive: never = workflow.stage;
       return exhaustive;
@@ -136,6 +142,8 @@ export function clientStepFor(stage: Workflow["stage"], season: SeasonStage): nu
     case "delivery":
     case "renewal":
       return 6;
+    case "canceled":
+      return 0;
     default: {
       const exhaustive: never = stage;
       return exhaustive;

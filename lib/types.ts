@@ -123,6 +123,7 @@ export type ProfileUpdate = {
 export type DocumentRecord = {
   id: string;
   profileId: string;
+  returnId: string | null;
   kind: DocumentKind;
   filename: string;
   contentType: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import {
   BadgeCheckIcon,
   BellIcon,
@@ -82,7 +83,13 @@ const iconColor: Record<ActivityIconName, string> = {
   "due-date-cleared": "bg-purple-500/10 text-purple-600 dark:text-purple-300",
 };
 
-const filters: { id: "all" | ActivityGroup; label: string }[] = [
+type ActivityFilter = "all" | ActivityGroup;
+
+function isActivityFilter(value: unknown): value is ActivityFilter {
+  return filters.some((item) => item.id === value);
+}
+
+const filters: { id: ActivityFilter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "documents", label: "Documents" },
   { id: "preparation", label: "Preparation" },
@@ -161,7 +168,7 @@ function iconFor(icon: ActivityIconName): ReactNode {
 }
 
 export function ActivityTimeline({ items }: { items: ActivityItem[] }) {
-  const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("all");
+  const [filter, setFilter] = useSavedState<ActivityFilter>("view:activity", "all", isActivityFilter);
   const [page, setPage] = useState(0);
   const filtered = items.filter((item) => filter === "all" || item.group === filter);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));

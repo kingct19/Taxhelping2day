@@ -45,19 +45,28 @@ function letterCopy(
         action: null,
         href: null,
       };
-    case "ready":
+    case "sent":
       return {
         headline: next.headline,
-        detail: `${letter.title} is ready. Preparation starts after you sign.`,
-        action: "Review and sign",
-        href: letter.href,
+        detail: "The engagement letter was sent. Open it to review and sign.",
+        action: letter.href ? "Review and sign" : next.action,
+        href: letter.href ?? next.href,
       };
-    case "waiting":
+    case "opened":
       return {
         headline: next.headline,
-        detail: "The letter was sent. Open the email from DocuSeal, and the signed copy will show here.",
-        action: next.action,
-        href: next.href,
+        detail: "You opened the engagement letter. Sign it so preparation can start.",
+        action: letter.href ? "Review and sign" : "Finish signing",
+        href: letter.href ?? "/portal/signatures",
+      };
+    case "signed":
+      return next;
+    case "declined":
+      return {
+        headline: "The engagement letter was declined",
+        detail: "Ask the firm to send a new copy.",
+        action: null,
+        href: null,
       };
     default: {
       const exhaustive: never = letter;

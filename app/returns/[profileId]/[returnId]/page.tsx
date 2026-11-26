@@ -14,12 +14,15 @@ import { SubpageNav } from "@/components/subpage-nav";
 import { advanceEngagement, openNextYear, saveReturnWorkflow, sendBackEngagement } from "@/lib/actions";
 import { requireProfile } from "@/lib/auth";
 import { avatarUrl } from "@/lib/avatar";
+import { refreshOpenPackets } from "@/lib/docuseal";
+import { engagementLetter } from "@/lib/engagement-letter";
 import { missingOrganizer, type GateInput } from "@/lib/engagement";
 import { requestThreads } from "@/lib/request-thread";
 import { documentEntries } from "@/lib/return-documents";
 import { advanceOffer, blockerLines, isReturnTab, sendBackOffer, type ReturnTab } from "@/lib/return-progress";
 import { getReturnWorkflowState } from "@/lib/return-readiness";
 import { taxpayerTypeLabel } from "@/lib/types";
+import { shownStage } from "@/lib/return-workflow";
 import { getStore } from "@/lib/store";
 import { isActiveStaff } from "@/lib/teammates";
 import { notFound } from "next/navigation";
@@ -36,6 +39,7 @@ export default async function ReviewPage({
   await requireProfile("staff");
   const { profileId, returnId } = await params;
   const query = await searchParams;
+  await refreshOpenPackets([returnId]);
   const store = getStore();
   const [team, documents, signatures, messages, profiles, filings, authorizations, invoices, catalog, firmTags, returnTags] = await Promise.all([
     store.listTeamReturns(),
@@ -59,8 +63,10 @@ export default async function ReviewPage({
   const returnMessages = messages.filter((message) => message.returnId === returnId);
   const threads = requestThreads(returnMessages);
   const invoice = invoices[0] ?? null;
+  const stage = shownStage(item);
+  const letter = await engagementLetter([returnId]);
   const gate: GateInput = {
-    workflow: item,
+    workflow: stage === item.stage ? item : { ...item, stage },
     profile: client,
     signatures,
     threads,
@@ -69,6 +75,7 @@ export default async function ReviewPage({
     filings,
     note: "",
     catalog,
+    letter: letter.status,
   };
   const tab: ReturnTab = isReturnTab(query.tab) ? query.tab : "overview";
   const offer = advanceOffer(gate);
@@ -112,8 +119,8 @@ export default async function ReviewPage({
         preparer={authors.get(item.owner ?? "") || "Unassigned"}
         reviewer={authors.get(item.reviewerId ?? "") || "Unassigned"}
         due={item.due}
-        stage={item.stage}
-        waitingOn={item.waitingOn}
+        stage={stage}
+        waitingOn={stage === "canceled" ? null : item.waitingOn}
         assignAction={saveReturnWorkflow.bind(null, item.id, item.revision)}
         advanceAction={offer ? advanceAction : null}
         advanceLabel={offer?.label ?? null}
@@ -124,7 +131,7 @@ export default async function ReviewPage({
         contactHref={`/contacts/${profileId}`}
         teammates={teammates}
         ownerId={item.owner ?? ""}
-        nextAction={item.nextAction}
+        nextAction={stage === "canceled" ? "Client cancelled this return." : item.nextAction}
         readiness={workflowState.overall}
         profileId={profileId}
         returnId={returnId}
@@ -139,14 +146,14 @@ export default async function ReviewPage({
         applied={firmTags.filter((tag) => returnTags.some((row) => row.returnId === returnId && row.tagId === tag.id))}
       />
       <ReturnBanner
-        stage={item.stage}
+        stage={stage}
         blocker={blockerLines(gate)[0] ?? null}
         advanceAction={offer ? advanceAction : null}
         advanceLabel={offer?.label ?? null}
         advanceNeedsNote={offer?.needsNote ?? false}
         openYearAction={openYearAction}
       />
-      <ReturnProgress steps={workflowState.stages} operational={item.stage} profileId={profileId} returnId={returnId} />
+      <ReturnProgress steps={workflowState.stages} operational={stage} profileId={profileId} returnId={returnId} />
       <ReturnTabs tab={tab} profileId={profileId} returnId={returnId} />
       <ReturnPanelFade panel={tab}>
       <ReturnPanel
@@ -225,6 +232,7 @@ function ReturnPanel({
         <OverviewTab
           profileId={profileId}
           returnId={returnId}
+          email={email}
           state={workflowState}
           messages={messages}
           authors={authors}
@@ -257,7 +265,6 @@ function ReturnPanel({
         <ReviewTab
           profileId={profileId}
           returnId={returnId}
-          email={email}
           gate={gate}
           reviewer={reviewer}
           teammates={teammates}

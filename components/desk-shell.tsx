@@ -6,7 +6,6 @@ import {
   ContactRoundIcon,
   FileSignatureIcon,
   FileTextIcon,
-  FolderOpenIcon,
   HouseIcon,
   InboxIcon,
   LayoutDashboardIcon,
@@ -48,7 +47,7 @@ const staffSearch: DeskSearchItem[] = [
 
 const clientItems: DeskItem[] = [
   { href: "/portal", label: "Home", icon: HouseIcon },
-  { href: "/portal/documents", label: "Documents", icon: FolderOpenIcon },
+  { href: "/portal/documents", label: "Returns", icon: FileTextIcon },
   { href: "/portal/signatures", label: "Signatures", icon: FileSignatureIcon },
   { href: "/portal/messages", label: "Messages", icon: MessageSquareIcon },
   { href: "/portal/profile", label: "Profile", icon: UserRoundIcon },
@@ -62,7 +61,7 @@ const clientAccount: DeskItem[] = [
 const clientSearch: DeskSearchItem[] = [...clientItems, ...clientAccount].map((item) => ({ href: item.href, label: item.label, group: "Portal" }));
 
 const portalActions: NotchAction[] = [
-  { href: "/portal/documents", label: "Upload a document" },
+  { href: "/portal/documents", label: "File a return" },
   { href: "/portal/messages", label: "Message the firm" },
 ];
 

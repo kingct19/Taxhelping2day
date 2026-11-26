@@ -66,10 +66,14 @@ export function SendSmartdocDialog({
               setError(null);
               setPending(true);
               try {
-                await sendSmartdoc(templateId, formData);
+                const result = await sendSmartdoc(templateId, formData);
+                if (result.error) {
+                  setError(result.error);
+                  return;
+                }
                 setOpen(false);
-              } catch {
-                setError("Could not send the document. Check DocuSeal and try again.");
+              } catch (caught) {
+                setError(caught instanceof Error && caught.message ? caught.message : "Could not send the document.");
               } finally {
                 setPending(false);
               }

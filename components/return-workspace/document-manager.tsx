@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useSavedState } from "@/hooks/use-saved-state";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,14 @@ import type { DocumentEntry, DocumentGroup } from "@/lib/return-documents";
 import { cn } from "@/lib/utils";
 
 type DocumentFilter = "all" | DocumentGroup | "review" | "waiting" | "missing";
+
+type DocumentView = { query: string; category: DocumentFilter };
+
+function isDocumentView(value: unknown): value is DocumentView {
+  if (!value || typeof value !== "object") return false;
+  const item = value as DocumentView;
+  return typeof item.query === "string" && categories.some((category) => category.id === item.category);
+}
 
 const categories: { id: DocumentFilter; label: string }[] = [
   { id: "all", label: "All" },
@@ -34,8 +42,10 @@ export function DocumentManager({
   fileId: string | null;
 }) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<(typeof categories)[number]["id"]>("all");
+  const [view, setView] = useSavedState<DocumentView>(`view:documents:${returnId}`, { query: "", category: "all" }, isDocumentView);
+  const { query, category } = view;
+  const setQuery = (next: string) => setView((current) => ({ ...current, query: next }));
+  const setCategory = (next: DocumentFilter) => setView((current) => ({ ...current, category: next }));
   const filtered = entries.filter((entry) => {
     if (category === "source" || category === "workpaper" || category === "signed") {
       if (entry.group !== category) return false;

@@ -1,4 +1,3 @@
-import { EngagementPacket } from "@/components/engagement-packet";
 import { EfilePanel } from "@/components/efile-panel";
 import { DeskChecklist, DeskIssues } from "@/components/return-workspace/desk-panel";
 import { StageMoveForm } from "@/components/return-workspace/stage-move-form";
@@ -47,7 +46,6 @@ function Fact({ label, value }: { label: string; value: string }) {
 export function ReviewTab({
   profileId,
   returnId,
-  email,
   gate,
   reviewer,
   teammates,
@@ -58,7 +56,6 @@ export function ReviewTab({
 }: {
   profileId: string;
   returnId: string;
-  email: string;
   gate: GateInput;
   reviewer: string;
   teammates: Person[];
@@ -187,7 +184,6 @@ export function ReviewTab({
       </div>
       <div className="grid content-start gap-3">
         <EfilePanel mode="staff" profileId={profileId} returnId={returnId} returnVersion={workflow.returnVersion} authorizations={authorizations} />
-        <EngagementPacket profileId={profileId} returnId={returnId} email={email} />
       </div>
     </div>
   );

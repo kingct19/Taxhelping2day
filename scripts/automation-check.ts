@@ -66,8 +66,8 @@ async function main() {
   const staff = (await store.listProfiles()).find((person) => person.role === "staff");
   assert.ok(staff);
   const defaults = await store.listAutomations();
-  assert.equal(defaults.length, 8);
-  assert.equal(defaults.filter((rule) => rule.enabled).length, 4);
+  assert.equal(defaults.length, 9);
+  assert.equal(defaults.filter((rule) => rule.enabled).length, 5);
 
   const waiting = await store.createClient({ email: "age-check@example.com", name: "Age Check" });
   await settle(() => runInvited(waiting.id));

@@ -33,7 +33,7 @@ import { blankConversation, conversationFromSupabase, normalizeConversation, nor
 import { defaultSuggestions } from "@/lib/inbox-view";
 import { asWorkflow, initialWorkflow, type TeamReturn, type Workflow } from "@/lib/return-workflow";
 import { randomBytes, randomUUID } from "crypto";
-import { mkdir, readFile, rename, rm, writeFile } from "fs/promises";
+import { mkdir, readFile, rename, rm, stat, writeFile } from "fs/promises";
 import path from "path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { decryptText, encryptText, hashToken, last4 } from "@/lib/crypto";
@@ -139,6 +139,7 @@ export type Store = {
   listDocuments(profileId: string): Promise<DocumentRecord[]>;
   addDocument(input: {
     profileId: string;
+    returnId?: string | null;
     kind: DocumentKind;
     filename: string;
     contentType: string;
@@ -313,6 +314,7 @@ function publicProfile(profile: StoredProfile): Profile {
 }
 
 let queue: Promise<unknown> = Promise.resolve();
+const lockPath = `${dbPath}.lock`;
 
 async function loadDb(): Promise<Database> {
   try {
@@ -324,18 +326,53 @@ async function loadDb(): Promise<Database> {
   }
 }
 
+async function saveDb(db: Database) {
+  const temporary = `${dbPath}.${process.pid}.${randomUUID()}.tmp`;
+  await writeFile(temporary, JSON.stringify(db, null, 2));
+  try {
+    await rename(temporary, dbPath);
+  } catch (error) {
+    await rm(temporary, { force: true });
+    throw error;
+  }
+}
+
+async function withFileLock<T>(fn: () => Promise<T>): Promise<T> {
+  const token = randomUUID();
+  const started = Date.now();
+  for (;;) {
+    try {
+      await writeFile(lockPath, token, { flag: "wx" });
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== "EEXIST") throw error;
+      try {
+        const info = await stat(lockPath);
+        if (Date.now() - info.mtimeMs > 30_000) await rm(lockPath, { force: true });
+      } catch {
+        // Another save released the lock while this one was waiting.
+      }
+      if (Date.now() - started > 30_000) throw new Error("The local database is busy. Try again.");
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      continue;
+    }
+    try {
+      return await fn();
+    } finally {
+      const current = await readFile(lockPath, "utf8").catch(() => "");
+      if (current === token) await rm(lockPath, { force: true });
+    }
+  }
+}
+
 function withDb<T>(mutate: boolean, fn: (db: Database) => Promise<T> | T): Promise<T> {
-  const run = queue.then(async () => {
+  const run = queue.then(() => withFileLock(async () => {
     await mkdir(dataDir, { recursive: true });
     const db = await loadDb();
     const result = await fn(db);
-    if (mutate) {
-      const temporary = `${dbPath}.${process.pid}.tmp`;
-      await writeFile(temporary, JSON.stringify(db, null, 2));
-      await rename(temporary, dbPath);
-    }
+    if (mutate) await saveDb(db);
     return result;
-  });
+  }));
   queue = run.then(
     () => undefined,
     () => undefined,
@@ -507,7 +544,7 @@ const localStore: Store = {
     return withDb(false, (db) =>
       db.documents
         .filter((item) => item.profileId === profileId)
-        .map((item) => omit(item, "storagePath")),
+        .map((item) => publicDocument(item)),
     );
   },
   async addDocument(input) {
@@ -518,6 +555,7 @@ const localStore: Store = {
     const record: StoredDocument = {
       id,
       profileId: input.profileId,
+      returnId: input.returnId ?? null,
       kind: input.kind,
       filename: input.filename,
       contentType: input.contentType,
@@ -527,7 +565,7 @@ const localStore: Store = {
     await withDb(true, (db) => {
       db.documents.push(record);
     });
-    return omit(record, "storagePath");
+    return publicDocument(record);
   },
   async readDocument(id) {
     return withDb(false, async (db) => {
@@ -536,7 +574,7 @@ const localStore: Store = {
         return null;
       }
       const bytes = await readFile(record.storagePath);
-      return { record: omit(record, "storagePath"), bytes };
+      return { record: publicDocument(record), bytes };
     });
   },
   async listSignatures(profileId) {
@@ -1140,14 +1178,7 @@ function supabaseStore(client: SupabaseClient): Store {
       if (error) {
         throw new Error(error.message);
       }
-      return (data as Array<Record<string, string>>).map((row) => ({
-        id: row.id,
-        profileId: row.profile_id,
-        kind: row.kind as DocumentKind,
-        filename: row.filename,
-        contentType: row.content_type,
-        createdAt: row.created_at,
-      }));
+      return (data as Array<Record<string, string | null>>).map((row) => documentFromRow(row));
     },
     async addDocument(input) {
       const id = randomUUID();
@@ -1164,6 +1195,7 @@ function supabaseStore(client: SupabaseClient): Store {
         .insert({
           id,
           profile_id: input.profileId,
+          return_id: input.returnId ?? null,
           kind: input.kind,
           filename: input.filename,
           content_type: input.contentType,
@@ -1174,36 +1206,21 @@ function supabaseStore(client: SupabaseClient): Store {
       if (error) {
         throw new Error(error.message);
       }
-      const row = data as Record<string, string>;
-      return {
-        id: row.id,
-        profileId: row.profile_id,
-        kind: row.kind as DocumentKind,
-        filename: row.filename,
-        contentType: row.content_type,
-        createdAt: row.created_at,
-      };
+      return documentFromRow(data as Record<string, string | null>);
     },
     async readDocument(id) {
       const { data } = await client.from("documents").select("*").eq("id", id).maybeSingle();
       if (!data) {
         return null;
       }
-      const row = data as Record<string, string>;
-      const file = await client.storage.from(bucket).download(row.storage_path);
+      const row = data as Record<string, string | null>;
+      const file = await client.storage.from(bucket).download(String(row.storage_path));
       if (file.error || !file.data) {
         throw new Error(file.error?.message ?? "File missing.");
       }
       const bytes = Buffer.from(await file.data.arrayBuffer());
       return {
-        record: {
-          id: row.id,
-          profileId: row.profile_id,
-          kind: row.kind as DocumentKind,
-          filename: row.filename,
-          contentType: row.content_type,
-          createdAt: row.created_at,
-        },
+        record: documentFromRow(row),
         bytes,
       };
     },
@@ -1826,6 +1843,30 @@ async function ensureConversationId(client: SupabaseClient, profileId: string, c
   }).select("id").single();
   if (inserted.error) throw new Error(inserted.error.message);
   return (inserted.data as { id: string }).id;
+}
+
+function publicDocument(record: StoredDocument): DocumentRecord {
+  return {
+    id: record.id,
+    profileId: record.profileId,
+    returnId: record.returnId ?? null,
+    kind: record.kind,
+    filename: record.filename,
+    contentType: record.contentType,
+    createdAt: record.createdAt,
+  };
+}
+
+function documentFromRow(row: { [key: string]: string | null | undefined }): DocumentRecord {
+  return {
+    id: String(row.id),
+    profileId: String(row.profile_id),
+    returnId: row.return_id ? String(row.return_id) : null,
+    kind: row.kind as DocumentKind,
+    filename: String(row.filename),
+    contentType: String(row.content_type),
+    createdAt: String(row.created_at),
+  };
 }
 
 function messageFromSupabase(row: Record<string, unknown>): Message {

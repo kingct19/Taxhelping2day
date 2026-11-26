@@ -1,4 +1,4 @@
-import { isOrganizerItem } from "@/lib/engagement";
+import { isOrganizerItem, type LetterPhase } from "@/lib/engagement";
 import { clientOwes, type RequestThread } from "@/lib/request-thread";
 import type { Stage } from "@/lib/return-workflow";
 import { documentRequests, documentsForId, documentsForIds, type CatalogLists, type SeasonStage } from "@/lib/season";
@@ -17,7 +17,7 @@ import type {
   SignatureRecord,
   TaxpayerType,
 } from "@/lib/types";
-import { isTaxpayerType } from "@/lib/types";
+import { isTaxpayerType, taxFormFor, taxpayerTypeLabel } from "@/lib/types";
 import { signerLabel } from "@/lib/next-action";
 
 export const clientStages = ["getting_started", "upload_documents", "sign_agreement", "preparation", "review_sign", "completed"] as const;
@@ -26,7 +26,7 @@ export type ClientStage = (typeof clientStages)[number];
 export const requirementStatuses = ["needed", "uploaded", "under_review", "accepted", "correction", "not_applicable"] as const;
 export type RequirementStatus = (typeof requirementStatuses)[number];
 
-export type LetterSnapshot = "unsigned" | "ready" | "waiting";
+export type LetterSnapshot = LetterPhase;
 
 export type ClientAction = {
   id: string;
@@ -44,7 +44,7 @@ export type RequirementCardModel = {
   correction: string | null;
   files: DocumentRecord[];
   kind: DocumentKind | null;
-  upload: { kind: DocumentKind; title: string } | null;
+  upload: { kind: DocumentKind; title: string; returnId: string } | null;
   respond: { profileId: string; latestId: string } | null;
   allowUnavailable: boolean;
   anchors: string[];
@@ -66,6 +66,27 @@ export function clientStageLabel(stage: ClientStage): string {
       return "Review & sign";
     case "completed":
       return "Filed & complete";
+    default: {
+      const exhaustive: never = stage;
+      return exhaustive;
+    }
+  }
+}
+
+export function clientStageDetail(stage: ClientStage): string {
+  switch (stage) {
+    case "getting_started":
+      return "This return is opening. Your name, address, and taxpayer ID need to be on file before the firm can prepare it.";
+    case "upload_documents":
+      return "This return is waiting on files. Send what you have, or tell the firm when you do not have one.";
+    case "sign_agreement":
+      return "The records for this return are in. Sign the engagement letter before preparation starts.";
+    case "preparation":
+      return "The firm is preparing this return. You will hear from them if they need anything else.";
+    case "review_sign":
+      return "This return is ready for you to review. Signing Form 8879 lets the firm e-file it. A signature here is not the IRS receipt.";
+    case "completed":
+      return "This return is filed. The firm keeps the record, and a new year is a separate return.";
     default: {
       const exhaustive: never = stage;
       return exhaustive;
@@ -99,7 +120,7 @@ export function clientFirstName(name: string): string {
 export function pickReturn<T extends { taxYear: number; stage: Stage; archivedAt: string | null }>(returns: T[]): T | null {
   if (returns.length === 0) return null;
   return [...returns].sort((left, right) => {
-    const rank = (item: T) => (item.archivedAt || item.stage === "renewal" ? 1 : 0);
+    const rank = (item: T) => (item.archivedAt || item.stage === "renewal" || item.stage === "canceled" ? 1 : 0);
     return rank(left) - rank(right) || right.taxYear - left.taxYear;
   })[0];
 }
@@ -128,35 +149,89 @@ export function visibleActivity(messages: Message[], limit = 8): Message[] {
 
 function letterOutstanding(letter: LetterSnapshot | null, signatures: SignatureRecord[]): ClientAction | null {
   if (signatures.some((signature) => signature.kind === "engagement")) return null;
-  if (letter === "ready") {
-    return {
-      id: "engagement",
-      title: "Review your engagement letter",
-      detail: "Preparation starts after you sign. This is separate from e-file authorization.",
-      href: "/portal/signatures",
-    };
+  switch (letter) {
+    case null:
+    case "unsigned":
+    case "signed":
+      return null;
+    case "sent":
+      return {
+        id: "engagement",
+        title: "Open your engagement letter",
+        detail: "The firm sent it. Open it to review and sign. Preparation starts after you sign.",
+        href: "/portal/signatures",
+      };
+    case "opened":
+      return {
+        id: "engagement",
+        title: "Finish signing your engagement letter",
+        detail: "You opened it. Sign it so preparation can start.",
+        href: "/portal/signatures",
+      };
+    case "declined":
+      return {
+        id: "engagement",
+        title: "The engagement letter was declined",
+        detail: "Ask the firm to send a new copy.",
+        href: "/portal/signatures",
+      };
+    default: {
+      const exhaustive: never = letter;
+      return exhaustive;
+    }
   }
-  if (letter === "waiting") {
-    return {
-      id: "engagement",
-      title: "Finish signing your engagement letter",
-      detail: "Open the email from DocuSeal, then the signed copy will show here.",
-      href: "/portal/signatures",
-    };
+}
+
+function shortRequestTitle(body: string): string {
+  const organizer = /^Organizer: ([^.]+)\./.exec(body);
+  if (organizer) return organizer[1];
+  return body.length > 80 ? `${body.slice(0, 77)}…` : body;
+}
+
+export function documentsForReturn(returnId: string, documents: DocumentRecord[], messages: Message[]): DocumentRecord[] {
+  const linked = new Set(messages.flatMap((message) => (message.returnId === returnId && message.documentId ? [message.documentId] : [])));
+  return documents.filter((document) => document.returnId === returnId || (!document.returnId && linked.has(document.id)));
+}
+
+export function returnTypeName(
+  item: { taxpayerType: TaxpayerType; filingTypeId?: string },
+  catalog: { types: { id: string; label: string; form: string }[] },
+): { label: string; form: string } {
+  const id = item.filingTypeId || item.taxpayerType;
+  const listed = catalog.types.find((type) => type.id === id);
+  return {
+    label: listed?.label ?? taxpayerTypeLabel(item.taxpayerType),
+    form: listed?.form ?? taxFormFor(item.taxpayerType),
+  };
+}
+
+export function returnHoldsUpload(season: SeasonStage, stage: Stage): boolean {
+  return season === "documents" && (stage === "lead" || stage === "onboarding" || stage === "documents");
+}
+
+export function returnClientStatus(season: SeasonStage, stage: Stage, filings: FilingRecord[]): string {
+  if (stage === "canceled") return "Canceled";
+  if (returnHoldsUpload(season, stage)) return "Documents needed";
+  if ((season === "letter" || season === "ready") && (stage === "lead" || stage === "onboarding" || stage === "documents")) {
+    return "Documents received";
   }
-  return null;
+  return clientStageLabel(deriveClientStage({ returnStage: stage, filings, season }));
 }
 
 export function clientActions(input: {
   profile: Profile;
   signatures: SignatureRecord[];
-  threads: RequestThread[];
-  authorizations: EfileAuthorization[];
-  filings: FilingRecord[];
-  invoice: Invoice | null;
   letter: LetterSnapshot | null;
   poaAsked: boolean;
-  returnVersion: number;
+  files: {
+    id: string;
+    label: string;
+    threads: RequestThread[];
+    authorizations: EfileAuthorization[];
+    filings: FilingRecord[];
+    invoice: Invoice | null;
+    returnVersion: number;
+  }[];
 }): ClientAction[] {
   const actions: ClientAction[] = [];
   if (!input.profile.name || !input.profile.address || !input.profile.taxIdLast4) {
@@ -169,43 +244,46 @@ export function clientActions(input: {
   }
   const letter = letterOutstanding(input.letter, input.signatures);
   if (letter) actions.push(letter);
-  for (const thread of input.threads) {
-    const state = thread.latest.requestState;
-    if (!state || !clientOwes(state)) continue;
-    const replacement = state === "replacement";
-    actions.push({
-      id: `request-${thread.root.id}`,
-      title: replacement ? "Replace a document" : thread.root.body,
-      detail: replacement ? thread.latest.body : "Upload the file, or tell us if you do not have it.",
-      href: `/portal/documents#request-${thread.root.id}`,
-    });
-  }
-  const pending = input.authorizations.filter((item) => item.returnVersion === input.returnVersion && item.status === "needed");
-  if (pending.length > 0) {
-    const who = pending.map((item) => signerLabel(item.signer).toLowerCase()).join(" and ");
-    actions.push({
-      id: "efile",
-      title: "Sign Form 8879",
-      detail: `Authorize e-file for version ${input.returnVersion} (${who}). This is separate from the engagement letter.`,
-      href: "/portal/signatures",
-    });
-  }
-  const draft = input.filings.find((filing) => filing.status === "draft" || filing.status === "changes");
-  if (draft) {
-    actions.push({
-      id: `filing-${draft.id}`,
-      title: draft.status === "changes" ? "Review the updated return" : "Review your draft return",
-      detail: draft.note || "Tell the firm what to change before you authorize e-file.",
-      href: "/portal/messages",
-    });
-  }
-  if (input.invoice?.status === "sent") {
-    actions.push({
-      id: "invoice",
-      title: "Pay invoice",
-      detail: "Payment instructions from the firm are on this page. The portal does not charge a card.",
-      href: "/portal#invoice",
-    });
+  for (const file of input.files) {
+    for (const thread of file.threads) {
+      const state = thread.latest.requestState;
+      if (!state || !clientOwes(state)) continue;
+      const replacement = state === "replacement";
+      const name = shortRequestTitle(thread.root.body);
+      actions.push({
+        id: `request-${thread.root.id}`,
+        title: replacement ? `${file.label} · Replace a document` : `${file.label} · ${name}`,
+        detail: replacement ? thread.latest.body : "Upload the file, or tell us if you do not have it.",
+        href: `/portal/documents?return=${file.id}#request-${thread.root.id}`,
+      });
+    }
+    const pending = file.authorizations.filter((item) => item.returnVersion === file.returnVersion && item.status === "needed");
+    if (pending.length > 0) {
+      const who = pending.map((item) => signerLabel(item.signer).toLowerCase()).join(" and ");
+      actions.push({
+        id: `efile-${file.id}`,
+        title: `${file.label} · Sign Form 8879`,
+        detail: `Authorize e-file for version ${file.returnVersion} (${who}). This is separate from the engagement letter.`,
+        href: "/portal/signatures",
+      });
+    }
+    const draft = file.filings.find((filing) => filing.status === "draft" || filing.status === "changes");
+    if (draft) {
+      actions.push({
+        id: `filing-${draft.id}`,
+        title: draft.status === "changes" ? `${file.label} · Review the updated return` : `${file.label} · Review your draft return`,
+        detail: draft.note || "Tell the firm what to change before you authorize e-file.",
+        href: "/portal/messages",
+      });
+    }
+    if (file.invoice?.status === "sent") {
+      actions.push({
+        id: `invoice-${file.id}`,
+        title: `${file.label} · Pay invoice`,
+        detail: "Payment instructions from the firm are on this page. The portal does not charge a card.",
+        href: "/portal#invoice",
+      });
+    }
   }
   if (input.poaAsked && !input.signatures.some((signature) => signature.kind === "poa")) {
     actions.push({
@@ -290,6 +368,7 @@ function filesFor(
   claimed: Set<string>,
   attachmentIds: Set<string>,
   includeKind = true,
+  returnId?: string,
 ): DocumentRecord[] {
   const rows: DocumentRecord[] = [];
   const seen = new Set<string>();
@@ -301,6 +380,7 @@ function filesFor(
   if (kind && includeKind) {
     for (const document of documents) {
       if (document.kind !== kind) continue;
+      if (returnId && document.returnId !== returnId) continue;
       if (attachmentIds.has(document.id) && !owns(threads, document.id)) continue;
       if (claimed.has(document.id) && !owns(threads, document.id)) continue;
       add(document);
@@ -337,10 +417,11 @@ function toCard(input: {
   profileId: string;
   includeKind?: boolean;
   required: boolean;
+  returnId?: string;
 }): RequirementCardModel {
   const thread = primaryThread(input.threads);
   const state = thread?.latest.requestState ?? null;
-  const files = filesFor(input.kind, input.threads, input.documents, input.claimed, input.attachmentIds, input.includeKind ?? true);
+  const files = filesFor(input.kind, input.threads, input.documents, input.claimed, input.attachmentIds, input.includeKind ?? true, input.returnId);
   const status = state ? statusFromRequest(state) : files.length > 0 ? "uploaded" : "needed";
   const owes = state ? clientOwes(state) : false;
   const uploadKind = input.kind ?? "other";
@@ -353,7 +434,7 @@ function toCard(input: {
     correction: status === "correction" ? thread?.latest.body ?? null : null,
     files,
     kind: input.kind,
-    upload: !owes && status !== "not_applicable" ? { kind: uploadKind, title: input.title } : null,
+    upload: !owes && status !== "not_applicable" && input.returnId ? { kind: uploadKind, title: input.title, returnId: input.returnId } : null,
     respond: owes && thread ? { profileId: input.profileId, latestId: thread.latest.id } : null,
     allowUnavailable: owes,
     anchors: input.threads.map((item) => item.root.id),
@@ -369,6 +450,7 @@ export function requirementCards(input: {
   types?: string[];
   scope?: "all" | "standard" | "extras";
   catalog?: CatalogLists;
+  returnId?: string;
 }): RequirementCardModel[] {
   const attachmentIds = new Set(input.attachmentIds ?? []);
   const claimed = new Set<string>();
@@ -411,6 +493,7 @@ export function requirementCards(input: {
           profileId: input.profile.id,
           includeKind: (kindUses.get(request.kind) ?? 0) < 2,
           required: request.required,
+          returnId: input.returnId,
         }),
       );
     }
@@ -431,6 +514,7 @@ export function requirementCards(input: {
         attachmentIds,
         profileId: input.profile.id,
         required: true,
+        returnId: input.returnId,
       }),
     );
   }

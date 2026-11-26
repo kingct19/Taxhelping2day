@@ -71,10 +71,29 @@ export async function signingApi(path: string, body?: unknown) {
 }
 
 type Submission = {
-  id: number; status: string;
-  submitters: {email:string; status:string; external_id?:string}[];
-  documents: {name:string;url:string}[]; audit_log_url?:string;
+  id: number;
+  status: string;
+  submitters: {
+    email: string;
+    status: string;
+    external_id?: string;
+    sent_at?: string | null;
+    opened_at?: string | null;
+    completed_at?: string | null;
+  }[];
+  documents: { name: string; url: string }[];
+  audit_log_url?: string;
 };
+
+function signerStates(submission: Submission) {
+  return submission.submitters.map((person) => ({
+    email: person.email,
+    status: person.status,
+    sent_at: person.sent_at ?? null,
+    opened_at: person.opened_at ?? null,
+    completed_at: person.completed_at ?? null,
+  }));
+}
 
 export async function syncSubmission(submissionId: number) {
   const db = packetDb();
@@ -86,6 +105,28 @@ export async function syncSubmission(submissionId: number) {
   if (error) throw error;
   if (!packet || packet.status === "completed" || (packet.submission_id && packet.submission_id !== submissionId)) return;
   if (!submission.submitters.some(p => p.external_id === key && p.email.toLowerCase() === packet.recipient.toLowerCase())) return;
+  const states = signerStates(submission);
+  const templateId = Number(process.env.DOCUSEAL_ENGAGEMENT_TEMPLATE_ID);
+  const marked = packet.template_ref
+    ? await db.from("signing_templates").select("kind").eq("id", packet.template_ref).maybeSingle()
+    : null;
+  if (marked?.error) throw marked.error;
+  const engagementLetter = marked?.data?.kind === "engagement" || (templateId > 0 && Number(packet.template_id) === templateId);
+  const store = getStore();
+  const taxReturn = engagementLetter ? (await store.listTeamReturns()).find((item) => item.id === packet.return_id) : undefined;
+  if (taxReturn && submission.submitters.some((person) => person.opened_at)) {
+    const noted = (await store.listMessages(taxReturn.profileId)).some((message) => message.returnId === taxReturn.id && message.body === "Opened the engagement letter.");
+    if (!noted) {
+      await store.addMessage({
+        profileId: taxReturn.profileId,
+        returnId: taxReturn.id,
+        authorId: taxReturn.profileId,
+        authorRole: "client",
+        kind: "event",
+        body: "Opened the engagement letter.",
+      });
+    }
+  }
   const files: {name:string;path:string}[] = [];
   if (submission.status === "completed") {
     if (!submission.documents?.length) throw new Error("Signed packet is not yet available.");
@@ -105,39 +146,58 @@ export async function syncSubmission(submissionId: number) {
       if (result.error) throw result.error;
       files.push({path,name:source.name});
     }
-    const templateId = Number(process.env.DOCUSEAL_ENGAGEMENT_TEMPLATE_ID);
-    const marked = packet.template_ref
-      ? await db.from("signing_templates").select("kind").eq("id", packet.template_ref).maybeSingle()
-      : null;
-    if (marked?.error) throw marked.error;
-    const engagementLetter = marked?.data?.kind === "engagement" || (templateId > 0 && Number(packet.template_id) === templateId);
-    if (engagementPdf && engagementLetter) {
-      const store = getStore();
-      const taxReturn = (await store.listTeamReturns()).find((item) => item.id === packet.return_id);
-      if (taxReturn) {
-        const signed = await store.listSignatures(taxReturn.profileId);
-        if (!signed.some((item) => item.kind === "engagement")) {
-          await store.addSignature({
-            profileId: taxReturn.profileId,
-            kind: "engagement",
-            ip: "docuseal",
-            userAgent: "docuseal",
-            bytes: engagementPdf,
-          });
-          await store.addMessage({
-            profileId: taxReturn.profileId,
-            returnId: taxReturn.id,
-            authorId: taxReturn.profileId,
-            authorRole: "client",
-            kind: "event",
-            body: "Signed the engagement letter.",
-          });
-        }
-        await runDocumentsReady(taxReturn.profileId, taxReturn.id);
+    if (engagementPdf && engagementLetter && taxReturn) {
+      const signed = await store.listSignatures(taxReturn.profileId);
+      if (!signed.some((item) => item.kind === "engagement")) {
+        await store.addSignature({
+          profileId: taxReturn.profileId,
+          kind: "engagement",
+          ip: "docuseal",
+          userAgent: "docuseal",
+          bytes: engagementPdf,
+        });
+        await store.addMessage({
+          profileId: taxReturn.profileId,
+          returnId: taxReturn.id,
+          authorId: taxReturn.profileId,
+          authorRole: "client",
+          kind: "event",
+          body: "Signed the engagement letter.",
+        });
       }
+      await runDocumentsReady(taxReturn.profileId, taxReturn.id);
     }
   }
-  const updated = await db.from("signing_packets").update({submission_id:submissionId,status:submission.status,files,
-    signer_states:submission.submitters.map(({email,status})=>({email,status}))}).eq("id",key).neq("status","completed");
+  const updated = await db.from("signing_packets").update({
+    submission_id: submissionId,
+    status: submission.status,
+    files,
+    signer_states: states,
+  }).eq("id", key).neq("status", "completed");
   if (updated.error) throw updated.error;
+}
+
+export async function refreshOpenPackets(returnIds: string[]) {
+  const ids = [...new Set(returnIds.filter((id) => id.length > 0))];
+  if (ids.length === 0 || !process.env.DOCUSEAL_API_KEY) return;
+  const db = packetDb();
+  if (!db) return;
+  const result = await db.from("signing_packets").select("submission_id,status").in("return_id", ids);
+  if (result.error || !Array.isArray(result.data)) return;
+  const seen = new Set<number>();
+  for (const packet of result.data as { submission_id: number | null; status: string }[]) {
+    const submissionId = Number(packet.submission_id);
+    if (packet.status === "completed" || !Number.isSafeInteger(submissionId) || submissionId <= 0 || seen.has(submissionId)) continue;
+    seen.add(submissionId);
+    try {
+      await syncSubmission(submissionId);
+    } catch {
+      // Keep the last status stored for this packet.
+    }
+  }
+}
+
+export async function refreshProfileLetters(profileId: string) {
+  const returns = await getStore().listTeamReturns();
+  await refreshOpenPackets(returns.filter((item) => item.profileId === profileId).map((item) => item.id));
 }

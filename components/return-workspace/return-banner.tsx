@@ -17,6 +17,14 @@ export function ReturnBanner({
   advanceNeedsNote: boolean;
   openYearAction: (() => Promise<void>) | null;
 }) {
+  if (stage === "canceled") {
+    return (
+      <section className="grid gap-1 rounded-lg border px-3 py-3">
+        <p className="text-sm font-medium">Canceled</p>
+        <p className="text-sm text-muted-foreground">The client cancelled this return. It stays off the active stages.</p>
+      </section>
+    );
+  }
   if (stage === "lead" || stage === "onboarding") {
     return (
       <section className="grid gap-2 rounded-lg border px-3 py-3">
